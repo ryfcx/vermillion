@@ -1,5 +1,9 @@
 const PREFIX = 'vermillion:';
 const RUN_LIMIT = 50;
+// Display copy for stats and other summaries; tier IDs remain stable in stored data.
+export const TIER_LABELS = Object.freeze({
+  none: 'No score', common: 'Common', uncommon: 'Uncommon', rare: 'Rare', mythic: 'One in a Vermillion'
+});
 const DEFAULT_STATS = {
   runs: 0, bestDepth: 0, totalPoints: 0, avgPoints: 0, dailyStreak: 0, bestStreak: 0,
   lastDailyKey: null, mythicCount: 0, rareCount: 0, perPack: {},
@@ -153,7 +157,9 @@ export function getHistory({ limit = 50, mode, packId } = {}) {
   } catch { return []; }
 }
 
-export function getStats() { return mergeStats(read('stats', {})); }
+export function getStats() {
+  return { ...mergeStats(read('stats', {})), tierLabels: TIER_LABELS };
+}
 
 export function getRecentPromptIds(n = 50) {
   const ids = read('recent', []);

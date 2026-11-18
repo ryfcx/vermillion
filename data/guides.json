@@ -5,14 +5,14 @@
       "title": "Think in layers, not lists",
       "group": "strategy",
       "summary": "Move from broad categories to distinctive examples before the clock runs out.",
-      "body": "A prompt usually contains more than one clue. Start with the broad subject, then narrow it by time, place, material, role, or context. That keeps you from repeating the first famous examples that come to mind. Check whether your candidate satisfies every word of the prompt; a rare answer only scores if it is correct.\n\n## A quick three-pass method\n- Name the broad category silently.\n- Choose a narrow lane you can search reliably.\n- Check the candidate against the exact rule. A calm, defensible answer is better than an exotic guess."
+      "body": "A question usually contains more than one clue. Start with the broad subject, then narrow it by time, place, material, role, or context. That keeps you from repeating the first famous examples that come to mind. Check whether your answer fits every word of the question; a rare answer only scores if it is correct.\n\n## A quick three-step method\n- Name the broad subject silently.\n- Choose one clear path to search.\n- Check your answer against the exact rule. A calm, sound answer is better than an unusual guess."
     },
     {
       "slug": "read-the-whole-prompt",
-      "title": "Read every word of the prompt",
+      "title": "Read every word of the question",
       "group": "strategy",
       "summary": "Small qualifiers often define the answer set and rule out tempting guesses.",
-      "body": "Words such as first, longest, named after, currently, or ends in can change the answer set. Before typing, restate the condition in your own words. A prompt about a current capital does not accept a historic capital; a word puzzle is about spelling, not sound.\n\n## Check the boundary\\nAsk whether the answer meets the exact wording and whether a date or formal definition matters. Treat hints as a nudge toward the right boundary, not permission to ignore it."
+      "body": "Words such as first, longest, named after, currently, or ends in can change which answers fit. Before typing, restate the condition in your own words. A question about a current capital does not accept a historic capital; a word puzzle is about spelling, not sound.\n\n## Check the boundary\\nAsk whether your answer fits the wording and whether a date or clear definition matters. Treat hints as a nudge toward the right answer, not permission to ignore the question."
     },
     {
       "slug": "rarity-without-guessing",
@@ -47,35 +47,35 @@
       "title": "Know when to change branches",
       "group": "strategy",
       "summary": "A stuck memory path is a signal to switch categories of thought.",
-      "body": "When one train of thought repeats, deliberately change the dimension you are searching. For a film prompt, switch from directors to performers, then to titles or studios if those fit the question. For science, switch from people to materials, processes, or units.\n\n## Make the switch useful\\nDo not jump randomly. Pick a different branch that still follows the prompt's rule. If no branch produces a candidate you trust, leave it blank rather than submitting a made-up fact."
+      "body": "When one train of thought repeats, deliberately change the dimension you are searching. For a film question, switch from directors to performers, then to titles or studios if those fit the question. For science, switch from people to materials, processes, or units.\n\n## Make the switch useful\\nDo not jump randomly. Pick a different branch that still follows the question's rule. If no branch produces a candidate you trust, leave it blank rather than submitting a made-up fact."
     },
     {
       "slug": "learn-from-feedback",
       "title": "Turn feedback into a memory cue",
       "group": "strategy",
       "summary": "Use the answer reveal to build durable knowledge for later runs.",
-      "body": "After a prompt, choose one unfamiliar correct answer and connect it to something you know. A place can connect to a region; a composer to an era; a unit to the quantity it measures.\n\n## Keep a tiny review list\\nNote the answer and why it fits, group it with related facts, and revisit the group later instead of memorizing isolated trivia. The goal is curiosity and better recall, not cramming a giant list."
+      "body": "After a question, choose one unfamiliar correct answer and connect it to something you know. A place can connect to a region; a composer to an era; a unit to the quantity it measures.\n\n## Keep a tiny review list\\nNote the answer and why it fits, group it with related facts, and revisit the group later instead of memorizing isolated trivia. The goal is curiosity and better recall, not cramming a giant list."
     },
     {
       "slug": "practice-without-pressure",
       "title": "Practice without pressure",
       "group": "practice",
       "summary": "Use practice runs to explore categories and learn the interface.",
-      "body": "Practice is a good place to try a new pack, experiment with a branch, and get comfortable with the timer. It does not replace an official daily attempt. Take time after each answer to read the note and compare rarity tiers.\n\n## A useful session\\nPick one category, play a run, then review missed examples. For a second run, focus on one retrieval method rather than chasing a high score. Small focused sessions are more useful than rushing through many runs."
+      "body": "Practice is a good place to try a new topic, experiment with a branch, and get comfortable with the timer. It does not replace an official daily attempt. Take time after each answer to read the note and compare rarity tiers.\n\n## A useful session\\nPick one category, play a run, then review missed examples. For a second run, focus on one retrieval method rather than chasing a high score. Small focused sessions are more useful than rushing through many runs."
     },
     {
       "slug": "language-word-puzzles",
-      "title": "Solve language prompts by constraints",
+      "title": "Solve language questions by constraints",
       "group": "category",
       "summary": "Translate a word puzzle into letter positions and test the condition carefully.",
-      "body": "Language prompts often define a closed set through spelling rules. Write down the constraints: number of letters, first and last letter, allowed vowels, or repeated characters. Check each candidate against the written form rather than pronunciation.\n\n## Narrow the search\\nFix the required length first. Check the first and last positions. Apply the vowel or letter restriction last. A plausible word that breaks one condition is not correct."
+      "body": "Language questions often define a closed set through spelling rules. Write down the constraints: number of letters, first and last letter, allowed vowels, or repeated characters. Check each candidate against the written form rather than pronunciation.\n\n## Narrow the search\\nFix the required length first. Check the first and last positions. Apply the vowel or letter restriction last. A plausible word that breaks one condition is not correct."
     },
     {
       "slug": "geography-region-first",
       "title": "Geography: think by region",
       "group": "category",
       "summary": "Use continental and regional groupings to reach beyond headline countries.",
-      "body": "For geography prompts, start with the relevant continent and divide it into smaller regions. Remember island states and landlocked countries as separate groups. If the wording names a river, capital, or coast, use that feature to narrow the map. Be careful with transcontinental places and changing official names. Exact wording determines whether a region or political boundary matters."
+      "body": "For geography questions, start with the relevant continent and divide it into smaller regions. Remember island states and landlocked countries as separate groups. If the wording names a river, capital, or coast, use that feature to narrow the map. Be careful with transcontinental places and changing official names. Exact wording determines whether a region or political boundary matters."
     },
     {
       "slug": "science-family-tree",
@@ -89,35 +89,35 @@
       "title": "Film: look beyond the biggest titles",
       "group": "category",
       "summary": "Use country, decade, genre, and role to explore a wider filmography.",
-      "body": "A film prompt may concern titles, performers, directors, characters, or studios. Identify which one before searching memory. Then move by decade, animation versus live action, genre, or country. This helps uncover examples outside the most famous releases. Names and credits can vary by region. Prefer the credited standard form and ensure the person or title belongs to the requested set."
+      "body": "A film question may concern titles, performers, directors, characters, or studios. Identify which one before searching memory. Then move by decade, animation versus live action, genre, or country. This helps uncover examples outside the most famous releases. Names and credits can vary by region. Prefer the credited standard form and ensure the person or title belongs to the requested set."
     },
     {
       "slug": "music-era-and-instrument",
       "title": "Music: search by era and instrument",
       "group": "category",
       "summary": "Use time period, style, geography, and instrument as retrieval paths.",
-      "body": "Music has useful memory clusters: eras, styles, instruments, regions, and roles. First distinguish whether the prompt asks for a performer, composer, instrument, song, or genre. Then use one cluster to retrieve examples. Avoid treating influence or collaboration as membership in a formal group. The wording may require a specific credit, instrument, or period."
+      "body": "Music has useful memory clusters: eras, styles, instruments, regions, and roles. First distinguish whether the question asks for a performer, composer, instrument, song, or genre. Then use one cluster to retrieve examples. Avoid treating influence or collaboration as membership in a formal group. The wording may require a specific credit, instrument, or period."
     },
     {
       "slug": "sports-league-and-role",
       "title": "Sports: sort by league and role",
       "group": "category",
       "summary": "Break sports knowledge into competitions, positions, records, and teams.",
-      "body": "Sports prompts become easier when you separate leagues, competitions, positions, teams, and individual records. Think across eras rather than only current stars, while paying attention to date qualifiers such as current or inaugural. League membership changes. For historical questions, anchor your answer to the year or season implied by the prompt. For positions, check the sport's own terminology."
+      "body": "Sports questions become easier when you separate leagues, competitions, positions, teams, and individual records. Think across eras rather than only current stars, while paying attention to date qualifiers such as current or inaugural. League membership changes. For historical questions, anchor your answer to the year or season implied by the question. For positions, check the sport's own terminology."
     },
     {
       "slug": "nature-habitat-first",
       "title": "Nature: begin with habitat",
       "group": "category",
       "summary": "Use habitat and biological groups to retrieve less familiar examples accurately.",
-      "body": "Nature examples can be sorted by habitat, climate, taxonomic group, diet, or behavior. Decide which branch applies to the prompt. An animal's common name may cover multiple species, so use a precise familiar name when the question requires a specific type. Do not infer scientific classification from appearance alone. If you are uncertain whether an example belongs to a group, choose one you know fits."
+      "body": "Nature examples can be sorted by habitat, climate, taxonomic group, diet, or behavior. Decide which branch applies to the question. An animal's common name may cover multiple species, so use a precise familiar name when the question requires a specific type. Do not infer scientific classification from appearance alone. If you are uncertain whether an example belongs to a group, choose one you know fits."
     },
     {
       "slug": "food-by-ingredient",
       "title": "Food: think by ingredient and technique",
       "group": "category",
       "summary": "Use ingredients, cooking methods, and regional cuisines as memory shelves.",
-      "body": "Food prompts can be approached through ingredients, preparation, course, or region. Identify the requested kind: a dish is different from an ingredient, and a cooking technique is different from a cuisine. Regional names may have alternate spellings. Use a common standard name and check that the dish is genuinely associated with the requested place or method."
+      "body": "Food questions can be approached through ingredients, preparation, course, or region. Identify the requested kind: a dish is different from an ingredient, and a cooking technique is different from a cuisine. Regional names may have alternate spellings. Use a common standard name and check that the dish is genuinely associated with the requested place or method."
     }
   ]
 }

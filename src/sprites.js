@@ -191,6 +191,31 @@ function makePulseFrame(color) {
   return pixels.map(row => row.join(''));
 }
 
+function makeShockwaveFrame(radius) {
+  const pixels = Array.from({ length: 24 }, () => Array(24).fill('.'));
+  for (let y = 0; y < 24; y += 1) for (let x = 0; x < 24; x += 1) {
+    const dx = x - 11.5, dy = y - 11.5;
+    const distance = Math.hypot(dx, dy);
+    // Small breaks keep the ring visibly pixelated and leave four bright cardinal gaps.
+    const angle = (Math.atan2(dy, dx) + Math.PI * 2) % (Math.PI * 2);
+    const inGap = [0, Math.PI / 2, Math.PI, Math.PI * 1.5].some(mark => {
+      const delta = Math.abs(angle - mark);
+      return Math.min(delta, Math.PI * 2 - delta) < 0.16;
+    });
+    if (Math.abs(distance - radius) < 0.72 && !inGap) pixels[y][x] = 'x';
+  }
+  return pixels.map(row => row.join(''));
+}
+
+const divePalette = { ...P };
+const shockwavePalette = { '.': null, x: '#e9e6ff' };
+const shockwaveSprite = sprite([3.5, 5.5, 7.5, 9.5].map(makeShockwaveFrame), shockwavePalette);
+shockwaveSprite.tintable = true;
+const gateDashSprite = bitmap({ '.': null, x: '#e9e6ff' },
+  `xx....xx\n........\n........\n........`
+);
+gateDashSprite.tileable = true;
+
 function makeHint() {
   const pixels = Array.from({ length: 16 }, () => Array(16).fill('.'));
   const bands = [[5, 10], [3, 12], [2, 13], [1, 14], [1, 14], [2, 13], [3, 12], [4, 11], [5, 10], [6, 9]];
@@ -754,6 +779,37 @@ Object.assign(SPRITES, {
     `...a....\n..abb...\n.abcb...\nabbwbb..\n.abcb...\n..abb...\n...a....\n........`,
     `........\n...a....\n..abc...\n.abcw...\n..abc...\n...a....\n........\n........`
   ),
+  'vermi-dive': sprite(rows(
+    `....p...p.......\n....P...P.......\n.....p.p........\n......p.p.......\n......P.P.......\n.....vppv.......\n....pppppppp....\n...opppppppppo...\n...pppppppppp...\n....cccccccc....\n....d....d......\n.....p..p.......\n......p.p.......\n......P.P.......\n.......p........\n................`,
+    `...p....p.......\n...P....P.......\n....p..p.........\n.....p..p........\n.....P..P........\n....vppv.........\n...pppppppp......\n..opppppppppo.....\n..pppppppppp......\n...cccccccc.......\n...d....d.........\n....p..p..........\n.....p.p..........\n.....P.P..........\n......p...........\n..................`,
+    `.....p....p.....\n.....P....P.....\n......p..p......\n.......p.p......\n.......P.P......\n......vppv......\n.....pppppppp...\n....opppppppppo..\n....pppppppppp...\n.....cccccccc...\n.....d....d.....\n......p..p......\n.......p.p......\n.......P.P......\n........p.......\n................`
+  ), divePalette),
+  'vermi-squash': define(`................
+................
+................
+................
+................
+................
+................
+...opppppppppo...
+..opppppppppppo..
+..pppppppppppp..
+...cccccccccc...
+....d....d......
+.....pppp.......
+....p....p......
+................
+................`),
+  'vermi-land': sprite(rows(
+    `................\n................\n................\n................\n...opppppppppo...\n..opppppppppppo..\n..pppppppppppp..\n...cccccccccc...\n....d....d......\n.....pppp.......\n....p....p......\n................\n................\n................\n................\n................`,
+    `................\n................\n.....vppv.......\n....pppppppp....\n...opppppppppo...\n...pppppppppp...\n....cccccccc....\n....d....d......\n.....p..p.......\n......p.p.......\n......P.P.......\n.......p........\n................\n................\n................\n................`,
+    `................\n................\n................\n....vppppv......\n...opppppppppo...\n...pppppppppp...\n....cccccccc....\n....d....d......\n.....p..p.......\n......p.p.......\n......P.P.......\n.......p........\n................\n................\n................\n................`
+  ), divePalette),
+  'speedline': bitmap({ '.': null, x: '#5ee0ff', p: '#ff4fa3' },
+    `x.......\nx.......\n........\n..x.....\n..x.....\n........\n....p...\n....p...\n........\n......x.\n......x.\n........\n.x......\n.x......\n........\n........`
+  ),
+  shockwave: shockwaveSprite,
+  'gate-dash': gateDashSprite,
   // Frame order for drawSprite(..., frame): none, common, uncommon, rare, mythic.
   'vermi-pulse': sprite(['m', 'b', 'v', 'p', 'c'].map(makePulseFrame), pulsePalette),
   sparkle: bitmap(P,
@@ -810,6 +866,20 @@ export function drawSprite(ctx, name, x, y, scale = 4, frame = 0) {
   for (let row = 0; row < def.h; row += 1) for (let col = 0; col < def.w; col += 1) {
     const color = def.palette[pixels[row]?.[col] || '.'];
     if (color) { ctx.fillStyle = color; ctx.fillRect(Math.round(x + col * scale), Math.round(y + row * scale), scale, scale); }
+  }
+}
+
+/** Draw a sprite silhouette in one caller-selected color (useful for tier-tinted rings/gates). */
+export function drawTintedSprite(ctx, name, x, y, scale = 4, frame = 0, tint = '#ffffff') {
+  const def = typeof name === 'string' ? SPRITES[name] : name;
+  if (!def) throw new RangeError(`Unknown sprite: ${name}`);
+  const pixels = def.frames[((frame % def.frames.length) + def.frames.length) % def.frames.length];
+  for (let row = 0; row < def.h; row += 1) for (let col = 0; col < def.w; col += 1) {
+    const key = pixels[row]?.[col] || '.';
+    if (def.palette[key]) {
+      ctx.fillStyle = tint;
+      ctx.fillRect(Math.round(x + col * scale), Math.round(y + row * scale), scale, scale);
+    }
   }
 }
 

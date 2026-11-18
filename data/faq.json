@@ -1,18 +1,68 @@
-{"faq":[
-{"q":"What is Vermillion?","a":"Vermillion is a free trivia game about finding correct answers that are less obvious. Each Descent has seven prompts, and rarer valid answers earn more points."},
-{"q":"How are points awarded?","a":"Each accepted answer has a curated rarity score from 1 to 100. Rarer answers may score more than familiar ones. Scores are editorial estimates, not live survey data."},
-{"q":"What happens when I enter an unknown answer?","a":"An unrecognized answer scores nothing and lets you retry while time remains. If time expires before a valid answer, that prompt scores zero."},
-{"q":"How long is each prompt?","a":"Daily, Endless, and pack prompts have 20 seconds. Duel prompts have 15 seconds. The clock continues while the page is hidden."},
-{"q":"What is the Daily Descent?","a":"It is a shared set of seven mixed prompts for a UTC calendar day. Your official Daily result is saved locally once; replays for practice do not change that result."},
-{"q":"What is Endless Descent?","a":"Endless gives you another seven mixed prompts whenever you want. It tries to avoid recently seen prompts when enough alternatives are available."},
-{"q":"How does a Duel work?","a":"One player completes a run and shares its challenge link. The other player receives the same seven prompts. When both players give the same accepted answer, both scores for that prompt are halved, rounding down."},
-{"q":"Can I play a pack challenge from an earlier date?","a":"Yes. Every pack has a daily challenge and an archive beginning November 1, 2026. Archive and practice runs do not replace an official daily pack result."},
-{"q":"What does Practice mean?","a":"Practice lets you replay a daily or pack set without using or overwriting your official attempt. Practice runs are marked separately in local history."},
-{"q":"Why did my answer not match?","a":"The game checks its curated answer bank and aliases. It tolerates some small typos, but cannot accept every alternate name or ambiguous spelling. Try a standard name when you know one."},
-{"q":"Are rarity scores exact statistics?","a":"No. Scores are curated estimates intended to create a useful rarity gradient. They are not based on personal data, accounts, or player polls."},
-{"q":"Does the game need an account or send my scores to a server?","a":"No account is required. Runs, settings, and stats are stored in your browser when local storage is available. Duel links contain the challenge prompts and answers needed for comparison."},
-{"q":"Is Vermillion free?","a":"Yes. Every mode and pack is free. There are no ads, paywalls, accounts, subscriptions, or locked content."},
-{"q":"How do I change the display or sound?","a":"Use Display for Neon, Midnight, or CRT, and Sound to toggle effects. Easy Read increases text size and contrast and disables scanlines and motion."},
-{"q":"What does depth measure?","a":"For Daily, Endless, and Duel, each point represents ten metres on the depth display. Packs use their own themed unit, such as kilometres, years, or energy."},
-{"q":"What is Vermi?","a":"Vermi is the game's original glowing jellyfish mascot. Vermi reacts to play with idle, happy, and sad animations."}
-]}
+{
+  "faq": [
+    {
+      "q": "What is Vermillion?",
+      "a": "Vermillion is a free trivia game about finding correct answers that are less obvious. Each game has seven questions, and rarer answers earn more points."
+    },
+    {
+      "q": "How are points awarded?",
+      "a": "Each accepted answer has a rarity score from 1 to 100. Less common answers can earn more points. These scores are estimates, not live survey results."
+    },
+    {
+      "q": "What happens when I enter an answer the game does not know?",
+      "a": "An answer the game does not recognize scores nothing, and you can try again while time remains. If time runs out first, that question scores zero."
+    },
+    {
+      "q": "How long is each question?",
+      "a": "Daily Game, Endless and topic games give you 20 seconds per question. Duel gives you 15 seconds. The clock keeps going if you hide the page."
+    },
+    {
+      "q": "What is the Daily Game?",
+      "a": "It is the same set of seven mixed questions for everyone on a UTC date. Your Daily Game score is saved once. Practice replays do not change it."
+    },
+    {
+      "q": "What is Endless?",
+      "a": "Endless gives you another seven mixed questions whenever you want. It tries to avoid questions you have seen recently when enough others are available."
+    },
+    {
+      "q": "How does a Duel work?",
+      "a": "One player finishes a game and shares its challenge link. The other player gets the same seven questions. If both players give the same accepted answer, both scores for that question are cut in half, rounding down."
+    },
+    {
+      "q": "Can I play a topic game from an earlier date?",
+      "a": "Yes. Every topic has a daily game and Past games going back to November 1, 2026. Playing an older game or practicing does not replace your official topic score."
+    },
+    {
+      "q": "What is Practice?",
+      "a": "Practice lets you replay a Daily Game or topic game without using or replacing your official score. Practice games are marked separately in your browser history."
+    },
+    {
+      "q": "Why did my answer not match?",
+      "a": "The game checks a list of accepted answers and alternate names. It can handle some small spelling mistakes, but not every name or unclear spelling. Try a standard name when you know one."
+    },
+    {
+      "q": "Are rarity scores exact facts?",
+      "a": "No. Scores are estimates that create a range from common to unusual answers. They do not come from personal data, accounts or player polls."
+    },
+    {
+      "q": "Does the game need an account or send my scores to a server?",
+      "a": "No account is needed. Games, settings and scores are saved in your browser when browser storage is available. Duel links include the questions and answers needed to compare scores."
+    },
+    {
+      "q": "Is Vermillion free?",
+      "a": "Yes. Every game mode and topic is free. There are no ads, paywalls, accounts, subscriptions or locked content."
+    },
+    {
+      "q": "How do I change the display or sound?",
+      "a": "Use Display to choose Neon, Midnight or CRT, and Sound to turn effects on or off. Easy Read makes text larger and easier to see, and turns off scanlines and motion."
+    },
+    {
+      "q": "What does depth measure?",
+      "a": "In Daily Game, Endless and Duel, each point stands for ten metres on the depth display. Topics use their own units, such as kilometres, years or energy."
+    },
+    {
+      "q": "What is Vermi?",
+      "a": "Vermi is the game’s original glowing jellyfish mascot. Vermi moves and changes expression during play."
+    }
+  ]
+}

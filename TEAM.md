@@ -23,7 +23,7 @@ Do not copy Krillion's text, prompts, or answer data.
    The only downloaded files allowed are the OFL fonts Press Start 2P and VT323, self-hosted in `assets/fonts/`. All art and sound must be original.
    The game is 100% free: no ads, paywalls, accounts, or locked content.
 6. **Run it:** `./serve.sh`, then open http://localhost:8642.
-7. **Don't git commit.** The orchestrator makes checkpoints. Don't run destructive git commands.
+7. **Don't git commit or push.** The orchestrator makes checkpoints and pushes to GitHub (https://github.com/ryfcx/vermillion, branch `main`). Don't run destructive git commands.
 8. If your module depends on one that isn't written yet, code against the contract and stub it locally if needed.
    Never overwrite the real file.
 9. When your lane's tasks are done, post in CHAT_LOG.md and wait for review.

@@ -4,11 +4,12 @@
 
 export const TIER_ORDER = ['none', 'common', 'uncommon', 'rare', 'mythic'];
 export const TIER_INFO = {
-  none: { label: 'No score', emoji: '⬛', min: 0, max: 0 },
-  common: { label: 'Common', emoji: '🟦', min: 1, max: 20 },
-  uncommon: { label: 'Uncommon', emoji: '🟪', min: 21, max: 50 },
-  rare: { label: 'Rare', emoji: '🩷', min: 51, max: 80 },
-  mythic: { label: 'Mythic', emoji: '✨', min: 81, max: 100 },
+  none: { label: 'No score', short: 'No score', emoji: '⬛', min: 0, max: 0 },
+  common: { label: 'Common', short: 'Common', emoji: '🟦', min: 1, max: 20 },
+  uncommon: { label: 'Uncommon', short: 'Uncommon', emoji: '🟪', min: 21, max: 50 },
+  rare: { label: 'Rare', short: 'Rare', emoji: '🩷', min: 51, max: 80 },
+  // internal tier id stays `mythic`; the player-facing name is "One in a Vermillion" (contract §6)
+  mythic: { label: 'ONE IN A VERMILLION', short: '1 in a Vermillion', emoji: '✨', min: 81, max: 100 },
 };
 
 const DEFAULT_LIMIT_MS = { daily: 20000, endless: 20000, duel: 15000, pack: 20000 };
@@ -54,6 +55,7 @@ export function createGame({
   let rejected = [];   // unknown inputs on the current prompt
   let last = null;     // detailed result of the most recently resolved prompt
   let finishedAt = null;
+  let suggestion = null;   // pending "Did you mean X?" from the matcher: { answer, points, input }
 
   const total = () => answers.reduce((s, a) => s + a.points, 0);
   const remaining = (t) => Math.max(0, limitMs - (t - startedAt));
@@ -79,7 +81,8 @@ export function createGame({
   }
 
   function resolve(prompt, entry, timedOut, chosen) {
-    const full = { ...entry, tier: tierOf(entry.points), usedHint: hintUsed, timedOut };
+    const full = { ...entry, corrected: !!entry.corrected, tier: tierOf(entry.points), usedHint: hintUsed, timedOut };
+    suggestion = null;
     answers.push(full);
     last = {
       ...full,
@@ -109,7 +112,7 @@ export function createGame({
 
   /**
    * Submit an answer. Returns { status }:
-   *  'match' | 'unknown' | 'empty' | 'timeout' | 'ignored'
+   *  'match' | 'suggest' | 'unknown' | 'empty' | 'timeout' | 'ignored'
    */
   function submit(input, t = Date.now()) {
     if (phase !== 'playing') return { status: 'ignored' };
@@ -122,9 +125,16 @@ export function createGame({
         input: String(input).trim(),
         answerName: res.answer.name,
         points: res.points,
+        corrected: res.corrected === true,
       }, false, res.answer);
       return { status: 'match', result: last };
     }
+    if (res.status === 'suggest' && res.answer) {
+      // medium-confidence correction: ask the player; the timer keeps running, no attempt is counted
+      suggestion = { name: res.answer.name, points: res.points, answer: res.answer, input: String(input).trim() };
+      return { status: 'suggest', suggestion: { name: suggestion.name, input: suggestion.input } };
+    }
+    suggestion = null;
     if (res.status === 'unknown') {
       attempts += 1;
       const s = String(input).trim();
@@ -132,6 +142,18 @@ export function createGame({
     }
     return { status: res.status, attempts };
   }
+
+  /** YES to "Did you mean X?": score the suggested answer as a corrected match. */
+  function acceptSuggestion(t = Date.now()) {
+    if (phase !== 'playing') return { status: 'ignored' };
+    if (timeoutIfExpired(t)) return { status: 'timeout', result: last };
+    if (!suggestion) return { status: 'ignored' };
+    const prompt = prompts[index], sg = suggestion;
+    resolve(prompt, { promptId: prompt.id, input: sg.input, answerName: sg.answer.name, points: sg.points, corrected: true }, false, sg.answer);
+    return { status: 'match', result: last };
+  }
+  /** NO to "Did you mean X?": forget it and keep playing. */
+  function dismissSuggestion() { suggestion = null; }
 
   /** Reveal the hint for this prompt. Free, but it is recorded on the answer (usedHint). */
   function useHint() {
@@ -153,6 +175,7 @@ export function createGame({
       attempts = 0;
       hintUsed = false;
       rejected = [];
+      suggestion = null;
       last = null;
     }
     return getState(t);
@@ -189,6 +212,7 @@ export function createGame({
       attempts,
       rejected: rejected.slice(),
       hintUsed,
+      suggestion: suggestion ? { name: suggestion.name, input: suggestion.input } : null,
       hint: hintUsed ? prompts[index]?.hint || '' : null,
       last,
       answers: answers.map((a) => ({ ...a })),
@@ -199,5 +223,5 @@ export function createGame({
     };
   }
 
-  return { submit, tick, next, useHint, getState, getRun };
+  return { submit, tick, next, useHint, acceptSuggestion, dismissSuggestion, getState, getRun };
 }

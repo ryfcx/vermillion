@@ -21,7 +21,14 @@ const PATTERNS = {
   finish: { notes: [392, 494, 587, 784], wave: 'square', duration: 0.38, gain: 0.13 },
   click: { notes: [560], wave: 'square', duration: 0.035, gain: 0.04 },
   duelWin: { notes: [392, 523, 659, 784, 988], wave: 'square', duration: 0.42, gain: 0.14 },
-  duelLose: { notes: [330, 294, 262, 220], wave: 'triangle', duration: 0.35, gain: 0.12 }
+  duelLose: { notes: [330, 294, 262, 220], wave: 'triangle', duration: 0.35, gain: 0.12 },
+  gate: { notes: [523], wave: 'square', duration: 0.09, gain: 0.1 },
+  'land-none': { notes: [196, 147], wave: 'triangle', duration: 0.16, gain: 0.09 },
+  'land-common': { notes: [330, 392], wave: 'square', duration: 0.13, gain: 0.1 },
+  'land-uncommon': { notes: [392, 494, 587], wave: 'square', duration: 0.18, gain: 0.11 },
+  'land-rare': { notes: [494, 587, 740], wave: 'square', duration: 0.21, gain: 0.12 },
+  'land-mythic': { notes: [587, 740, 880, 1175], wave: 'square', duration: 0.3, gain: 0.13 },
+  bloop: { notes: [196, 130], wave: 'triangle', duration: 0.2, gain: 0.09 }
 };
 
 function getContext() {
@@ -50,14 +57,38 @@ function tone(frequency, startAt, duration, wave, gainLevel, target = null) {
   } catch { /* audio is an enhancement; unsupported contexts should never break play */ }
 }
 
-export function play(name) {
+function sweep(from, to, duration, wave, gainLevel) {
+  const ctx = getContext();
+  if (!ctx || muted || volume <= 0) return;
+  try {
+    const oscillator = ctx.createOscillator();
+    const gain = ctx.createGain();
+    oscillator.type = wave;
+    oscillator.frequency.setValueAtTime(from, ctx.currentTime);
+    oscillator.frequency.exponentialRampToValueAtTime(to, ctx.currentTime + duration);
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(Math.max(0.0002, gainLevel * volume), ctx.currentTime + 0.012);
+    gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + duration);
+    oscillator.connect(gain); gain.connect(ctx.destination);
+    oscillator.start(ctx.currentTime); oscillator.stop(ctx.currentTime + duration + 0.01);
+    oscillator.onended = () => { oscillator.disconnect(); gain.disconnect(); };
+  } catch { /* audio is optional; an unsupported sweep should never interrupt play */ }
+}
+
+export function play(name, stepIndex = 0) {
+  if (name === 'dive') {
+    if (!muted) sweep(620, 92, 0.58, 'triangle', 0.12);
+    return;
+  }
   const pattern = PATTERNS[name];
   if (!pattern || muted) return;
   const ctx = getContext();
   if (!ctx) return;
   if (ctx.state === 'suspended') ctx.resume().catch(() => {});
   const spacing = pattern.duration / pattern.notes.length;
-  pattern.notes.forEach((frequency, index) => tone(frequency, ctx.currentTime + index * spacing, spacing * 1.35, pattern.wave, pattern.gain));
+  const gateStep = name === 'gate' ? Math.max(0, Math.min(3, Number.isFinite(Number(stepIndex)) ? Number(stepIndex) : 0)) : 0;
+  const rise = name === 'gate' ? 2 ** (gateStep * 2 / 12) : 1;
+  pattern.notes.forEach((frequency, index) => tone(frequency * rise, ctx.currentTime + index * spacing, spacing * 1.35, pattern.wave, pattern.gain));
 }
 
 export function setVolume(value) {

@@ -34,8 +34,14 @@ function selectMixed(bank, rand) {
   return chosen;
 }
 
+function everydayBank(bank) {
+  const prompts = bank?.prompts || [];
+  const everyday = prompts.filter(prompt => prompt.everyday === true);
+  return everyday.length >= PROMPTS_PER_RUN ? { ...bank, prompts: everyday } : bank;
+}
+
 export function getDailyPrompts(bank, dayKey) {
-  return selectMixed(bank, mulberry32(seedFromString(`vermillion-daily:${dayKey}`)));
+  return selectMixed(everydayBank(bank), mulberry32(seedFromString(`vermillion-daily:${dayKey}`)));
 }
 
 export function getEndlessPrompts(bank, recentIds = [], rand = Math.random) {
@@ -58,7 +64,13 @@ export function getPackPrompts(bank, category, rand = Math.random) {
 
 export function getPackDailyPrompts(bank, packId, dayKey) {
   const rand = mulberry32(seedFromString(`${packId}:${dayKey}`));
-  return getPackPrompts(bank, packId, rand);
+  const topic = (bank?.prompts || []).filter(prompt =>
+    Array.isArray(prompt.packs) ? prompt.packs.includes(packId) : prompt.category === packId
+  );
+  const everyday = topic.filter(prompt => prompt.everyday === true);
+  const pool = everyday.length >= PROMPTS_PER_RUN ? everyday : topic;
+  if (pool.length < PROMPTS_PER_RUN) return [];
+  return shuffle(pool, rand).slice(0, PROMPTS_PER_RUN);
 }
 
 export function listArchiveDays(today = utcDayKey()) {

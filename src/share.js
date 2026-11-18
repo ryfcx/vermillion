@@ -8,13 +8,16 @@ function tier(answer) {
   return 'mythic';
 }
 const SQUARES = { none: '⬛', common: '🟦', uncommon: '🟪', rare: '🩷', mythic: '✨' };
+const MYTHIC_SHARE_LABEL = '✨ One in a Vermillion';
 
 export function shareText(run) {
   const date = run?.dayKey || new Date(run?.finishedAt || Date.now()).toISOString().slice(0, 10);
   const isPack = run?.mode === 'pack' || String(run?.mode || '').startsWith('pack:');
   const score = isPack ? `${(Number(run?.total) || 0).toLocaleString('en-US')} pts` : `${(Number.isFinite(run?.depth) ? run.depth : (Number(run?.total) || 0) * 10).toLocaleString('en-US')} m`;
-  const squares = Array.isArray(run?.answers) ? run.answers.map(answer => SQUARES[tier(answer)]).join('') : '';
-  return `Vermillion ${date} — ${score}\n${squares}`;
+  const answers = Array.isArray(run?.answers) ? run.answers : [];
+  const squares = answers.map(answer => SQUARES[tier(answer)]).join('');
+  const mythicLabel = answers.some(answer => tier(answer) === 'mythic') ? `\n${MYTHIC_SHARE_LABEL}` : '';
+  return `Vermillion ${date} — ${score}\n${squares}${mythicLabel}`;
 }
 
 export async function shareRun(run) {

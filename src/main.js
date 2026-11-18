@@ -33,6 +33,16 @@ const ui = createUI(root, {
   getSettings: () => settings,
   toggleSetting: (key) => { setSettings({ [key]: !settings[key] }); },
   setSettings: (patch) => setSettings(patch),
+  acceptSuggest: () => {
+    if (!run || !ui.playing) return;
+    const res = run.game.acceptSuggestion(Date.now());
+    if (res.status === 'match' || res.status === 'timeout') {
+      stopTimer();
+      const st = run.game.getState();
+      ui.showResult(st, { rivalPoints: rivalPoints(st.index) });
+    }
+  },
+  dismissSuggest: () => { if (run) run.game.dismissSuggestion(); },
   cycleTheme: () => {
     const order = ['neon', 'midnight', 'crt'];
     setSettings({ theme: order[(order.indexOf(settings.theme) + 1) % order.length] });
@@ -47,7 +57,7 @@ const ui = createUI(root, {
   copyLink: (link) => copyText(link, 'Duel link copied.'),
   challenge: (r) => {
     const link = duelLink(r);
-    if (!link) return ui.inlineToast('This run can’t be turned into a duel.');
+    if (!link) return ui.inlineToast('This game can’t be turned into a duel.');
     copyText(link, 'Duel link copied. Send it to a friend!');
   },
   playAgain: () => playAgain(),
@@ -169,7 +179,7 @@ function metaFor({ mode, packId, dayKey, practice, official, archive, rival }) {
   const pack = packId ? packById(packId) : null;
   return {
     mode, packId, dayKey: mode === 'daily' || mode === 'pack' ? dayKey : null,
-    title: pack ? pack.name : mode === 'daily' ? 'Daily Descent' : mode === 'endless' ? 'Endless Descent' : 'Duel',
+    title: pack ? pack.name : mode === 'daily' ? 'Daily Game' : mode === 'endless' ? 'Endless' : 'Duel',
     icon: pack ? pack.icon : mode, official, practice, archive, rival,
     displayKind: displayKindFor(mode, packId),
   };
@@ -198,7 +208,7 @@ function startRun(r) {
     }
     if (invite) {
       prompts = invite.promptIds.map((id) => getPrompt(bank, id));
-      if (prompts.some((p) => !p)) { invite = null; inviteAccepted = false; return ui.showError('This duel uses prompts this version of the game doesn’t have.', () => router.go(href.home())); }
+      if (prompts.some((p) => !p)) { invite = null; inviteAccepted = false; return ui.showError('This duel uses questions this version of the game doesn’t have.', () => router.go(href.home())); }
       theirs = invite;
     } else {
       prompts = modes.getEndlessPrompts(bank, safe(() => storage.getRecentPromptIds(), []), Math.random);
@@ -216,7 +226,7 @@ function startRun(r) {
     }
   }
   if (!prompts || prompts.length < modes.PROMPTS_PER_RUN) {
-    return ui.showError('Not enough prompts to build a run yet.', () => router.go(href.home()), 'Empty depths');
+    return ui.showError('Not enough questions to start a game yet.', () => router.go(href.home()), 'Not enough questions');
   }
 
   const limit = modes.TIMERS?.[mode] ?? (mode === 'duel' ? 15000 : 20000);
@@ -257,6 +267,8 @@ function onSubmit(text) {
     stopTimer();
     const st = run.game.getState();
     ui.showResult(st, { rivalPoints: rivalPoints(st.index) });
+  } else if (res.status === 'suggest') {
+    ui.showSuggest(res.suggestion);
   } else if (res.status === 'unknown' || res.status === 'empty') {
     const st = run.game.getState();
     ui.showReject(res.status, st.rejected);
@@ -285,7 +297,7 @@ function nextPackSuggestion(r) {
 function buildView(r, extra = {}) {
   const kind = displayKindFor(r.mode === 'pack' ? 'pack' : r.mode, r.packId);
   const pack = r.packId ? packById(r.packId) : null;
-  const title = pack ? pack.name : r.mode === 'daily' ? 'Daily Descent' : r.mode === 'endless' ? 'Endless Descent' : 'Duel';
+  const title = pack ? pack.name : r.mode === 'daily' ? 'Daily Game' : r.mode === 'endless' ? 'Endless' : 'Duel';
   const challengeable = r.answers.length === modes.PROMPTS_PER_RUN && !!duelLink(r);
   return {
     run: r, promptOf: byId, kind, meta: { title, replayLabel: r.official ? 'Practice' : 'Play again', ...(extra.meta || {}) },
@@ -312,7 +324,7 @@ function finish(finishedRun) {
     } catch (err) {
       console.error(err);
       invite = null; inviteAccepted = false;
-      return ui.showError('This duel link is broken, so the two runs can’t be compared. Your run was still saved.', () => router.go(href.home()), 'Duel link broken');
+      return ui.showError('This duel link is broken, so the two games can’t be compared. Your game was still saved.', () => router.go(href.home()), 'Duel link broken');
     }
     view.duel = { ...sc, collisions: sc.collisions || [], theirAnswers: run.theirs.answers };
     view.canReplay = false; view.canChallenge = false;
@@ -361,12 +373,13 @@ async function boot() {
     bank = await loadBank();
   } catch (err) {
     console.error(err);
-    return ui.showError('Couldn’t load the prompt bank. If you opened the file directly, run ./serve.sh and visit http://localhost:8642.', () => location.reload());
+    return ui.showError('Couldn’t load the question list. If you opened the file directly, run ./serve.sh and visit http://localhost:8642.', () => location.reload());
   }
   try { packs = (await loadPacks()).packs; }
   catch (err) { console.warn('packs failed validation, using raw file', err); packs = await loadJson('./data/packs.json', 'packs'); }
   ui.setPacks(packs);
   [guides, faq] = await Promise.all([loadJson('./data/guides.json', 'guides'), loadJson('./data/faq.json', 'faq')]);
+  ui.setContent({ guides, faq });
 
   const token = new URLSearchParams(location.search).get('duel');
   router = createRouter(onRoute);
@@ -375,7 +388,7 @@ async function boot() {
     history.replaceState(null, '', location.pathname + (invite ? href.duel() : href.home()));
     if (!invite) {
       router.start();
-      return ui.showError('This duel link is broken. Ask your rival to send it again, or play a normal run.', () => router.go(href.home()), 'Duel link broken');
+      return ui.showError('This duel link is broken. Ask your rival to send it again, or play a normal game.', () => router.go(href.home()), 'Duel link broken');
     }
   }
   router.start();

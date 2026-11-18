@@ -3,10 +3,14 @@
 // image-rendering: pixelated. Everything is original, drawn here from rectangles; Luna's sprites
 // (moon, star, cloud-a/b, buoy, wave, fish-a/b, mascot) are used when they exist.
 import { assets, hasSprite } from './displays.js';
+import { TIER_INFO } from './game.js';
 
 let S = null;   // running scene state (null when stopped)
-const PX_PER_M = 0.24;   // play mode: 1 logical px per ~4 m, so a 100 m ruler tick is 24 px
+const PX_PER_M = 0.24;
+const WIND = 150, LAND = 400;                     // ms: wind-up before the plunge, landing after it
+const GATES = [['common', 0], ['uncommon', 210], ['rare', 510], ['mythic', 810]];   // metres below where the dive starts (points 1/21/51/81 x 10 m)   // play mode: 1 logical px per ~4 m, so a 100 m ruler tick is 24 px
 
+const sfxPlay = (name, step) => { try { assets.sfx && assets.sfx.play && assets.sfx.play(name, step); } catch { /* audio is best-effort */ } };
 const hex = (h) => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
 const mix = (a, b, t) => { const A = hex(a), B = hex(b); return `rgb(${A.map((v, i) => Math.round(v + (B[i] - v) * t)).join(',')})`; };
 function lerpStops(stops, t) {
@@ -40,6 +44,11 @@ const GLYPH = {
   0: '111101101101111', 1: '010110010010111', 2: '111001111100111', 3: '111001111001111', 4: '101101111001001',
   5: '111100111001111', 6: '111100111101111', 7: '111001001001001', 8: '111101111101111', 9: '111101111001111',
   m: '000000110111101', '-': '000000111000000',
+  A: '010101111101101', B: '110101110101110', C: '011100100100011', D: '110101101101110', E: '111100110100111', F: '111100110100100',
+  G: '011100101101011', H: '101101111101101', I: '111010010010111', J: '001001001101010', K: '101101110101101', L: '100100100100111',
+  M: '101111111101101', N: '110101101101101', O: '010101101101010', P: '110101110100100', Q: '010101101111011', R: '110101110101101',
+  S: '011100010001110', T: '111010010010010', U: '101101101101111', V: '101101101101010', W: '101101111111101', X: '101101010101101',
+  Y: '101101010010010', Z: '111001010100111',
 };
 
 function rng(seed) { let a = seed >>> 0; return () => { a = (a + 0x6d2b79f5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
@@ -48,13 +57,13 @@ const isReduced = () => document.documentElement.classList.contains('reduce-moti
 const themeName = () => document.documentElement.dataset.theme || 'neon';
 
 function rect(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), w, h); }
-function text(g, str, x, y, c) {
+function text(g, str, x, y, c, sc = 1) {
   g.fillStyle = c;
   let cx = x;
-  for (const ch of String(str)) {
-    const bits = GLYPH[ch]; if (!bits) { cx += 2; continue; }
-    for (let i = 0; i < 15; i++) if (bits[i] === '1') g.fillRect(cx + (i % 3), y + Math.floor(i / 3), 1, 1);
-    cx += 4;
+  for (const ch of String(str).toUpperCase()) {
+    const bits = (ch === 'M' && /m$/.test(String(str)) && /^[-0-9]*m$/.test(String(str))) ? GLYPH.m : GLYPH[ch]; if (!bits) { cx += 2 * sc; continue; }
+    for (let i = 0; i < 15; i++) if (bits[i] === '1') g.fillRect(cx + (i % 3) * sc, y + Math.floor(i / 3) * sc, sc, sc);
+    cx += 4 * sc;
   }
 }
 function sprite(g, name, x, y, scale, frame = 0) {
@@ -80,6 +89,9 @@ function makeCloud(w, h, seed, color) {
   return c;
 }
 
+function tinted(g, name, x, y, scale, frame, color) {
+  try { assets.sprites.drawTintedSprite(g, name, Math.round(x), Math.round(y), scale, frame, color); return true; } catch { return false; }
+}
 function spriteCanvas(name, scale) {
   const d = assets.sprites.SPRITES[name]; const c = document.createElement('canvas'); c.width = d.w * scale; c.height = d.h * scale;
   sprite(c.getContext('2d'), name, 0, 0, scale, 0); return c;
@@ -127,7 +139,7 @@ export function startScene(host, opts = {}) {
   const bg = base.getContext('2d');
   const st = S = {
     host, canvas, g, base, bg, W: 0, H: 0, scale: 4, water: 0, th: THEMES[themeName()] || THEMES.neon,
-    play: opts.mode === 'play', cam: 0, camTween: null, depthM: 0, rival: null, answered: 0, pulse: null, glow: [], raf: 0, last: 0, t: 0, stars: [], clouds: [], bubbles: [], fish: [], moonImg: null, opts,
+    play: opts.mode === 'play', trail: [], dive: null, sad: null, banner: null, prevCam: null, rivalTween: null, cam: 0, camTween: null, depthM: 0, rival: null, answered: 0, pulse: null, glow: [], raf: 0, last: 0, t: 0, stars: [], clouds: [], bubbles: [], fish: [], moonImg: null, opts,
     getWaterY: opts.getWaterY || (() => host.clientHeight * 0.62), stopped: false, observers: [],
   };
 
@@ -287,9 +299,38 @@ export function startScene(host, opts = {}) {
       if (prog >= 1 || reduced) { st.cam = tw.to; st.camTween = null; }
       else st.cam = Math.round(tw.from + (tw.to - tw.from) * (Math.floor(prog * 8) / 8));   // steps(8) over 800 ms
     }
+    // --- the dive: wind-up, plunge (camera follows, easeOutCubic in steps), landing ---
+    const dv = st.dive; let dph = null, dp = 0;
+    if (dv) {
+      const e = now - dv.t0;
+      if (e < WIND) { dph = 'wind'; dp = e / WIND; st.cam = dv.fromPx; }
+      else if (e < WIND + dv.dur) {
+        dph = 'dive'; dp = (e - WIND) / dv.dur;
+        const q = Math.max(6, Math.round(dv.dur / 45)), ez = 1 - Math.pow(1 - dp, 3);
+        st.cam = Math.round(dv.fromPx + (dv.toPx - dv.fromPx) * (Math.floor(ez * q) / q));
+      } else if (e < WIND + dv.dur + LAND) {
+        dph = 'land'; dp = (e - WIND - dv.dur) / LAND; st.cam = dv.toPx;
+        if (!dv.landed) { dv.landed = true; st.pulse = { tier: dv.tier, t0: now }; st.answered++; dv.onLand && dv.onLand(); }
+      } else { st.cam = dv.toPx; st.dive = null; if (dv.onProgress) dv.onProgress(dv.toM); st.depthM = dv.toM; if (!dv.landed && dv.onLand) dv.onLand(); if (dv.onDone) dv.onDone(); }
+      if (st.dive && dv.onProgress) dv.onProgress(st.cam / PX_PER_M);
+    }
+    if (st.rivalTween) {
+      const rt = st.rivalTween, rp = Math.min(1, (now - rt.t0) / rt.ms);
+      st.rival = Math.round(rt.from + (rt.to - rt.from) * (1 - Math.pow(1 - rp, 3)));
+      if (rp >= 1) st.rivalTween = null;
+    }
+    const camVel = st.cam - (st.prevCam == null ? st.cam : st.prevCam); st.prevCam = st.cam;
     const cam = st.cam, wy = water0 - cam, shift = wy - water0;
     const depthM = cam / PX_PER_M;
+    const bob = reduced ? 0 : Math.round(Math.sin(T * 1.7) * 2);
+    const narrow = W < 200;
+    const vx = Math.round(W * (narrow ? 0.08 : 0.06));
+    // idle: low on phones (clear of the card); during a dive: always 55% of the screen height, on every viewport
+    const idleY = Math.round(H * (narrow ? 0.74 : 0.56) + Math.min(30, st.answered * 3)), diveY = Math.round(H * 0.55);
+    const baseY = dph === 'wind' ? Math.round(idleY + (diveY - idleY) * dp) : dph ? diveY : idleY;
     g.clearRect(0, 0, W, H);
+    g.save();
+    if (dph === 'land' && dv.tier === 'mythic' && !reduced) g.translate(Math.floor(dp * 8) % 2 ? 1 : -1, Math.floor(dp * 8) % 3 === 0 ? 1 : 0);   // small shake for ONE IN A VERMILLION
 
     // sky (attached to the waterline, so it scrolls off the top as we sink)
     if (wy > 0) for (let y = Math.max(0, wy - water0); y < wy; y += 3) rect(g, 0, y, W, 3, lerpStops(th.sky, (y - (wy - water0)) / Math.max(1, water0 - 1)));
@@ -317,6 +358,31 @@ export function startScene(host, opts = {}) {
       }
     }
     g.globalAlpha = 1;
+
+    // rarity gates (relative to where the dive started) + speed lines
+    if (dv && st.dive !== null) {
+      const gained = st.cam - dv.fromPx;
+      GATES.forEach(([tier, offM], gi) => {
+        const offPx = offM * PX_PER_M, y = Math.round(baseY + 14 + offPx - gained);
+        const reach = offPx <= dv.toPx - dv.fromPx, col = TIER_RGB[tier];
+        if (offM > 0 && !dv.passed.has(tier) && gained >= offPx) { dv.passed.add(tier); dv.flash = now; dv.flashCol = col; sfxPlay('gate', dv.passed.size - 1); }
+        if (y < -8 || y > H + 2) return;
+        const hot = dv.passed.has(tier) && now - dv.flash < 260 && dv.flashCol === col;
+        g.globalAlpha = reach ? (hot ? 1 : 0.8) : 0.3;
+        if (sw('gate-dash')) { const gw = sw('gate-dash').w; for (let x = 0; x < W; x += gw) tinted(g, 'gate-dash', x, y - 1, 1, 0, hot ? '#ffffff' : col); }
+        else for (let x = 0; x < W; x += 6) rect(g, x, y, 4, hot ? 2 : 1, hot ? '#ffffff' : col);
+        const label = TIER_INFO[tier].label.toUpperCase();
+        rect(g, 2, y - 8, label.length * 4 + 1, 7, 'rgba(7,6,13,0.7)'); text(g, label, 3, y - 7, col);
+        g.globalAlpha = 1;
+      });
+      if (dph === 'dive' && camVel > 1) for (let i = 0; i < 18; i++) {
+        const l = st.glow[i], y = ((((l.y * 1.7 - cam * 1.6) % H) + H) % H);
+        g.globalAlpha = 0.45;
+        if (sw('speedline')) { const sl = st.speedImg || (st.speedImg = spriteCanvas('speedline', 1)); g.imageSmoothingEnabled = false; g.drawImage(sl, Math.round(l.x), y, sl.width, Math.round(sl.height * Math.min(2.4, 0.8 + camVel / 8))); }
+        else rect(g, Math.round(l.x), y, 1, Math.min(22, 3 + camVel * 2), '#cfe9ff');
+      }
+      g.globalAlpha = 1;
+    }
 
     // fish + bubbles (parallax wrap)
     for (const f of st.fish) {
@@ -362,30 +428,44 @@ export function startScene(host, opts = {}) {
     rect(g, rx + 1, Math.max(0, wy), 1, H, '#8fa6ff'); g.globalAlpha = 1;
 
     // Vermi (lower left), the rival, pulse + sparkles
-    const bob = reduced ? 0 : Math.round(Math.sin(T * 1.7) * 2);
-    const narrow = W < 200;
-    const vx = Math.round(W * (narrow ? 0.08 : 0.06)), baseY = Math.round(H * (narrow ? 0.74 : 0.56) + Math.min(30, st.answered * 3));
-    const drawJelly = (x, y, tint, a) => {
+    const drawJelly = (x, y, tint, a, sx = 1, sy = 1, pose = null) => {
       const ms = sw('mascot'); const k = 2;
       const c = st.jelly || (st.jelly = document.createElement('canvas')); c.width = 16 * k; c.height = 16 * k;
       const jg = c.getContext('2d');
-      if (ms) sprite(jg, 'mascot', 0, 0, k, reduced ? 0 : Math.floor(T * 1.4) % 2);
+      if (pose && sw(pose.name)) sprite(jg, pose.name, 0, 0, k, pose.frame);
+      else if (ms) sprite(jg, 'mascot', 0, 0, k, reduced ? 0 : Math.floor(T * 1.4) % 2);
       else { jg.fillStyle = '#ff4fa3'; jg.fillRect(6, 4, 20, 14); }
       if (tint) { jg.globalCompositeOperation = 'source-atop'; jg.globalAlpha = a; jg.fillStyle = tint; jg.fillRect(0, 0, c.width, c.height); }
       g.globalAlpha = 0.13; for (let dy = -14; dy <= 14; dy += 2) { const w = Math.floor(Math.sqrt(1 - (dy * dy) / 225) * 26); rect(g, x + 16 - w, y + 14 + dy, w * 2, 2, tint || '#ff4fa3'); } g.globalAlpha = 1;
-      g.drawImage(c, x, y);
+      g.imageSmoothingEnabled = false;
+      g.drawImage(c, Math.round(x + 16 - 16 * sx), Math.round(y + 32 - 32 * sy), Math.round(32 * sx), Math.round(32 * sy));
     };
     if (st.rival != null) {
       const ry = baseY + Math.round(st.rival * PX_PER_M - st.depthM * PX_PER_M);
       if (ry > wy && ry < H) { g.globalAlpha = 0.9; drawJelly(Math.round(W * 0.32), ry + bob, '#5ee0ff', 0.55); g.globalAlpha = 1; }
     }
-    let tint = null, ta = 0;
+    let tint = null, ta = 0, sx = 1, sy = 1, yo = 0;
     const pl = st.pulse; const pt = pl ? (now - pl.t0) / 700 : 2;
     if (pl && pt < 1) { tint = TIER_RGB[pl.tier] || '#ff4fa3'; ta = 0.6 * (1 - Math.floor(pt * 4) / 4); }
-    drawJelly(vx, baseY + bob, tint, ta);
+    let pose = null;   // Luna's authored poses when present; otherwise the mascot stretched/squashed
+    if (dph === 'wind') { if (sw('vermi-squash')) pose = { name: 'vermi-squash', frame: 0 }; else { sx = 1 + 0.25 * dp; sy = 1 - 0.25 * dp; } }
+    else if (dph === 'dive') { if (sw('vermi-dive')) pose = { name: 'vermi-dive', frame: Math.floor(now / 90) % 3 }; else { sx = 0.78; sy = 1.3; } }
+    else if (dph === 'land') { const k = Math.min(3, Math.floor(dp * 4)); yo = [0, -4, -6, -2][k]; if (sw('vermi-land')) pose = { name: 'vermi-land', frame: Math.min(2, Math.floor(dp * 3)) }; else [sx, sy] = [[1.3, 0.7], [1.15, 0.88], [0.95, 1.08], [1, 1]][k]; }
+    if (st.sad && now - st.sad.t0 < 1400) { tint = '#8d86b8'; ta = 0.55; sx = 1.1; sy = 0.85; yo = 4; }
+    if (dv && dv.flash && now - dv.flash < 260) { tint = '#ffffff'; ta = 0.75; }
+    // bubble trail streaming up from Vermi while diving
+    if ((dph === 'dive' || (st.sad && now - st.sad.t0 < 500)) && !reduced) {
+      const n = dph === 'dive' ? 2 : 1;
+      for (let i = 0; i < n; i++) st.trail.push({ x: vx + 8 + Math.random() * 16, y: baseY + 6 + bob, vy: 2 + Math.max(0, camVel) * 0.5 + Math.random() * 2, life: 1, len: dph === 'dive' ? Math.min(10, 1 + camVel) : 1 });
+    }
+    st.trail = st.trail.filter((b) => { b.y -= b.vy; b.life -= 0.045; return b.life > 0 && b.y > -10; });
+    for (const b of st.trail) { g.globalAlpha = Math.max(0, b.life) * 0.7; rect(g, Math.round(b.x), Math.round(b.y), 1 + (b.life > 0.5 ? 1 : 0), Math.max(1, Math.round(b.len)), '#cfe9ff'); }
+    g.globalAlpha = 1;
+    drawJelly(vx, baseY + bob + yo, tint, ta, sx, sy, pose);
     if (pl && pt < 1) {
       const col = TIER_RGB[pl.tier] || '#ff4fa3'; const step = Math.floor(pt * 4);
-      for (let i = 0; i < 2; i++) { const r = 18 + (step + i) * 7; g.globalAlpha = 0.7 - step * 0.15; const cx = vx + 16, cy = baseY + 14 + bob; for (let a = 0; a < 24; a++) { const an = (a / 24) * Math.PI * 2; rect(g, cx + Math.cos(an) * r, cy + Math.sin(an) * r * 0.8, 2, 2, col); } }
+      if (sw('shockwave')) { g.globalAlpha = 0.9 - step * 0.15; tinted(g, 'shockwave', vx + 16 - 36, baseY + 14 + bob - 36, 3, step, col); g.globalAlpha = 1; }
+      else for (let i = 0; i < 2; i++) { const r = 18 + (step + i) * 7; g.globalAlpha = 0.7 - step * 0.15; const cx = vx + 16, cy = baseY + 14 + bob; for (let a = 0; a < 24; a++) { const an = (a / 24) * Math.PI * 2; rect(g, cx + Math.cos(an) * r, cy + Math.sin(an) * r * 0.8, 2, 2, col); } }
       g.globalAlpha = 1;
       if (pl.tier === 'mythic') for (let i = 0; i < 10; i++) {
         const an = (i / 10) * Math.PI * 2 + 0.3, r = 14 + pt * 42, sx = vx + 16 + Math.cos(an) * r, sy = baseY + 14 + Math.sin(an) * r * 0.8 + bob;
@@ -393,6 +473,17 @@ export function startScene(host, opts = {}) {
         rect(g, sx - 1, sy, 3, 1, c2); rect(g, sx, sy - 1, 1, 3, c2);
       }
     }
+
+    // tier banner while landing
+    if (dph === 'land' || (st.banner && dv == null && st.banner.static)) {
+      const tier = dv ? dv.tier : st.banner.tier, label = TIER_INFO[tier].label.toUpperCase(), n = label.length;
+      const sc = Math.max(1, Math.min(3, Math.floor((W * 0.9) / (4 * n)))), by = Math.round(H * 0.34), bw = 4 * n * sc, bx = Math.round((W - bw) / 2);
+      const a = dph === 'land' ? (dp < 0.7 ? 1 : 1 - (dp - 0.7) / 0.3) : 1;
+      g.globalAlpha = 0.6 * a; rect(g, 0, by - 4 * sc, W, 5 * sc + 8 * sc, '#07060d');
+      g.globalAlpha = a; text(g, label, bx + sc, by + sc, '#07060d', sc); text(g, label, bx, by, TIER_RGB[tier], sc); g.globalAlpha = 1;
+      if (tier === 'mythic') for (let i = 0; i < 6; i++) { const ph = ((dp || 0) * 3 + i / 6) % 1, ax = bx + (bw * (i + 0.5)) / 6, ay = by - 6 - ph * 10; rect(g, ax - 1, ay, 3, 1, '#ffffff'); rect(g, ax, ay - 1, 1, 3, '#ffffff'); }
+    }
+    g.restore();
   }
 
   const ctl = {
@@ -403,14 +494,40 @@ export function startScene(host, opts = {}) {
       frame();
     },
     pulse(tier) { st.pulse = { tier, t0: performance.now() }; st.answered++; frame(); },
-    setRival(m) { st.rival = m; frame(); },
+    setRival(m, { ms = 0 } = {}) {
+      if (ms > 0 && st.rival != null && !isReduced()) st.rivalTween = { from: st.rival, to: m, t0: performance.now(), ms }; else { st.rival = m; st.rivalTween = null; }
+      frame();
+    },
+    /** Plunge from fromM to toM; the camera follows. Callbacks: onProgress(m) each frame, onLand() at the stop, onDone() after the landing banner. */
+    dive({ fromM, toM, points, tier, onProgress, onLand, onDone }) {
+      const now = performance.now(), dur = 700 + points * 18, fromPx = Math.round(fromM * PX_PER_M), toPx = Math.round(toM * PX_PER_M);
+      st.camTween = null; st.cam = fromPx; st.depthM = toM; st.sad = null;
+      const dv = { t0: now, dur, fromPx, toPx, fromM, toM, points, tier, landed: false, passed: new Set(), flash: 0, flashCol: null, onProgress, onLand, onDone };
+      if (isReduced() || document.documentElement.classList.contains('easy-read')) {
+        // no camera movement: show the final depth and the banner straight away
+        st.cam = toPx; st.dive = null; st.pulse = null; st.answered++; st.banner = { tier, static: true };
+        if (onProgress) onProgress(toM); if (onLand) onLand(); frame();
+        setTimeout(() => { st.banner = null; frame(); if (onDone) onDone(); }, 700);
+        return;
+      }
+      st.dive = dv; sfxPlay('dive'); frame();
+    },
+    skip() {
+      const dv = st.dive; if (!dv) return false;
+      const e = performance.now() - dv.t0, landStart = WIND + dv.dur;
+      dv.t0 = performance.now() - (e < landStart ? landStart : landStart + LAND);   // jump to the landing / to the end
+      frame(); return true;
+    },
+    /** Timeout or 0 points: no dive. Vermi droops and a little bloop of bubbles rises. */
+    sad() { st.sad = { t0: performance.now() }; sfxPlay('bloop'); frame(); },
+    get diving() { return !!st.dive; },
   };
 
   function tick(now) {
     if (st.stopped) return;
     st.raf = requestAnimationFrame(tick);
     if (document.hidden || isReduced()) return;
-    if (now - st.last < 66) return;          // ~15 fps: stepped, pixel-y
+    if (now - st.last < (st.dive || st.rivalTween ? 33 : 66)) return;          // ~15 fps idle, ~30 fps while diving: stepped, pixel-y
     st.t += Math.min(0.25, (now - st.last) / 1000 || 0.066); st.last = now;
     frame();
   }

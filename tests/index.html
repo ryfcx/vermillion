@@ -45,6 +45,23 @@
       assert(matcher.matchAnswer(prompt, '   ').status === 'empty', 'empty input mismatch');
     });
 
+    await check('Matcher v2.1 corrected and suggested status contracts', async () => {
+      const { matchAnswer } = await import('../src/matcher.js');
+      const corrected = matchAnswer({ answers: [{ name: 'Malatya', points: 95 }] }, 'malatyia');
+      assert(corrected.status === 'match' && corrected.corrected === true && corrected.answer.name === 'Malatya' && corrected.points === 95 && corrected.input === 'malatyia', 'automatic correction status/shape mismatch');
+      const suggestion = matchAnswer({ answers: [{ name: 'Mercury', points: 81 }] }, 'mercu');
+      assert(suggestion.status === 'suggest' && suggestion.answer.name === 'Mercury' && suggestion.points === 81 && suggestion.input === 'mercu' && !('corrected' in suggestion), 'suggestion status/shape mismatch');
+    });
+
+    await check('Matcher v2.1 200+ case typo and ambiguity corpus', async () => {
+      const [{ matchAnswer }, { runMatcherCorpus }] = await Promise.all([
+        import('../src/matcher.js'), import('./matcher-corpus.js')
+      ]);
+      const report = runMatcherCorpus(matchAnswer);
+      assert(report.typoCases >= 200, `corpus has only ${report.typoCases} typo cases`);
+      assert(report.passed === report.total, `${report.passed}/${report.total} corpus cases pass: ${JSON.stringify(report.failures.slice(0, 5))}`);
+    });
+
     await check('Daily, endless, pack and duel mode contracts', async () => {
       const modes = await import('../src/modes.js');
       const bank = { prompts: Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, category: `c${i % 7}` })) };
@@ -56,8 +73,18 @@
       assert(modes.listArchiveDays('2026-11-03').join() === '2026-11-03,2026-11-02,2026-11-01', 'archive day range mismatch');
       assert(modes.getEndlessPrompts(bank, dailyA.map(p => p.id), () => 0).length === 7, 'endless count mismatch');
       assert(modes.getPackPrompts(bank, 'c0', () => 0).length === 0, 'undersized pack should not return a partial run');
+      const everydayBank = { prompts: Array.from({ length: 10 }, (_, i) => ({ id: `everyday${i}`, category: `c${i % 7}`, everyday: i < 8 })) };
+      assert(modes.getDailyPrompts(everydayBank, '2026-11-17').every(prompt => prompt.everyday), 'Daily included non-everyday questions despite an eligible pool');
+      const smallEverydayBank = { prompts: Array.from({ length: 8 }, (_, i) => ({ id: `small${i}`, category: `c${i % 7}`, everyday: i < 4 })) };
+      const fallbackDaily = modes.getDailyPrompts(smallEverydayBank, '2026-11-17');
+      assert(fallbackDaily.length === 7 && fallbackDaily.some(prompt => !prompt.everyday), 'Daily did not fall back to all questions when fewer than seven everyday questions exist');
       const packBank = { prompts: Array.from({ length: 8 }, (_, i) => ({ id: `pack${i}`, category: 'science', packs: ['lab'] })) };
       assert(modes.getPackDailyPrompts(packBank, 'lab', '2026-11-17').map(p => p.id).join() === modes.getPackDailyPrompts(packBank, 'lab', '2026-11-17').map(p => p.id).join(), 'pack daily not deterministic');
+      const packEverydayBank = { prompts: Array.from({ length: 9 }, (_, i) => ({ id: `topic${i}`, category: 'science', packs: ['lab'], everyday: i < 7 })) };
+      assert(modes.getPackDailyPrompts(packEverydayBank, 'lab', '2026-11-17').every(prompt => prompt.everyday), 'topic Daily included non-everyday questions despite an eligible pool');
+      const packFallback = { prompts: Array.from({ length: 8 }, (_, i) => ({ id: `topicFallback${i}`, category: 'science', packs: ['lab'], everyday: i < 5 })) };
+      const packDailyFallback = modes.getPackDailyPrompts(packFallback, 'lab', '2026-11-17');
+      assert(packDailyFallback.length === 7 && packDailyFallback.some(prompt => !prompt.everyday), 'topic Daily did not fall back to all topic questions when fewer than seven everyday questions exist');
       const run = { promptIds: Array.from({ length: 7 }, (_, i) => `x${i}`), answers: Array.from({ length: 7 }, (_, i) => ({ promptId: `x${i}`, input: 'Same', answerName: i === 0 ? 'Same' : null, points: 11 })), total: 77 };
       const decoded = modes.decodeDuel(modes.encodeDuel(run));
       assert(decoded?.promptIds.join() === run.promptIds.join(), 'duel round-trip failed');
@@ -80,6 +107,7 @@
         assert(storage.saveRun({ ...run, finishedAt: 2 }) === false, 'duplicate official daily attempt replaced the saved result');
         assert(storage.getStats().runs === 1 && storage.getRecentPromptIds()[0] === 'p', 'stats/recent update failed');
         assert(storage.getStats().mythicCount === 1 && storage.getStats().tierCounts.mythic === 1 && storage.getStats().avgPoints === 85, 'rich stats mismatch');
+        assert(storage.TIER_LABELS.mythic === 'One in a Vermillion' && storage.getStats().tierLabels.mythic === 'One in a Vermillion', 'mythic stats label mismatch');
         const archiveRun = { ...run, dayKey: '2026-11-16', finishedAt: 3 };
         assert(storage.saveRun(archiveRun), 'archive Daily result was not saved');
         assert(storage.getStats().dailyStreak === 1 && storage.getStats().lastDailyKey === run.dayKey, 'archive Daily moved the streak backwards');
@@ -106,8 +134,11 @@
 
     await check('Share summary uses points bands and depth', async () => {
       const { shareText, shareRun } = await import('../src/share.js');
+      const { TIER_INFO } = await import('../src/game.js');
+      assert(TIER_INFO.mythic.label === 'ONE IN A VERMILLION' && TIER_INFO.mythic.short === '1 in a Vermillion', 'player-facing mythic tier labels mismatch');
       const text = shareText({ dayKey: '2026-11-17', depth: 3420, answers: [0, 1, 21, 51, 81].map(points => ({ points })) });
-      assert(text === 'Vermillion 2026-11-17 — 3,420 m\n⬛🟦🟪🩷✨', 'v2 tier share summary mismatch');
+      assert(text === 'Vermillion 2026-11-17 — 3,420 m\n⬛🟦🟪🩷✨\n✨ One in a Vermillion', 'v2 tier share summary mismatch');
+      assert(!shareText({ dayKey: '2026-11-17', depth: 0, answers: [{ points: 0 }] }).includes('One in a Vermillion'), 'mythic share label shown without a mythic answer');
       const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
       let copied = '';
       try {
@@ -120,9 +151,10 @@
     });
 
     await check('Original sprite catalog has required sprites and valid pixel maps', async () => {
-      const { SPRITES, drawSprite, spriteDataURL, spriteEl } = await import('../src/sprites.js');
+      const { SPRITES, drawSprite, drawTintedSprite, spriteDataURL, spriteEl } = await import('../src/sprites.js');
       const required = ['logo','mascot','diver','car','runner','plane','rocket','notebook','tree','skyline-tile','daily','endless','duel','stats','archive','guides','settings','share','menu','close','sound-on','sound-off','tier-none','tier-common','tier-uncommon','tier-rare','tier-mythic','star','bubble'];
       for (const name of ['moon','cloud-a','cloud-b','buoy','wave','fish-a','fish-b','gear','palette','mascot-idle','glyph-archive','glyph-endless','glyph-duel','glyph-down','ray','particle-glow','vermi-pulse','sparkle','hint']) assert(SPRITES[name], `missing scene sprite ${name}`);
+      for (const name of ['vermi-dive','vermi-squash','vermi-land','speedline','shockwave','gate-dash']) assert(SPRITES[name], `missing dive sprite ${name}`);
       for (const name of required) assert(SPRITES[name], `missing sprite ${name}`);
       for (const pack of ['movies','sports','geography','language','science','history','music','nature','food','games','space','arts','myth','tech']) assert(SPRITES[`pack-${pack}`]?.w === 16 && SPRITES[`pack-${pack}`]?.h === 16, `invalid pack icon ${pack}`);
       assert(SPRITES.mascot.frames.length >= 3, 'mascot needs 3 animation frames');
@@ -141,6 +173,13 @@
       assert(SPRITES['vermi-pulse'].frames.length === 5, 'Vermi pulse needs one tint frame per tier');
       assert(SPRITES.sparkle.frames.length === 4, 'sparkle burst needs four frames');
       assert(SPRITES.hint.w === 16 && SPRITES.hint.h === 16, 'hint icon must be 16×16');
+      assert(SPRITES['vermi-dive'].w === 16 && SPRITES['vermi-dive'].h === 16 && SPRITES['vermi-dive'].frames.length === 3, 'Vermi dive must have three 16×16 frames');
+      assert(SPRITES['vermi-squash'].w === 16 && SPRITES['vermi-squash'].h === 16, 'Vermi squash must be 16×16');
+      assert(SPRITES['vermi-land'].w === 16 && SPRITES['vermi-land'].h === 16 && SPRITES['vermi-land'].frames.length === 3, 'Vermi landing bounce must have three 16×16 frames');
+      assert(SPRITES.speedline.w === 8 && SPRITES.speedline.h >= 16, 'speedline must be a narrow vertical streak');
+      assert(SPRITES.shockwave.w === 24 && SPRITES.shockwave.h === 24 && SPRITES.shockwave.frames.length === 4 && SPRITES.shockwave.tintable, 'shockwave must have four tintable frames');
+      assert(typeof drawTintedSprite === 'function', 'tinted sprite renderer is missing');
+      assert(SPRITES['gate-dash'].tileable && SPRITES['gate-dash'].frames[0].every(row => row[0] === row.at(-1)), 'gate dash must tile horizontally');
       assert(SPRITES.gear.frames[0][8][8] === '.' && [...SPRITES.gear.frames[0].join('')].filter(pixel => pixel === 'c').length > 35, 'gear needs a clear cog ring and center hole');
       assert(['c','p','y'].every(color => SPRITES.palette.frames[0].join('').includes(color)), 'palette needs three color wells');
       assert(SPRITES['sound-on'].frames[0].join('').includes('p') && SPRITES['sound-off'].frames[0].join('').includes('p'), 'sound icons need visible waves / mute X');
@@ -156,6 +195,7 @@
       }
       const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
       drawSprite(canvas.getContext('2d'), 'mascot', 0, 0, 4, 1);
+      drawTintedSprite(canvas.getContext('2d'), 'shockwave', 0, 0, 2, 1, '#ff4fa3');
       assert(spriteDataURL('logo').startsWith('data:image/png'), 'sprite data URL failed');
       assert(spriteEl('mascot', 2).tagName === 'CANVAS', 'sprite element is not a canvas');
     });
@@ -163,7 +203,9 @@
     await check('Sound API accepts all contract effect names', async () => {
       const { play, setVolume, setMuted, music } = await import('../src/sfx.js');
       setVolume(0.4); setMuted(true);
-      for (const name of ['type','submit','unknown','common','uncommon','rare','mythic','timeout','tick','next','finish','click','duelWin','duelLose']) play(name);
+      for (const name of ['type','submit','unknown','common','uncommon','rare','mythic','timeout','tick','next','finish','click','duelWin','duelLose','land-none','land-common','land-uncommon','land-rare','land-mythic','bloop']) play(name);
+      for (let step = 0; step < 4; step += 1) play('gate', step);
+      play('dive');
       music(false); setMuted(false); setVolume(0.6);
     });
 
@@ -193,11 +235,15 @@
       assert(bank.prompts.length >= 450, `bank has only ${bank.prompts.length} prompts; v2 requires at least 450`);
       const categories = new Set(['geography','science','film','music','sports','history','language','food','nature','pop','games','space','arts','myth','tech','animals','literature','tv']);
       const ids = new Set();
+      let everydayCount = 0;
+      let questionsWithRareAnswer = 0;
       for (const prompt of bank.prompts) {
         assert(prompt.id && !ids.has(prompt.id), `missing or duplicate prompt id: ${prompt.id}`); ids.add(prompt.id);
         assert(categories.has(prompt.category) && typeof prompt.text === 'string' && typeof prompt.hint === 'string' && prompt.hint.length > 0, `invalid category, prompt, or missing hint ${prompt.id}`);
+        assert(typeof prompt.everyday === 'boolean', `missing everyday flag in ${prompt.id}`);
+        if (prompt.everyday) everydayCount += 1;
         assert(Array.isArray(prompt.packs) && prompt.packs.every(packId => typeof packId === 'string'), `invalid pack references in ${prompt.id}`);
-        assert(Array.isArray(prompt.answers) && prompt.answers.length >= 12, `${prompt.id} has fewer than 12 answers`);
+        assert(Array.isArray(prompt.answers) && prompt.answers.length >= (prompt.everyday ? 15 : 12), `${prompt.id} has too few answers`);
         const names = new Set();
         for (const answer of prompt.answers) {
           assert(typeof answer.name === 'string' && Number.isInteger(answer.points) && answer.points >= 1 && answer.points <= 100 && (answer.aliases === undefined || Array.isArray(answer.aliases)), `invalid answer in ${prompt.id}`);
@@ -207,19 +253,33 @@
             names.add(key);
           }
         }
+        const points = prompt.answers.map(answer => answer.points);
+        const distinctPoints = new Set(points);
+        assert(distinctPoints.size >= 3 && Math.min(...points) <= 15 && Math.max(...points) >= 25, `${prompt.id} needs three point values spanning 15–25 or wider`);
+        if (points.some(value => value >= 70)) questionsWithRareAnswer += 1;
       }
+      assert(everydayCount >= 150, `bank has only ${everydayCount} everyday questions; v2.2 requires at least 150`);
+      assert(questionsWithRareAnswer >= 150, `only ${questionsWithRareAnswer} questions have a 70-point answer; at least 150 are required`);
+      const { getDailyPrompts } = await import('../src/modes.js');
+      const officialDaily = getDailyPrompts(bank, '2026-11-18');
+      assert(officialDaily.length === 7 && officialDaily.every(prompt => prompt.everyday === true), 'production Daily did not select seven everyday questions');
     });
 
     await check('Pack bank contains every pack and at least 40 prompts per pack', async () => {
       const [packResponse, promptResponse] = await Promise.all([fetch('../data/packs.json'), fetch('../data/prompts.json')]);
       assert(packResponse.ok && promptResponse.ok, 'pack or prompt data unavailable');
       const [packBank, promptBank] = await Promise.all([packResponse.json(), promptResponse.json()]);
+      const { getPackDailyPrompts } = await import('../src/modes.js');
       assert(Array.isArray(packBank.packs) && packBank.packs.length === 14, 'expected 14 packs');
       const packIds = new Set(packBank.packs.map(pack => pack.id));
       for (const pack of packBank.packs) {
         assert(pack.id && pack.name && pack.blurb && pack.icon && pack.display && pack.unit && Number.isFinite(pack.pointsPerUnit) && pack.pointsPerUnit > 0, `invalid pack metadata for ${pack.id}`);
         const count = promptBank.prompts.filter(prompt => prompt.packs?.includes(pack.id)).length;
         assert(count >= 40, `${pack.id} has only ${count} prompts`);
+        const eligible = promptBank.prompts.filter(prompt => prompt.packs?.includes(pack.id) && prompt.everyday === true);
+        const daily = getPackDailyPrompts(promptBank, pack.id, '2026-11-18');
+        assert(daily.length === 7, `${pack.id} Daily did not return seven questions`);
+        if (eligible.length >= 7) assert(daily.every(prompt => prompt.everyday === true), `${pack.id} Daily included non-everyday questions despite an eligible pool`);
       }
       assert(promptBank.prompts.filter(prompt => prompt.category === 'language').length >= 40, 'fewer than 40 language word-puzzle prompts');
       for (const prompt of promptBank.prompts) assert(prompt.packs.every(packId => packIds.has(packId)), `unknown pack id in ${prompt.id}`);
@@ -234,6 +294,10 @@
       assert(new Set(guides.guides.map(guide => guide.slug)).size === guides.guides.length, 'guide slugs are not unique');
       assert(guides.guides.every(guide => guide.title && ['strategy','category','practice'].includes(guide.group) && guide.summary && guide.body), 'invalid guide entry');
       assert(faq.faq.every(item => item.q && item.a), 'invalid FAQ entry');
+      const guideText = guides.guides.flatMap(guide => [guide.title, guide.summary, guide.body]).join(' ');
+      const faqText = faq.faq.flatMap(item => [item.q, item.a]).join(' ');
+      assert(!/\bprompts?\b|\bpacks?\b|\barchive\b|Daily Descent|Endless Descent|Themed packs/i.test(`${guideText} ${faqText}`), 'guides or FAQ still use old game terms');
+      assert(faqText.includes('Daily Game') && faqText.includes('Past games') && faqText.includes('topic'), 'guides/FAQ are missing the plain v2.2 terms');
     });
 
     for (const result of checks) {

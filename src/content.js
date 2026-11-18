@@ -15,6 +15,7 @@ export async function loadBank(url = './data/prompts.json') {
   for (const prompt of bank.prompts) {
     if (typeof prompt?.id !== 'string' || !prompt.id.trim() || ids.has(prompt.id) ||
         !CATEGORIES.has(prompt.category) || typeof prompt.text !== 'string' || !prompt.text.trim() ||
+        typeof prompt.everyday !== 'boolean' || (prompt.everyday && prompt.answers?.length < 15) ||
         !Array.isArray(prompt.packs) || prompt.packs.some(id => !PACK_IDS.has(id)) ||
         new Set(prompt.packs).size !== prompt.packs.length ||
         typeof prompt.hint !== 'string' || !prompt.hint.trim() ||

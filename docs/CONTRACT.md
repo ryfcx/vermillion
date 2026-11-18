@@ -159,3 +159,36 @@ export function music(on) // optional gentle looping chiptune bed, off by defaul
 RunAnswer = { promptId, input, answerName: string|null, points, tier, usedHint: boolean, timedOut: boolean }
 Run = { mode, packId, dayKey, practice, official, promptIds, answers, total, depth, finishedAt }
 ```
+
+## 6. Amendment v2.1 (2026-11-18)
+- **Tier label:** tier id `mythic` (81–100 pts) is displayed everywhere as **"ONE IN A VERMILLION"** (short form "1 in a Vermillion"). Share square ✨.
+- **`matchAnswer(prompt, input)`** may also return:
+  - `{ status:'match', answer, points, corrected:true, input }`: a high-confidence correction, accepted automatically.
+  - `{ status:'suggest', answer, points, input }`: medium confidence. The UI asks "Did you mean X?". YES submits `answer.name` as a match, and NO keeps the timer running.
+  - Ambiguity rule unchanged: if two different answers are plausible, return `{ status:'unknown' }`.
+- `RunAnswer` gains `corrected: boolean`.
+
+## 7. Amendment v2.2 (2026-11-18): everyday Daily + plain wording
+- **Prompt field `everyday: boolean`** (Sol). True for prompts about common, well-known things anyone can answer
+  (foods, animals, household items, jobs, colours, holidays, sports, weather, body parts, school subjects, vehicles, clothing, games, TV/film basics).
+  The **Daily** (`getDailyPrompts`) draws **only** from `everyday: true` prompts (fall back to all if fewer than 7).
+  Endless and packs still use everything. Need **≥ 150 everyday prompts**, each with ≥ 15 answers spanning obvious (≈5 pts) to clever-but-fair deep cuts.
+  Everyday prompt text must be short and plain: "Name a fruit that is red", not "Pick a pome cultivar…".
+- **Plain pack names** in `data/packs.json` (ids unchanged): movies **Movies**, sports **Sports**, geography **Geography**, language **Words**,
+  science **Science**, history **History**, music **Music**, nature **Nature**, food **Food**, games **Games**, space **Space**, arts **Art**,
+  myth **Mythology**, tech **Tech**. Blurbs are one plain sentence.
+- **Plain UI wording** (Sonnet). Keep the brand "Vermillion", the depth/metre score and the ocean scene, but use everyday words in all labels:
+  | Old | New |
+  |---|---|
+  | Daily Descent / THE DAILY DESCENT | Daily Game / THE DAILY RARE-ANSWER GAME |
+  | START TODAY'S DESCENT | PLAY TODAY'S GAME |
+  | VIEW TODAY'S RESULT | SEE TODAY'S SCORE |
+  | DESCENT #N | GAME #N |
+  | Endless Descent | Endless |
+  | SINK ▼ | SUBMIT |
+  | Deeper cuts | Rarer answers |
+  | "The dark swallowed that one." / themed flavour lines | "Time's up." / plain sentences |
+  | Themed packs | Topics |
+  | Archive | Past games |
+  | info line | "7 questions · 20 seconds each · rarer answers score more" |
+  Also "prompt" → "question" in user-facing text ("QUESTION 3 OF 7"). Code identifiers stay unchanged.
