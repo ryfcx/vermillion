@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vermillion browser checks</title>
+  <style>
+    :root { color-scheme: dark; font: 16px/1.5 system-ui, sans-serif; background: #100609; color: #f5e9e7; }
+    body { max-width: 850px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { color: #e34234; } li { padding: .35rem 0; } .pass { color: #8cdb9e; } .fail { color: #ff8278; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+  </style>
+</head>
+<body>
+  <h1>Vermillion checks</h1>
+  <p>Browser smoke and contract checks for the game modules and prompt bank.</p>
+  <p id="summary">Running…</p>
+  <ol id="results"></ol>
+  <script type="module">
+    const results = document.querySelector('#results');
+    const summary = document.querySelector('#summary');
+    const checks = [];
+    const assert = (condition, message) => { if (!condition) throw new Error(message); };
+    async function check(name, fn) {
+      try { await fn(); checks.push({ name, ok: true }); }
+      catch (error) { checks.push({ name, ok: false, error: error.message || String(error) }); }
+    }
+    const normalize = value => String(value).normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().replace(/[’']/g, '')
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim().replace(/^(the|a|an) /, '');
+
+    await check('RNG is seeded and shuffle does not mutate input', async () => {
+      const { seedFromString, mulberry32, shuffle } = await import('../src/rng.js');
+      const one = Array.from({ length: 5 }, () => mulberry32(seedFromString('same'))());
+      const two = Array.from({ length: 5 }, () => mulberry32(seedFromString('same'))());
+      assert(JSON.stringify(one) === JSON.stringify(two), 'seeded output differs');
+      const original = [1, 2, 3]; const shuffled = shuffle(original, () => 0.25);
+      assert(original.join() === '1,2,3' && shuffled.length === 3, 'shuffle mutated or lost input');
+    });
+
+    await check('Matcher normalization and answer matching', async () => {
+      const matcher = await import('../src/matcher.js');
+      assert(matcher.normalize('  The Café,  ') === 'cafe', 'normalization mismatch');
+      const prompt = { answers: [{ name: 'New Zealand', aliases: ['Aotearoa'], points: 42 }] };
+      assert(matcher.matchAnswer(prompt, 'Aotearoa').status === 'match', 'alias did not match');
+      assert(matcher.matchAnswer(prompt, '   ').status === 'empty', 'empty input mismatch');
+    });
+
+    await check('Daily, endless, pack and duel mode contracts', async () => {
+      const modes = await import('../src/modes.js');
+      const bank = { prompts: Array.from({ length: 14 }, (_, i) => ({ id: `p${i}`, category: `c${i % 7}` })) };
+      const dailyA = modes.getDailyPrompts(bank, '2026-11-17');
+      const dailyB = modes.getDailyPrompts(bank, '2026-11-17');
+      assert(dailyA.length === 7 && dailyA.map(p => p.id).join() === dailyB.map(p => p.id).join(), 'daily is not repeatable');
+      assert(new Set(dailyA.map(p => p.category)).size === 7, 'daily lacks category variety');
+      assert(modes.LAUNCH_DAY === '2026-11-01' && modes.TIMERS.duel === 15000, 'v2 constants mismatch');
+      assert(modes.listArchiveDays('2026-11-03').join() === '2026-11-03,2026-11-02,2026-11-01', 'archive day range mismatch');
+      assert(modes.getEndlessPrompts(bank, dailyA.map(p => p.id), () => 0).length === 7, 'endless count mismatch');
+      assert(modes.getPackPrompts(bank, 'c0', () => 0).length === 0, 'undersized pack should not return a partial run');
+      const packBank = { prompts: Array.from({ length: 8 }, (_, i) => ({ id: `pack${i}`, category: 'science', packs: ['lab'] })) };
+      assert(modes.getPackDailyPrompts(packBank, 'lab', '2026-11-17').map(p => p.id).join() === modes.getPackDailyPrompts(packBank, 'lab', '2026-11-17').map(p => p.id).join(), 'pack daily not deterministic');
+      const run = { promptIds: Array.from({ length: 7 }, (_, i) => `x${i}`), answers: Array.from({ length: 7 }, (_, i) => ({ promptId: `x${i}`, input: 'Same', answerName: i === 0 ? 'Same' : null, points: 11 })), total: 77 };
+      const decoded = modes.decodeDuel(modes.encodeDuel(run));
+      assert(decoded?.promptIds.join() === run.promptIds.join(), 'duel round-trip failed');
+      const score = modes.scoreDuel(run, decoded);
+      assert(score.mine[0] === 5 && score.collisions[0] === 0 && score.myTotal === 71, 'duel collision scoring mismatch');
+      assert(modes.decodeDuel('invalid token') === null, 'invalid duel token accepted');
+    });
+
+    await check('Storage tolerates unavailable storage and persists settings/runs', async () => {
+      const storage = await import('../src/storage.js');
+      let original;
+      try { original = globalThis.localStorage; } catch { original = undefined; }
+      try {
+        const values = new Map();
+        Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: { getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value), removeItem: key => values.delete(key) } });
+        assert(storage.saveSettings({ easyRead: true, reducedMotion: true, sound: false, volume: 0.3, theme: 'crt' }), 'settings not saved');
+        assert(storage.getSettings().easyRead && storage.getSettings().reducedMotion && storage.getSettings().theme === 'crt' && storage.getSettings().volume === 0.3, 'v2 settings round-trip failed');
+        const run = { mode: 'daily', packId: null, dayKey: '2026-11-17', practice: false, official: true, promptIds: ['p'], answers: [{ promptId: 'p', input: 'answer', answerName: 'Answer', points: 85, tier: 'mythic', usedHint: false, timedOut: false }], total: 85, depth: 850, finishedAt: 1 };
+        assert(storage.saveRun(run) && storage.getOfficialResult({ mode: 'daily', dayKey: run.dayKey })?.total === 85 && storage.getDailyResult(run.dayKey)?.total === 85, 'official daily result round-trip failed');
+        assert(storage.saveRun({ ...run, finishedAt: 2 }) === false, 'duplicate official daily attempt replaced the saved result');
+        assert(storage.getStats().runs === 1 && storage.getRecentPromptIds()[0] === 'p', 'stats/recent update failed');
+        assert(storage.getStats().mythicCount === 1 && storage.getStats().tierCounts.mythic === 1 && storage.getStats().avgPoints === 85, 'rich stats mismatch');
+        const archiveRun = { ...run, dayKey: '2026-11-16', finishedAt: 3 };
+        assert(storage.saveRun(archiveRun), 'archive Daily result was not saved');
+        assert(storage.getStats().dailyStreak === 1 && storage.getStats().lastDailyKey === run.dayKey, 'archive Daily moved the streak backwards');
+        const nextDaily = { ...run, dayKey: '2026-11-18', finishedAt: 4 };
+        assert(storage.saveRun(nextDaily), 'next Daily result was not saved');
+        assert(storage.getStats().dailyStreak === 2 && storage.getStats().lastDailyKey === nextDaily.dayKey, 'consecutive Daily did not extend streak after archive play');
+        assert(storage.saveRun({ ...run, practice: true, official: true, finishedAt: 5, total: 0 }), 'practice run was not saved');
+        assert(storage.getOfficialResult({ mode: 'daily', dayKey: run.dayKey })?.total === 85, 'practice replaced an official result');
+        assert(storage.getHistory({ mode: 'daily' }).find(item => item.practice)?.official === false, 'practice was marked as official');
+        assert(storage.getHistory({ mode: 'daily' }).length === 4, 'history retrieval failed');
+        const packRun = { ...run, mode: 'pack', packId: 'lab', official: true, practice: false, finishedAt: 6, total: 40 };
+        assert(storage.saveRun(packRun) && storage.getOfficialResult({ mode: 'pack', packId: 'lab', dayKey: run.dayKey })?.total === 40, 'pack daily result was not keyed by pack and day');
+        assert(storage.getStats().perPack.lab.best === 40 && storage.getHistory({ mode: 'pack:lab' }).length === 1, 'pack stats/history filter mismatch');
+        for (let i = 2; i <= 55; i += 1) storage.saveRun({ ...run, mode: 'endless', dayKey: null, finishedAt: i });
+        assert(JSON.parse(values.get('vermillion:run-keys')).length === 50, 'run history is not capped at 50');
+        assert([...values.keys()].filter(key => /^vermillion:run:/.test(key)).length === 50, 'old run records were not removed');
+        Object.defineProperty(globalThis, 'localStorage', { configurable: true, get() { throw new Error('blocked'); } });
+        assert(storage.getDailyResult('x') === null && storage.saveRun(run) === false, 'storage exception was not handled');
+      } finally {
+        if (original === undefined) delete globalThis.localStorage;
+        else Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: original });
+      }
+    });
+
+    await check('Share summary uses points bands and depth', async () => {
+      const { shareText, shareRun } = await import('../src/share.js');
+      const text = shareText({ dayKey: '2026-11-17', depth: 3420, answers: [0, 1, 21, 51, 81].map(points => ({ points })) });
+      assert(text === 'Vermillion 2026-11-17 — 3,420 m\n⬛🟦🟪🩷✨', 'v2 tier share summary mismatch');
+      const descriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+      let copied = '';
+      try {
+        Object.defineProperty(globalThis, 'navigator', { configurable: true, value: { clipboard: { writeText: async value => { copied = value; } } } });
+        assert(await shareRun({ dayKey: '2026-11-17', depth: 3420, answers: [0, 1, 21, 51, 81].map(points => ({ points })) }) === 'copied' && copied === text, 'clipboard share fallback mismatch');
+      } finally {
+        if (descriptor) Object.defineProperty(globalThis, 'navigator', descriptor);
+        else delete globalThis.navigator;
+      }
+    });
+
+    await check('Original sprite catalog has required sprites and valid pixel maps', async () => {
+      const { SPRITES, drawSprite, spriteDataURL, spriteEl } = await import('../src/sprites.js');
+      const required = ['logo','mascot','diver','car','runner','plane','rocket','notebook','tree','skyline-tile','daily','endless','duel','stats','archive','guides','settings','share','menu','close','sound-on','sound-off','tier-none','tier-common','tier-uncommon','tier-rare','tier-mythic','star','bubble'];
+      for (const name of ['moon','cloud-a','cloud-b','buoy','wave','fish-a','fish-b','gear','palette','mascot-idle','glyph-archive','glyph-endless','glyph-duel','glyph-down','ray','particle-glow','vermi-pulse','sparkle','hint']) assert(SPRITES[name], `missing scene sprite ${name}`);
+      for (const name of required) assert(SPRITES[name], `missing sprite ${name}`);
+      for (const pack of ['movies','sports','geography','language','science','history','music','nature','food','games','space','arts','myth','tech']) assert(SPRITES[`pack-${pack}`]?.w === 16 && SPRITES[`pack-${pack}`]?.h === 16, `invalid pack icon ${pack}`);
+      assert(SPRITES.mascot.frames.length >= 3, 'mascot needs 3 animation frames');
+      assert(SPRITES['mascot-idle']?.frames.length >= 3, 'mascot idle needs bobbing frames');
+      assert(SPRITES.moon.w === 32 && SPRITES.moon.h === 32, 'moon must be 32×32');
+      assert(SPRITES.star.frames.length === 3, 'star needs three twinkle frames');
+      assert(SPRITES['cloud-a'].w >= 32 && SPRITES['cloud-b'].w >= 32, 'cloud bands are too narrow');
+      assert(SPRITES.buoy.w === 24 && SPRITES.buoy.h === 24 && SPRITES.buoy.frames.length === 2, 'buoy must be a larger two-frame light');
+      assert(SPRITES.wave.w === 32 && SPRITES.wave.h === 8 && SPRITES.wave.frames.length === 3, 'wave must be a three-frame 32×8 tile');
+      for (const name of ['menu','gear','palette','sound-on','sound-off']) assert(SPRITES[name].w === 16 && SPRITES[name].h === 16, `${name} icon must be 16×16`);
+      for (const name of ['glyph-archive','glyph-endless','glyph-duel','glyph-down']) assert(SPRITES[name].w === 8 && SPRITES[name].h === 8, `${name} must be an 8×8 inline glyph`);
+      const downRows = SPRITES['glyph-down'].frames[0];
+      assert(downRows[3].replace(/\./g, '').length > downRows[6].replace(/\./g, '').length, 'glyph-down must widen above its lower tip');
+      assert(SPRITES.ray.h === 32 && Object.values(SPRITES.ray.palette).some(color => typeof color === 'string' && /^#[0-9a-f]{8}$/i.test(color)), 'ray must be tall and translucent');
+      assert(SPRITES['particle-glow'].frames.length === 2, 'particle glow needs two frames');
+      assert(SPRITES['vermi-pulse'].frames.length === 5, 'Vermi pulse needs one tint frame per tier');
+      assert(SPRITES.sparkle.frames.length === 4, 'sparkle burst needs four frames');
+      assert(SPRITES.hint.w === 16 && SPRITES.hint.h === 16, 'hint icon must be 16×16');
+      assert(SPRITES.gear.frames[0][8][8] === '.' && [...SPRITES.gear.frames[0].join('')].filter(pixel => pixel === 'c').length > 35, 'gear needs a clear cog ring and center hole');
+      assert(['c','p','y'].every(color => SPRITES.palette.frames[0].join('').includes(color)), 'palette needs three color wells');
+      assert(SPRITES['sound-on'].frames[0].join('').includes('p') && SPRITES['sound-off'].frames[0].join('').includes('p'), 'sound icons need visible waves / mute X');
+      for (const frame of SPRITES.mascot.frames.slice(0, 2)) {
+        assert(frame.slice(10).join('').replace(/[.]/g, '').length >= 24, 'Vermi needs 4–6 visible tentacles');
+        assert(frame.join('').includes('d') && frame.join('').includes('c') && frame.join('').includes('v'), 'Vermi needs eyes, a light rim, and a soft glow');
+      }
+      for (const frame of SPRITES.wave.frames) assert(frame.every(row => row[0] === row[row.length - 1]), 'wave tile edges do not join');
+      for (const [name, sprite] of Object.entries(SPRITES)) for (const frame of sprite.frames) {
+        assert(frame.length === sprite.h && frame.every(row => row.length === sprite.w), `invalid pixel map in ${name}`);
+        const paletteValid = frame.every(row => [...row].every(pixel => Object.hasOwn(sprite.palette, pixel)));
+        assert(paletteValid, `unknown palette key in ${name}`);
+      }
+      const canvas = document.createElement('canvas'); canvas.width = 64; canvas.height = 64;
+      drawSprite(canvas.getContext('2d'), 'mascot', 0, 0, 4, 1);
+      assert(spriteDataURL('logo').startsWith('data:image/png'), 'sprite data URL failed');
+      assert(spriteEl('mascot', 2).tagName === 'CANVAS', 'sprite element is not a canvas');
+    });
+
+    await check('Sound API accepts all contract effect names', async () => {
+      const { play, setVolume, setMuted, music } = await import('../src/sfx.js');
+      setVolume(0.4); setMuted(true);
+      for (const name of ['type','submit','unknown','common','uncommon','rare','mythic','timeout','tick','next','finish','click','duelWin','duelLose']) play(name);
+      music(false); setMuted(false); setVolume(0.6);
+    });
+
+    await check('Self-hosted OFL fonts, stylesheet references and licenses are present', async () => {
+      const paths = [
+        '../assets/fonts/PressStart2P-Regular.ttf', '../assets/fonts/VT323-Regular.ttf',
+        '../assets/fonts/fonts.css', '../assets/fonts/PressStart2P-OFL.txt', '../assets/fonts/VT323-OFL.txt'
+      ];
+      const responses = await Promise.all(paths.map(path => fetch(path)));
+      assert(responses.every(response => response.ok), 'one or more local font files could not be fetched');
+      const [pressBytes, vtBytes, css, pressLicense, vtLicense] = await Promise.all([
+        responses[0].arrayBuffer(), responses[1].arrayBuffer(), responses[2].text(), responses[3].text(), responses[4].text()
+      ]);
+      for (const [name, bytes] of [['Press Start 2P', pressBytes], ['VT323', vtBytes]]) {
+        const signature = [...new Uint8Array(bytes.slice(0, 4))];
+        assert(signature.join() === '0,1,0,0' || String.fromCharCode(...signature) === 'OTTO', `${name} is not a valid OpenType font`);
+      }
+      assert(css.includes('PressStart2P-Regular.ttf') && css.includes('VT323-Regular.ttf'), 'font CSS does not reference both local binaries');
+      assert(pressLicense.includes('SIL OPEN FONT LICENSE Version 1.1') && vtLicense.includes('SIL OPEN FONT LICENSE Version 1.1'), 'font license notice is missing');
+    });
+
+    await check('Prompt bank validates schema, ids, points, answer count and normalized duplicates', async () => {
+      const response = await fetch('../data/prompts.json');
+      assert(response.ok, `data/prompts.json unavailable (${response.status})`);
+      const bank = await response.json();
+      assert(bank && bank.version === 2 && Array.isArray(bank.prompts), 'v2 bank root schema invalid');
+      assert(bank.prompts.length >= 450, `bank has only ${bank.prompts.length} prompts; v2 requires at least 450`);
+      const categories = new Set(['geography','science','film','music','sports','history','language','food','nature','pop','games','space','arts','myth','tech','animals','literature','tv']);
+      const ids = new Set();
+      for (const prompt of bank.prompts) {
+        assert(prompt.id && !ids.has(prompt.id), `missing or duplicate prompt id: ${prompt.id}`); ids.add(prompt.id);
+        assert(categories.has(prompt.category) && typeof prompt.text === 'string' && typeof prompt.hint === 'string' && prompt.hint.length > 0, `invalid category, prompt, or missing hint ${prompt.id}`);
+        assert(Array.isArray(prompt.packs) && prompt.packs.every(packId => typeof packId === 'string'), `invalid pack references in ${prompt.id}`);
+        assert(Array.isArray(prompt.answers) && prompt.answers.length >= 12, `${prompt.id} has fewer than 12 answers`);
+        const names = new Set();
+        for (const answer of prompt.answers) {
+          assert(typeof answer.name === 'string' && Number.isInteger(answer.points) && answer.points >= 1 && answer.points <= 100 && (answer.aliases === undefined || Array.isArray(answer.aliases)), `invalid answer in ${prompt.id}`);
+          for (const name of [answer.name, ...(answer.aliases || [])]) {
+            const key = normalize(name);
+            assert(key && !names.has(key), `duplicate normalized answer "${name}" in ${prompt.id}`);
+            names.add(key);
+          }
+        }
+      }
+    });
+
+    await check('Pack bank contains every pack and at least 40 prompts per pack', async () => {
+      const [packResponse, promptResponse] = await Promise.all([fetch('../data/packs.json'), fetch('../data/prompts.json')]);
+      assert(packResponse.ok && promptResponse.ok, 'pack or prompt data unavailable');
+      const [packBank, promptBank] = await Promise.all([packResponse.json(), promptResponse.json()]);
+      assert(Array.isArray(packBank.packs) && packBank.packs.length === 14, 'expected 14 packs');
+      const packIds = new Set(packBank.packs.map(pack => pack.id));
+      for (const pack of packBank.packs) {
+        assert(pack.id && pack.name && pack.blurb && pack.icon && pack.display && pack.unit && Number.isFinite(pack.pointsPerUnit) && pack.pointsPerUnit > 0, `invalid pack metadata for ${pack.id}`);
+        const count = promptBank.prompts.filter(prompt => prompt.packs?.includes(pack.id)).length;
+        assert(count >= 40, `${pack.id} has only ${count} prompts`);
+      }
+      assert(promptBank.prompts.filter(prompt => prompt.category === 'language').length >= 40, 'fewer than 40 language word-puzzle prompts');
+      for (const prompt of promptBank.prompts) assert(prompt.packs.every(packId => packIds.has(packId)), `unknown pack id in ${prompt.id}`);
+    });
+
+    await check('Guides and FAQ meet v2 minimums', async () => {
+      const [guidesResponse, faqResponse] = await Promise.all([fetch('../data/guides.json'), fetch('../data/faq.json')]);
+      assert(guidesResponse.ok && faqResponse.ok, 'guides or FAQ data unavailable');
+      const [guides, faq] = await Promise.all([guidesResponse.json(), faqResponse.json()]);
+      assert(Array.isArray(guides.guides) && guides.guides.length >= 16, 'fewer than 16 guides');
+      assert(Array.isArray(faq.faq) && faq.faq.length >= 12, 'fewer than 12 FAQ entries');
+      assert(new Set(guides.guides.map(guide => guide.slug)).size === guides.guides.length, 'guide slugs are not unique');
+      assert(guides.guides.every(guide => guide.title && ['strategy','category','practice'].includes(guide.group) && guide.summary && guide.body), 'invalid guide entry');
+      assert(faq.faq.every(item => item.q && item.a), 'invalid FAQ entry');
+    });
+
+    for (const result of checks) {
+      const item = document.createElement('li'); item.className = result.ok ? 'pass' : 'fail';
+      item.textContent = `${result.ok ? 'PASS' : 'FAIL'} — ${result.name}${result.error ? `: ${result.error}` : ''}`;
+      results.append(item);
+    }
+    const passed = checks.filter(result => result.ok).length;
+    summary.textContent = `${passed}/${checks.length} checks passed`;
+    summary.className = passed === checks.length ? 'pass' : 'fail';
+    window.VermillionChecks = { checks, passed, total: checks.length };
+  </script>
+</body>
+</html>

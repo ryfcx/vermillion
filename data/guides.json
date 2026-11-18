@@ -1,0 +1,123 @@
+{
+  "guides": [
+    {
+      "slug": "think-in-layers",
+      "title": "Think in layers, not lists",
+      "group": "strategy",
+      "summary": "Move from broad categories to distinctive examples before the clock runs out.",
+      "body": "A prompt usually contains more than one clue. Start with the broad subject, then narrow it by time, place, material, role, or context. That keeps you from repeating the first famous examples that come to mind. Check whether your candidate satisfies every word of the prompt; a rare answer only scores if it is correct.\n\n## A quick three-pass method\n- Name the broad category silently.\n- Choose a narrow lane you can search reliably.\n- Check the candidate against the exact rule. A calm, defensible answer is better than an exotic guess."
+    },
+    {
+      "slug": "read-the-whole-prompt",
+      "title": "Read every word of the prompt",
+      "group": "strategy",
+      "summary": "Small qualifiers often define the answer set and rule out tempting guesses.",
+      "body": "Words such as first, longest, named after, currently, or ends in can change the answer set. Before typing, restate the condition in your own words. A prompt about a current capital does not accept a historic capital; a word puzzle is about spelling, not sound.\n\n## Check the boundary\\nAsk whether the answer meets the exact wording and whether a date or formal definition matters. Treat hints as a nudge toward the right boundary, not permission to ignore it."
+    },
+    {
+      "slug": "rarity-without-guessing",
+      "title": "Find rarity without guessing",
+      "group": "strategy",
+      "summary": "Use knowledge branches to reach uncommon answers while staying accurate.",
+      "body": "Rarity comes from reaching beyond the first examples people tend to name, not from inventing an answer. Use a well-known anchor to open a branch: after naming a familiar composer, think of the same era, region, instrument, or movement.\n\n## Branch from a sure fact\n- Start with something you know is valid.\n- Change one dimension at a time: era, country, subtype, or role.\n- Stop when you can no longer verify the fit. This works well in geography, science, film, and sport."
+    },
+    {
+      "slug": "use-the-clock",
+      "title": "Use the clock deliberately",
+      "group": "strategy",
+      "summary": "Spend the opening seconds interpreting and the final seconds checking.",
+      "body": "Use the opening moment to identify the rule and choose a search lane. Generate candidates in that lane. Save time at the end to check spelling and ensure your answer is not a near miss.\n\n## A simple rhythm\\nFirst, parse the wording. In the middle, retrieve examples from one or two branches. In the final seconds, verify the strongest candidate and submit. If you have no reliable candidate, do not invent a fact."
+    },
+    {
+      "slug": "remember-with-groups",
+      "title": "Remember facts with groups",
+      "group": "strategy",
+      "summary": "Organize examples into small clusters that are easier to retrieve under time pressure.",
+      "body": "A long unstructured list is hard to search. Group examples by a meaningful feature: continent, decade, scientific field, musical instrument, or team. These clusters act like shelves in memory.\n\n## Build small shelves\\nKeep groups short enough to scan, give each a clear label, and add facts only when you can verify them. If one shelf is empty, move to another instead of circling the same obvious answers."
+    },
+    {
+      "slug": "spelling-and-aliases",
+      "title": "Spelling, aliases, and careful answers",
+      "group": "strategy",
+      "summary": "Understand accepted names and avoid relying on uncertain spellings.",
+      "body": "Many names have alternate spellings, transliterations, or historical labels. The answer bank may include common aliases, but an alias is not guaranteed for every place or person. Enter the best-known name you can spell confidently.\n\n## Before submitting\\nCheck whether the name has spaces, a hyphen, or a familiar alternate form. Small typos may be tolerated, but a distinct name or ambiguous spelling should not be assumed to match. Use a standard spelling and keep it simple."
+    },
+    {
+      "slug": "when-to-change-branches",
+      "title": "Know when to change branches",
+      "group": "strategy",
+      "summary": "A stuck memory path is a signal to switch categories of thought.",
+      "body": "When one train of thought repeats, deliberately change the dimension you are searching. For a film prompt, switch from directors to performers, then to titles or studios if those fit the question. For science, switch from people to materials, processes, or units.\n\n## Make the switch useful\\nDo not jump randomly. Pick a different branch that still follows the prompt's rule. If no branch produces a candidate you trust, leave it blank rather than submitting a made-up fact."
+    },
+    {
+      "slug": "learn-from-feedback",
+      "title": "Turn feedback into a memory cue",
+      "group": "strategy",
+      "summary": "Use the answer reveal to build durable knowledge for later runs.",
+      "body": "After a prompt, choose one unfamiliar correct answer and connect it to something you know. A place can connect to a region; a composer to an era; a unit to the quantity it measures.\n\n## Keep a tiny review list\\nNote the answer and why it fits, group it with related facts, and revisit the group later instead of memorizing isolated trivia. The goal is curiosity and better recall, not cramming a giant list."
+    },
+    {
+      "slug": "practice-without-pressure",
+      "title": "Practice without pressure",
+      "group": "practice",
+      "summary": "Use practice runs to explore categories and learn the interface.",
+      "body": "Practice is a good place to try a new pack, experiment with a branch, and get comfortable with the timer. It does not replace an official daily attempt. Take time after each answer to read the note and compare rarity tiers.\n\n## A useful session\\nPick one category, play a run, then review missed examples. For a second run, focus on one retrieval method rather than chasing a high score. Small focused sessions are more useful than rushing through many runs."
+    },
+    {
+      "slug": "language-word-puzzles",
+      "title": "Solve language prompts by constraints",
+      "group": "category",
+      "summary": "Translate a word puzzle into letter positions and test the condition carefully.",
+      "body": "Language prompts often define a closed set through spelling rules. Write down the constraints: number of letters, first and last letter, allowed vowels, or repeated characters. Check each candidate against the written form rather than pronunciation.\n\n## Narrow the search\\nFix the required length first. Check the first and last positions. Apply the vowel or letter restriction last. A plausible word that breaks one condition is not correct."
+    },
+    {
+      "slug": "geography-region-first",
+      "title": "Geography: think by region",
+      "group": "category",
+      "summary": "Use continental and regional groupings to reach beyond headline countries.",
+      "body": "For geography prompts, start with the relevant continent and divide it into smaller regions. Remember island states and landlocked countries as separate groups. If the wording names a river, capital, or coast, use that feature to narrow the map. Be careful with transcontinental places and changing official names. Exact wording determines whether a region or political boundary matters."
+    },
+    {
+      "slug": "science-family-tree",
+      "title": "Science: follow the family tree",
+      "group": "category",
+      "summary": "Move from a familiar concept to neighboring fields, materials, and contributors.",
+      "body": "Science knowledge is connected. A familiar element can lead to its group, uses, discovery history, or compounds. A physics term can lead to its unit, instrument, or related phenomenon. Follow one connection at a time so the answer stays grounded. Scientists, theories, units, and materials are different answer types; a related item is not necessarily in the requested set."
+    },
+    {
+      "slug": "film-beyond-blockbusters",
+      "title": "Film: look beyond the biggest titles",
+      "group": "category",
+      "summary": "Use country, decade, genre, and role to explore a wider filmography.",
+      "body": "A film prompt may concern titles, performers, directors, characters, or studios. Identify which one before searching memory. Then move by decade, animation versus live action, genre, or country. This helps uncover examples outside the most famous releases. Names and credits can vary by region. Prefer the credited standard form and ensure the person or title belongs to the requested set."
+    },
+    {
+      "slug": "music-era-and-instrument",
+      "title": "Music: search by era and instrument",
+      "group": "category",
+      "summary": "Use time period, style, geography, and instrument as retrieval paths.",
+      "body": "Music has useful memory clusters: eras, styles, instruments, regions, and roles. First distinguish whether the prompt asks for a performer, composer, instrument, song, or genre. Then use one cluster to retrieve examples. Avoid treating influence or collaboration as membership in a formal group. The wording may require a specific credit, instrument, or period."
+    },
+    {
+      "slug": "sports-league-and-role",
+      "title": "Sports: sort by league and role",
+      "group": "category",
+      "summary": "Break sports knowledge into competitions, positions, records, and teams.",
+      "body": "Sports prompts become easier when you separate leagues, competitions, positions, teams, and individual records. Think across eras rather than only current stars, while paying attention to date qualifiers such as current or inaugural. League membership changes. For historical questions, anchor your answer to the year or season implied by the prompt. For positions, check the sport's own terminology."
+    },
+    {
+      "slug": "nature-habitat-first",
+      "title": "Nature: begin with habitat",
+      "group": "category",
+      "summary": "Use habitat and biological groups to retrieve less familiar examples accurately.",
+      "body": "Nature examples can be sorted by habitat, climate, taxonomic group, diet, or behavior. Decide which branch applies to the prompt. An animal's common name may cover multiple species, so use a precise familiar name when the question requires a specific type. Do not infer scientific classification from appearance alone. If you are uncertain whether an example belongs to a group, choose one you know fits."
+    },
+    {
+      "slug": "food-by-ingredient",
+      "title": "Food: think by ingredient and technique",
+      "group": "category",
+      "summary": "Use ingredients, cooking methods, and regional cuisines as memory shelves.",
+      "body": "Food prompts can be approached through ingredients, preparation, course, or region. Identify the requested kind: a dish is different from an ingredient, and a cooking technique is different from a cuisine. Regional names may have alternate spellings. Use a common standard name and check that the dish is genuinely associated with the requested place or method."
+    }
+  ]
+}

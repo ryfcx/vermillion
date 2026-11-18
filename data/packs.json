@@ -1,0 +1,130 @@
+{
+  "packs": [
+    {
+      "id": "movies",
+      "name": "Silver Screen",
+      "blurb": "Follow film credits, animated worlds and cinematic firsts along a neon boulevard.",
+      "icon": "pack-movies",
+      "display": "city",
+      "unit": "blocks",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "sports",
+      "name": "Arena",
+      "blurb": "Trade the obvious champion for a sporting deep cut and put distance on the track.",
+      "icon": "pack-sports",
+      "display": "track",
+      "unit": "m",
+      "pointsPerUnit": 0.1
+    },
+    {
+      "id": "geography",
+      "name": "Atlas",
+      "blurb": "Navigate cities, capitals, rivers and landscapes on a flight powered by your answers.",
+      "icon": "pack-geography",
+      "display": "flight",
+      "unit": "km",
+      "pointsPerUnit": 0.04
+    },
+    {
+      "id": "language",
+      "name": "Wordsmith",
+      "blurb": "Untangle spelling clues and finite word puzzles, one careful answer at a time.",
+      "icon": "pack-language",
+      "display": "notebook",
+      "unit": "words",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "science",
+      "name": "Lab",
+      "blurb": "Charge the reactor with discoveries, living systems and the building blocks of matter.",
+      "icon": "pack-science",
+      "display": "reactor",
+      "unit": "kJ",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "history",
+      "name": "Chronicle",
+      "blurb": "Unroll a timeline of people, places, inventions and turning points.",
+      "icon": "pack-history",
+      "display": "timeline",
+      "unit": "years back",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "music",
+      "name": "Soundcheck",
+      "blurb": "Build a wall of sound from instruments, songs, composers and recorded classics.",
+      "icon": "pack-music",
+      "display": "eq",
+      "unit": "dB",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "nature",
+      "name": "Wildwood",
+      "blurb": "Grow a pixel forest with answers from the living world and its habitats.",
+      "icon": "pack-nature",
+      "display": "growth",
+      "unit": "cm",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "food",
+      "name": "Kitchen",
+      "blurb": "Fill the recipe card with ingredients, dishes and culinary discoveries.",
+      "icon": "pack-food",
+      "display": "recipe",
+      "unit": "g",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "games",
+      "name": "Arcade",
+      "blurb": "Chase a high score through board games, video games and playful worlds.",
+      "icon": "pack-games",
+      "display": "arcade",
+      "unit": "score",
+      "pointsPerUnit": 0.01
+    },
+    {
+      "id": "space",
+      "name": "Orbit",
+      "blurb": "Fuel a rocket with astronomy, exploration and worlds beyond Earth.",
+      "icon": "pack-space",
+      "display": "launch",
+      "unit": "km",
+      "pointsPerUnit": 0.1
+    },
+    {
+      "id": "arts",
+      "name": "Gallery",
+      "blurb": "Reveal a pixel painting through visual art, literature, theatre and design.",
+      "icon": "pack-arts",
+      "display": "canvas",
+      "unit": "strokes",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "myth",
+      "name": "Mythos",
+      "blurb": "Find a path through legends, deities and creatures from storytelling traditions.",
+      "icon": "pack-myth",
+      "display": "maze",
+      "unit": "steps",
+      "pointsPerUnit": 1
+    },
+    {
+      "id": "tech",
+      "name": "Circuit",
+      "blurb": "Complete the download with computing, communication and engineering knowledge.",
+      "icon": "pack-tech",
+      "display": "download",
+      "unit": "MB",
+      "pointsPerUnit": 1
+    }
+  ]
+}
