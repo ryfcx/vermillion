@@ -7,10 +7,10 @@ Do not copy Krillion's text, prompts, or answer data.
 ## The team
 | Agent | Window | Lane (files you own) |
 |---|---|---|
-| **Orchestrator** (Claude Opus) | main | TEAM.md, docs/CONTRACT.md, PROGRESS.md structure, integration, review |
+| **Orchestrator** (Claude Opus) | main | TEAM.md, docs/CONTRACT.md, PROGRESS.md structure, integration, review, `src/config.js`, `vendor/`, `supabase/migrations/`, deploys + `.seed-secret` |
 | **Sonnet** (Claude Sonnet) | "Sonnet" | `index.html`, `styles.css`, `src/game.js`, `src/ui.js`, `src/main.js`, `src/router.js`, `src/displays.js`, `src/scene.js` |
-| **Sol** (Codex GPT-6.1-Sol) | "Codex Sol" | `data/prompts.json`, `data/packs.json`, `src/content.js`, `src/matcher.js` |
-| **Luna** (Codex GPT-6-Luna) | "Codex Luna" | `src/rng.js`, `src/modes.js`, `src/storage.js`, `src/share.js`, `src/sprites.js`, `src/sfx.js`, `assets/`, `tools/`, `data/guides.json`, `data/faq.json`, `tests/` |
+| **Sol** (Codex GPT-6.1-Sol) | "Codex Sol" | `data/prompts.json`, `data/packs.json`, `src/content.js`, `src/matcher.js`, `src/score.js` |
+| **Luna** (Codex GPT-6-Luna) | "Codex Luna" | `src/rng.js`, `src/modes.js`, `src/storage.js`, `src/share.js`, `src/sprites.js`, `src/sfx.js`, `assets/`, `tools/`, `data/guides.json`, `data/faq.json`, `tests/`, `src/online.js`, `src/rooms.js`, `supabase/functions/` (orchestrator deploys) |
 
 ## Rules
 1. **Stay in your lane.** Only edit files you own. If you need a change in someone else's file, ask in `CHAT_LOG.md`.

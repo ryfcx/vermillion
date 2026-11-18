@@ -1,1 +1,6 @@
 .DS_Store
+.seed-secret
+.env
+.env.*
+supabase/.temp/
+node_modules/
