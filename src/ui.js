@@ -228,7 +228,7 @@ export function createUI(root, on) {
     const ico = (name, fallback) => (hasSprite(name) ? px(name, 1) : h('span', { class: 'ico', 'aria-hidden': 'true', text: fallback }));
     const tile = (label, to, name, fallback, extra = {}) => h(to ? 'a' : 'button', { class: `m-tile${extra.disabled ? ' disabled' : ''}`, ...(to ? { href: to } : { type: 'button', onclick: extra.onclick }), ...(extra.disabled ? { 'aria-disabled': 'true', title: extra.title } : {}), tabindex: drawerOpen ? 0 : -1 },
       h('span', { class: 'm-ico' }, extra.node || ico(name, fallback)), h('span', { class: 'm-lab', text: label }));
-    const row = (title, sub, to, name, fallback, accent, arrow = '→') => h('a', { class: `m-row ${accent}`, href: to, tabindex: drawerOpen ? 0 : -1 },
+    const row = (title, sub, to, name, fallback, accent, arrow = '→', extra = '') => h('a', { class: `m-row ${accent} ${extra}`, href: to, tabindex: drawerOpen ? 0 : -1, onclick: () => closeDrawer() },
       h('span', { class: 'm-ico' }, ico(name, fallback)), h('span', { class: 'm-rt' }, h('b', { text: title }), h('small', { text: sub })), h('span', { class: 'm-arrow', 'aria-hidden': 'true', text: arrow }));
     const label = (t) => h('div', { class: 'm-label' }, h('span', { text: t }), h('i', { 'aria-hidden': 'true' }));
     searchInput = h('input', {
@@ -244,6 +244,7 @@ export function createUI(root, on) {
     searchBox = h('div', { class: 'drawer-searchbox' }, searchInput);
     const chargeNode = hasSprite('charge-idle') ? px('charge-idle', 1) : null;
     defaultNav = h('nav', { class: 'drawer-nav', 'aria-label': 'Site' },
+      row('HOME', 'back to the title screen', href.home(), 'ico-daily', '⌂', 'cyan', '←', 'm-home'),
       label('PLAY'),
       h('div', { class: 'm-grid' },
         tile('Daily game', href.daily(), 'ico-daily', '▼'), tile('Endless', href.endless(), 'ico-endless', '∞'),
@@ -258,11 +259,12 @@ export function createUI(root, on) {
         row('HOW TO PLAY', 'the rules in 30 seconds', href.how(), 'ico-how', '▯', 'cyan'),
         row('PRIVACY', 'what we keep and why', href.about(), 'ico-privacy', '◇', 'pink')));
     drawerEl.replaceChildren(
-      h('div', { class: 'drawer-head' }, h('div', {}, h('span', { class: 'm-eyebrow', text: 'VERMILLION' }), h('span', { class: 'm-title', text: 'MENU', 'data-t': 'MENU' })),
+      h('div', { class: 'drawer-head' }, h('div', {}, h('a', { class: 'm-eyebrow', href: href.home(), text: 'VERMILLION', tabindex: drawerOpen ? 0 : -1, onclick: () => closeDrawer() }), h('span', { class: 'm-title', text: 'MENU', 'data-t': 'MENU' })),
         h('button', { class: 'm-close', type: 'button', 'aria-label': 'Close menu', tabindex: drawerOpen ? 0 : -1, onclick: () => { closeDrawer(); menuBtnEl.focus(); } }, 'X')),
       searchBox,
       h('div', { class: 'drawer-scroll' }, defaultNav, h('div', { class: 'drawer-results', id: 'drawer-results', role: 'listbox', 'aria-label': 'Search results', hidden: true })));
     buildIndex();
+    markCurrent();
   }
   function setContent(c) { content = { guides: c.guides || [], faq: c.faq || [] }; buildIndex(); }
   function openDrawer() {
@@ -343,10 +345,12 @@ export function createUI(root, on) {
     toastHost.append(el);
     setTimeout(() => el.remove(), 2800);
   }
-  function setRoute(r) {
-    route = r;
+  function setRoute(r) { route = r; markCurrent(); }
+  function markCurrent() {
+    const r = route; if (!r) return;
     drawerEl?.querySelectorAll('a').forEach((x) => x.removeAttribute('aria-current'));
     const to = r.name === 'home' ? href.daily() : {  party: href.party(), packs: href.packs(), guides: href.guides(), guide: href.guides(), how: href.how(), faq: href.faq(), about: href.about(), stats: href.stats(), history: href.history(), account: href.account(), leaderboard: href.leaderboard(), friends: href.friends(), online: href.online() }[r.name];
+    if (r.name === 'home') drawerEl?.querySelectorAll(`.m-home[href="${href.home()}"]`).forEach((x) => x.setAttribute('aria-current', 'page'));
     const cur = r.name === 'play' ? ({ daily: href.daily(), endless: href.endless(), duel: href.duel() })[r.mode] : to;
     if (cur) drawerEl?.querySelector(`a[href="${cur}"]`)?.setAttribute('aria-current', 'page');
   }
@@ -666,6 +670,7 @@ export function createUI(root, on) {
       sceneCtl.resume();
       if (sceneCtl.mode !== kind || kind === 'title') sceneCtl.setMode(kind, { ms: 900 });
     }
+    sceneCtl.setVermiShown(true);
     requestAnimationFrame(() => sceneHost && sceneHost.classList.remove('scene-hidden'));
     return sceneCtl;
   }
@@ -881,7 +886,7 @@ export function createUI(root, on) {
       const diveMs = 700 + r.points * 18;
       sceneCtl.dive({
         fromM: prevTotal * 10, toM: state.total * 10, points: r.points, tier: r.tier,
-        onProgress: (m) => { const hd = hudFor(kind, m / 10); P.depthVal.textContent = hd.render(hd.to); P.depthVal._v = hd.to; },
+        onProgress: (m) => { const hd = hudFor(kind, m / 10); P.depthVal.textContent = hd.render(hd.to); P.depthVal._v = hd.to; const sc = Math.max(0, Math.round(m / 10)); P.scoreVal.textContent = fmt(sc); P.scoreVal._v = sc; },   // depth and score move with the camera, in one ease
         onLand: () => { P.cardSlot.firstElementChild && P.cardSlot.firstElementChild.classList.add('landing'); land(Math.round(diveMs / 2)); },
         onDone: () => { endDive(); if (P && P.cardSlot) showCard(true); },
       });
@@ -1126,7 +1131,12 @@ export function createUI(root, on) {
   }
 
   /** An empty page for Sol's DEPTH CHARGE UI (src/party-ui.js) to mount into. */
-  function showPartyHost() { pageTitle('Depth charge'); const host = h('div', { class: 'party-host' }); mount(host); return host; }
+  function showPartyHost() {
+    pageTitle('Depth charge'); const host = h('div', { class: 'party-host' }); mount(host);
+    root.classList.add('is-home', 'is-play'); page.className = 'page party-page';   // same calm shared scene as the game screen, no title UI
+    ensureScene('play'); sceneCtl.setDepth(0, { instant: true }); sceneCtl.setVermiShown(false);
+    return host;
+  }
   function showOffline(title = 'This page') {
     pageTitle(title);
     mount(h('div', { class: 'box hi error-box page-narrow', style: 'margin:30px auto' }, vermi(6, 2), h('h2', { text: 'You’re offline' }),

@@ -408,7 +408,7 @@ export function startScene(host, opts = {}) {
       else { jg.fillStyle = '#ff4fa3'; jg.fillRect(6, 4, 20, 14); }
       if (tint) { jg.globalCompositeOperation = 'source-atop'; jg.globalAlpha = a; jg.fillStyle = tint; jg.fillRect(0, 0, c.width, c.height); }
       g.imageSmoothingEnabled = false;
-      const ga = g.globalAlpha; g.globalAlpha = ga * 0.9 * st.vermiA;
+      const ga = g.globalAlpha; g.globalAlpha = ga * 0.9 * st.vermiA * (st.noVermi ? 0 : 1);
       g.drawImage(c, Math.round(x + 16 - 8 * sx), Math.round(y + 16 - 8 * sy), Math.round(16 * sx), Math.round(16 * sy));
       g.globalAlpha = ga;
     };
@@ -493,6 +493,7 @@ export function startScene(host, opts = {}) {
     /** Timeout or 0 points: no dive. Vermi droops and a little bloop of bubbles rises. */
     sad() { st.sad = { t0: performance.now() }; sfxPlay('bloop'); frame(); },
     get diving() { return !!st.dive; },
+    setVermiShown(v) { st.noVermi = !v; },
     get mode() { return st.play ? 'play' : 'title'; },
     setOpts(o) { Object.assign(st.opts, o); st.getWaterY = st.opts.getWaterY || st.getWaterY; },
     pause() { st.paused = true; }, resume() { st.paused = false; st.last = performance.now(); },

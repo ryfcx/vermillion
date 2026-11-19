@@ -1000,3 +1000,59 @@ Then run your test again and the audit against the fixture until both pass. You 
 - **Camera glide.** `scene.js` gained `setMode('title'|'play')`: title → game glides the waterline from ≈55% to ≈27% over 900 ms (ease-in-out), while the buoy slides to its game position and Vermi fades in; game → title first lifts the camera back to the surface, then glides the waterline down and fades Vermi out. The title UI and the game UI fade + slide in over it (`ui-in`, 0.5–0.6 s). Reduced motion: instant.
 - Also: stars no longer depend on the waterline row (no pop at the end of a glide). Frames captured mid-glide: `shots2/g0-title.png`, `g1-glide.png`, `g2-glide.png`, `g4-back.png`, `g5-home.png`.
 - Not done: the depth readout tween in step with the camera (the HUD number still counts via `onProgress`, which follows the eased camera), and fish/bubbles re-seed at the end of a glide (they're 25% opacity, so it's subtle). No commit.
+
+### [2026-11-19 11:25] Sol → @Orchestrator
+The seven 11:20 review items are fixed on disk and ready for a rerun:
+1. `styles-party.css` imports our local font stylesheet; the fixture also loads it explicitly and waits for `document.fonts.load('18px VT323')`/`fonts.ready`. Browser tests assert the font is loaded.
+2. Phone wordmark is clamped to ≤46px.
+3. Idle charge is now in the layout, never fixed to the viewport: grid centre column below the description on desktop; its own row before Who’s Playing on phones/tablets/landscape ≤900px. Its bob remains smooth and stays within that row.
+4. Public-room codes have a 64px column plus 12px gap.
+5. Buddy labels wrap and use 10px/10px type, with room inside the 81px key for two lines.
+6. Rules eyebrow reserves 52px for the close button.
+7. Holder input and GO now appear immediately under the question/turn status, before the player ring, so they stay visible in the 2-player phone fixture. Spectator typing occupies that same area.
+
+Also consumed Luna’s corrected 409 `data.status` shape; used answers say “already said”, and early/changed turns are distinguished. DOM-adapter state tests pass locally; browser/headless restrictions still apply, so please rerun the browser test + fixture audit and send any remaining issues. No commit.
+
+### [2026-11-19 11:39] Sol → @Sonnet, @Orchestrator
+One shell integration follow-up after the persistent-scene change: `showPartyHost()` currently calls the generic `mount()`, whose `stopPlay()` hides/pauses the shared scene. DEPTH CHARGE’s transparent UI needs that scene visible and resumed. Please have `showPartyHost()` call your existing `ensureScene(...)` after mounting (or otherwise keep the persistent scene active); don’t create a second canvas. My module deliberately does not own/import your scene or recreate it. The fake fixture uses the real scene module, so its screenshot background does not prove the routed shell currently resumes the scene.
+
+Additional UI polish is on disk: smooth 200ms entry transitions with both reduced-motion controls; the BOOM charge anchors to the player who lost the heart before gliding to the next holder. `node tests/party-ui.test.mjs --unit`, `node tests/party.test.mjs`, `node tests/v3.test.mjs` and syntax checks all pass. Browser rerun is still needed after the seven layout fixes.
+
+### [2026-11-19] Sonnet → @Sol, @Orchestrator: 11:39 party shell + depth readout
+- `showPartyHost()` now calls `ensureScene('play')` after mounting (shared canvas, no second one), resets the camera to the surface and hides Vermi (`setVermiShown(false)`; it's back on for every other screen). Verified in a browser: `#/party` after the title keeps the same `.scene-canvas`, the host is not `.scene-hidden`, and your UI mounts into `.party-host`. The page also gets `is-home is-play` so there is no inner-page header/wordmark from my shell.
+- **Depth readout:** during a dive both the DEPTH and SCORE numbers now update every frame from the camera position (`onProgress`), so they count in step with the eased camera instead of jumping at the landing. No commit.
+
+### [2026-11-19 11:46] Sol → @Sonnet, @Orchestrator
+Consumed Sonnet’s party scene hook. Party-only CSS now also covers the new `.page.party-page` / `is-home is-play` shell: full-width page, no duplicate heading, menu and sound in the top corners (instead of the solo game’s HUD-offset controls). The fixture now uses those actual shell classes. This avoids a new phone overlap between the generic solo menu offset and the party room header. No changes outside my files; please use the current fixture for the rerun.
+
+---
+**[Orchestrator] 2026-11-19 11:55: USER REQUEST: the ☰ menu needs a way back home**
+@Sonnet: add a **HOME** option to the menu modal, styled minimally like the rest:
+- Put a full-width row **at the top of the link rows**, directly under the tile grid: icon `ico-daily` turned to face left, or a simple ⌂ drawn as a 16×16 sprite if Luna has one.
+  Title **HOME** with sub-line "back to the title screen" and a ← at the right. It goes to `#/` with the normal camera glide back to the title.
+- Also make the **"VERMILLION" eyebrow in the menu header a link to `#/`** (no underline; hover brightens it).
+- On the title screen itself the row still shows, with the 2-px pink "current" border, so the menu always looks the same.
+- Keyboard: it's the first focusable item after the search box in tab order. Close the menu on click.
+Then run `npm run audit:layout` (menu-open state) and post.
+
+### [2026-11-19] Sonnet → @Orchestrator: 11:55 HOME row + audit
+- **HOME row** under the tile grid (`ico-daily` flipped, "back to the title screen", ← at the right), first in tab order after the search box (DOM order, moved visually with flex `order`), closes the menu on click, 2-px pink "current" border on the title screen (together with the DAILY GAME tile). The **VERMILLION eyebrow** is now a no-underline link to `#/` that brightens on hover. Fixed a bug on the way: the "current" highlight was lost whenever the menu was rebuilt after the first route (packs load), it is now re-applied after every rebuild.
+- **Audit** (full run, menu-open state included): `3 issue(s)`, all at 844×390 `play-duel` (hint line and HINT button over the input by 6–12 px). I tightened the landscape card (20-px question, smaller padding, stage top 70 px) and re-measured daily/endless/duel at 844×390: card bottom 146/167/167 vs input top 313, no overlap. I did not re-run the whole audit after that last CSS fix. No commit.
+
+### [2026-11-19 11:41] Sol → @Orchestrator, @Sonnet, @Luna
+**DEPTH CHARGE code handoff is ready for the audit rerun.** `mountParty(host,deps)` returns `{ready,destroy}` (callers may ignore it); `unmountParty()` cleans subscriptions, intervals, animation frames, modal and motion observer. The shipped screens cover guest entry, saved profile/buddy unlocks, 5-second real-room refresh, all matchmaking sizes/rated modes, public/private hosting and four-letter joining, room invitations/host start/quick countdown, authoritative live turns/typing/used answers/hearts/meters, smooth charge passes and BOOM/out feedback, and rated results/replay. No answers, rooms, winners or ratings are invented in production.
+
+All seven 11:20 findings have been addressed, including a genuinely narrower rules eyebrow box (so the audit does not count padding as an overlap). Sonnet’s shared-scene hook is consumed; the fixture now matches its `party-page` / `is-home is-play` shell. Later polish preserves keyboard focus while rooms refresh, adds accessible player status, and respects live motion/sound setting changes.
+
+Local verification passes: `node tests/party-ui.test.mjs --unit` (DOM adapter only), `node tests/party.test.mjs`, `node tests/v3.test.mjs`, syntax and whitespace checks. **Still unverified here:** the full browser test, six-size layout audit and current screenshots, because this shell cannot bind the fixture server or launch Chrome. Please run the two commands from my 08:05 post against the current files. I left S16 unchecked until that validation passes; ready to fix any remaining report. No commit or deployment.
+
+### [2026-11-19 11:56] Sol → @Orchestrator
+**All seven 11:20 fixes are ready for your audit rerun.** Rechecked the current files against that post: local VT323 is loaded and awaited in the fixture; the phone wordmark is ≤46px; the idle charge occupies a grid gap/its own mobile row; room codes have 64px plus 12px spacing; long buddy labels wrap inside the keys; the dialog eyebrow’s actual box is 52px narrower; and the holder’s input + GO sit below the card/status and before the player ring. The fixture matches Sonnet’s current party shell.
+
+Added browser regression assertions for these exact failures across the existing six-size fixture run (font loaded, viewport bounds, sprite/description separation, room-code separation, buddy bounds, dialog separation, and holder input visibility/placement). These geometry assertions are ready to run in your browser environment; I have not claimed they passed locally. Local DOM-adapter, party data-layer, v3, syntax and whitespace checks pass.
+
+Rerun: `node tests/party-ui.test.mjs`; then serve with `node tests/party-ui.test.mjs --serve 8766` and run `npm run audit:layout -- http://127.0.0.1:8766/__party-fixture/ --shots /tmp/vermillion-party-audit`. S16 stays unchecked until the visual rerun passes. No commit.
+
+**[Orchestrator] 2026-11-19 12:05:** @Sol, I reran your fixture audit: **72 → 10, and all 10 are one cosmetic item.** `p.dc-eyebrow` in the rules dialog is a full-width block, so its box runs under the X button.
+The text doesn't actually touch it. Fix: give the dialog header `padding-right: 52px` (or `max-width: calc(100% - 52px)`) on the **eyebrow and the title** themselves, so their boxes stop before the button.
+Fonts, the phone layout, the sprite row and the holder input all look right now. I'm committing the party UI.

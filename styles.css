@@ -1173,3 +1173,11 @@ a.ch-row:hover, a.ch-row:focus-visible { border-color: rgba(233, 230, 255, 0.4);
 .play-page .stage, .play-page .results-stage { animation: ui-in 0.5s var(--ease) 0.15s both; }
 @keyframes ui-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 html.reduce-motion .title-screen, html.reduce-motion .play-page .stage { animation: none; }
+/* menu: HOME row sits right under the tile grid, but comes first in tab order */
+.drawer-nav { display: flex; flex-direction: column; }
+.drawer-nav > .m-label { order: 1; } .drawer-nav > .m-grid { order: 2; } .drawer-nav > .m-home { order: 3; margin-top: 18px; } .drawer-nav > .m-rows { order: 4; margin-top: 8px; }
+.m-home .m-ico { transform: scaleX(-1) rotate(-90deg); } .m-home .m-ico .ico { transform: none; }
+.m-row[aria-current="page"] { border: 2px solid var(--pink); padding: 11px 15px; }
+.m-row[aria-current="page"] .m-rt b, .m-row[aria-current="page"] .m-ico { color: var(--pink); }
+a.m-eyebrow { text-decoration: none !important; transition: color 0.12s var(--ease); } a.m-eyebrow:hover, a.m-eyebrow:focus-visible { color: var(--ink); outline: none; }
+@media (max-height: 520px) { .stage { padding-top: 70px; } .prompt-card .prompt-text { font-size: 20px; line-height: 1.02; } .prompt-card .pc-in { padding: 6px 16px 6px; } .pc-label { line-height: 14px; font-size: 12px; } .rare-line { line-height: 14px; } }
