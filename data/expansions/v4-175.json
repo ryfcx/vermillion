@@ -1,0 +1,1958 @@
+{
+ "promptId": "v4-175",
+ "text": "Name a dog breed.",
+ "model": "openai/gpt-oss-120b",
+ "at": "2026-11-19T18:21:09.381Z",
+ "existing": 48,
+ "added": [
+  {
+   "name": "Airedale Terrier",
+   "aliases": [
+    "Airedale"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "breed"
+  },
+  {
+   "name": "Alaskan Malamute",
+   "aliases": [],
+   "familiarity": 80,
+   "points": 25,
+   "note": "breed"
+  },
+  {
+   "name": "American Eskimo Dog",
+   "aliases": [
+    "Eskimo Dog"
+   ],
+   "familiarity": 55,
+   "points": 45,
+   "note": "breed"
+  },
+  {
+   "name": "American Foxhound",
+   "aliases": [],
+   "familiarity": 45,
+   "points": 55,
+   "note": "breed"
+  },
+  {
+   "name": "American Pit Bull Terrier",
+   "aliases": [
+    "Pit Bull"
+   ],
+   "familiarity": 85,
+   "points": 20,
+   "note": "breed"
+  },
+  {
+   "name": "American Staffordshire Terrier",
+   "aliases": [
+    "AmStaff"
+   ],
+   "familiarity": 75,
+   "points": 30,
+   "note": "breed"
+  },
+  {
+   "name": "American Water Spaniel",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "breed"
+  },
+  {
+   "name": "Anatolian Shepherd Dog",
+   "aliases": [
+    "Anatolian Shepherd"
+   ],
+   "familiarity": 40,
+   "points": 60,
+   "note": "breed"
+  },
+  {
+   "name": "Australian Cattle Dog",
+   "aliases": [
+    "Blue Heeler",
+    "Red Heeler"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "breed"
+  },
+  {
+   "name": "Australian Kelpie",
+   "aliases": [],
+   "familiarity": 35,
+   "points": 65,
+   "note": "breed"
+  },
+  {
+   "name": "Australian Shepherd",
+   "aliases": [],
+   "familiarity": 80,
+   "points": 25,
+   "note": "breed"
+  },
+  {
+   "name": "Australian Silky Terrier",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "breed"
+  },
+  {
+   "name": "Australian Terrier",
+   "aliases": [],
+   "familiarity": 45,
+   "points": 55,
+   "note": "breed"
+  },
+  {
+   "name": "Barbet",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "breed"
+  },
+  {
+   "name": "Basque Shepherd Dog",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "breed"
+  },
+  {
+   "name": "Basset Griffon Vendéen",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "breed"
+  },
+  {
+   "name": "Bearded Collie",
+   "aliases": [],
+   "familiarity": 40,
+   "points": 60,
+   "note": "breed"
+  },
+  {
+   "name": "Bedlington Terrier",
+   "aliases": [],
+   "familiarity": 35,
+   "points": 65,
+   "note": "breed"
+  },
+  {
+   "name": "Belgian Shepherd (Groenendael)",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "breed"
+  },
+  {
+   "name": "Belgian Shepherd (Laekenois)",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "breed"
+  },
+  {
+   "name": "Belgian Shepherd (Malinois)",
+   "aliases": [],
+   "familiarity": 55,
+   "points": 45,
+   "note": "breed"
+  },
+  {
+   "name": "Belgian Shepherd (Tervuren)",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "breed"
+  },
+  {
+   "name": "Berger Picard",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "breed"
+  },
+  {
+   "name": "Bernese Mountain Dog",
+   "aliases": [],
+   "familiarity": 80,
+   "points": 25,
+   "note": "breed"
+  },
+  {
+   "name": "Bichon Havanais",
+   "aliases": [
+    "Havanese"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "breed"
+  },
+  {
+   "name": "Black and Tan Coonhound",
+   "aliases": [],
+   "familiarity": 25,
+   "points": 75,
+   "note": "breed"
+  },
+  {
+   "name": "Black Russian Terrier",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "breed"
+  },
+  {
+   "name": "Blue Heeler",
+   "aliases": [
+    "Australian Cattle Dog"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "breed"
+  },
+  {
+   "name": "Bolognese",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "breed"
+  },
+  {
+   "name": "Border Terrier",
+   "aliases": [],
+   "familiarity": 55,
+   "points": 45,
+   "note": "breed"
+  },
+  {
+   "name": "Boston Terrier",
+   "aliases": [],
+   "familiarity": 85,
+   "points": 20,
+   "note": "breed"
+  },
+  {
+   "name": "Bouvier des Ardennes",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "breed"
+  },
+  {
+   "name": "Brittany",
+   "aliases": [
+    "Brittany Spaniel"
+   ],
+   "familiarity": 65,
+   "points": 35,
+   "note": "breed"
+  },
+  {
+   "name": "Brussels Griffon",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "breed"
+  },
+  {
+   "name": "Cairn Terrier",
+   "aliases": [],
+   "familiarity": 60,
+   "points": 40,
+   "note": "breed"
+  },
+  {
+   "name": "Canaan Dog",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "breed"
+  },
+  {
+   "name": "Catahoula Leopard Dog",
+   "aliases": [],
+   "familiarity": 25,
+   "points": 75,
+   "note": "breed"
+  },
+  {
+   "name": "Cavalier King Charles Spaniel",
+   "aliases": [
+    "Cavalier"
+   ],
+   "familiarity": 85,
+   "points": 20,
+   "note": "breed"
+  },
+  {
+   "name": "Cesky Fousek",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "breed"
+  },
+  {
+   "name": "Cesky Terrier",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "breed"
+  },
+  {
+   "name": "Chinese Crested",
+   "aliases": [
+    "Chinese Crested Dog"
+   ],
+   "familiarity": 45,
+   "points": 55,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Shar‑Pei",
+   "aliases": [
+    "Chinese Shar‑Pei"
+   ],
+   "familiarity": 55,
+   "points": 45,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Chinook",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Chow Chow",
+   "aliases": [],
+   "familiarity": 70,
+   "points": 30,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Clumber Spaniel",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Cocker Spaniel",
+   "aliases": [
+    "American Cocker Spaniel",
+    "English Cocker Spaniel"
+   ],
+   "familiarity": 80,
+   "points": 25,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Collie",
+   "aliases": [
+    "Rough Collie",
+    "Smooth Collie"
+   ],
+   "familiarity": 65,
+   "points": 35,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Coton de Tuléar",
+   "aliases": [
+    "Cotton de Tuléar"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Curly‑Coated Retriever",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Dandie Dinmont Terrier",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "German Shepherd Dog",
+   "aliases": [
+    "Deutscher Schäferhund",
+    "German Shepherd"
+   ],
+   "familiarity": 95,
+   "points": 10,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Doberman Pinscher",
+   "aliases": [
+    "Doberman"
+   ],
+   "familiarity": 85,
+   "points": 20,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Dogo Argentino",
+   "aliases": [],
+   "familiarity": 25,
+   "points": 75,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Dogo Canario",
+   "aliases": [
+    "Presa Canario"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Dogue de Bordeaux",
+   "aliases": [
+    "French Mastiff"
+   ],
+   "familiarity": 18,
+   "points": 80,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Dutch Shepherd",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "English Cocker Spaniel",
+   "aliases": [],
+   "familiarity": 60,
+   "points": 40,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "English Foxhound",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "English Toy Spaniel",
+   "aliases": [
+    "King Charles Spaniel"
+   ],
+   "familiarity": 40,
+   "points": 60,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Entlebucher Mountain Dog",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Estrela Mountain Dog",
+   "aliases": [],
+   "familiarity": 8,
+   "points": 90,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Field Spaniel",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Finnish Hound",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Finnish Lapphund",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Finnish Spitz",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Flat‑Coated Retriever",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "French Bulldog",
+   "aliases": [],
+   "familiarity": 90,
+   "points": 15,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "German Shorthaired Pointer",
+   "aliases": [],
+   "familiarity": 55,
+   "points": 45,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "German Wirehaired Pointer",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Glen of Imaal Terrier",
+   "aliases": [],
+   "familiarity": 8,
+   "points": 90,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Goldendoodle",
+   "aliases": [
+    "Golden Doodle"
+   ],
+   "familiarity": 80,
+   "points": 25,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Grand Bleu de Gascogne",
+   "aliases": [],
+   "familiarity": 4,
+   "points": 90,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Great Pyrenees",
+   "aliases": [
+    "Pyrenean Mountain Dog"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Greyhound",
+   "aliases": [],
+   "familiarity": 75,
+   "points": 30,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Harrier",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Hokkaido",
+   "aliases": [
+    "Japanese Hokkaido"
+   ],
+   "familiarity": 5,
+   "points": 90,
+   "note": "Recognized breed"
+  },
+  {
+   "name": "Ibizan Hound",
+   "aliases": [
+    "Ibizan Hound (Podenco Ibicenco)",
+    "Podenco Ibicenco"
+   ],
+   "familiarity": 45,
+   "points": 55,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Icelandic Sheepdog",
+   "aliases": [
+    "Icelandic Sheep Dog"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Irish Red and White Setter",
+   "aliases": [
+    "Red and White Setter"
+   ],
+   "familiarity": 35,
+   "points": 65,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Irish Terrier",
+   "aliases": [],
+   "familiarity": 55,
+   "points": 45,
+   "note": "well‑known breed"
+  },
+  {
+   "name": "Irish Water Spaniel",
+   "aliases": [],
+   "familiarity": 40,
+   "points": 60,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Italian Greyhound",
+   "aliases": [
+    "Italian Greyhound (Piccolo Levriero Italiano)"
+   ],
+   "familiarity": 60,
+   "points": 40,
+   "note": "common small breed"
+  },
+  {
+   "name": "Jack Russell Terrier",
+   "aliases": [
+    "Jack Russell"
+   ],
+   "familiarity": 80,
+   "points": 25,
+   "note": "very popular"
+  },
+  {
+   "name": "Japanese Chin",
+   "aliases": [
+    "Japanese Spaniel"
+   ],
+   "familiarity": 45,
+   "points": 55,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Japanese Spitz",
+   "aliases": [],
+   "familiarity": 40,
+   "points": 60,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Jindo",
+   "aliases": [
+    "Korean Jindo",
+    "Jindo Dog"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Kai Ken",
+   "aliases": [
+    "Kai Ken Dog"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "obscure breed"
+  },
+  {
+   "name": "Karelian Bear Dog",
+   "aliases": [
+    "Karelian Bearhound"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "obscure breed"
+  },
+  {
+   "name": "Kerry Blue Terrier",
+   "aliases": [],
+   "familiarity": 35,
+   "points": 65,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Kishu",
+   "aliases": [
+    "Kishu Ken",
+    "Kishu Dog"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "obscure breed"
+  },
+  {
+   "name": "Kooikerhondje",
+   "aliases": [
+    "Dutch Kooiker"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "obscure breed"
+  },
+  {
+   "name": "Kromfohrlander",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "very rare breed"
+  },
+  {
+   "name": "Labradoodle",
+   "aliases": [],
+   "familiarity": 70,
+   "points": 30,
+   "note": "popular hybrid"
+  },
+  {
+   "name": "Lagotto Romagnolo",
+   "aliases": [
+    "Lagotto"
+   ],
+   "familiarity": 25,
+   "points": 75,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Lakeland Terrier",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "obscure breed"
+  },
+  {
+   "name": "Lancashire Heeler",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "very rare breed"
+  },
+  {
+   "name": "Lowchen",
+   "aliases": [
+    "Little Lion Dog"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Manchester Terrier",
+   "aliases": [],
+   "familiarity": 40,
+   "points": 60,
+   "note": "well‑known breed"
+  },
+  {
+   "name": "Maremma Sheepdog",
+   "aliases": [
+    "Maremma"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Mastiff",
+   "aliases": [],
+   "familiarity": 65,
+   "points": 35,
+   "note": "well‑known large breed"
+  },
+  {
+   "name": "Miniature American Shepherd",
+   "aliases": [
+    "Mini American Shepherd"
+   ],
+   "familiarity": 35,
+   "points": 65,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Miniature Bull Terrier",
+   "aliases": [
+    "Mini Bull Terrier"
+   ],
+   "familiarity": 45,
+   "points": 55,
+   "note": "popular small breed"
+  },
+  {
+   "name": "Miniature Pinscher",
+   "aliases": [
+    "Min Pin"
+   ],
+   "familiarity": 55,
+   "points": 45,
+   "note": "well‑known small breed"
+  },
+  {
+   "name": "Miniature Schnauzer",
+   "aliases": [
+    "Mini Schnauzer"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "very popular"
+  },
+  {
+   "name": "Mudi",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "obscure breed"
+  },
+  {
+   "name": "Neapolitan Mastiff",
+   "aliases": [],
+   "familiarity": 40,
+   "points": 60,
+   "note": "recognized large breed"
+  },
+  {
+   "name": "Norfolk Terrier",
+   "aliases": [],
+   "familiarity": 55,
+   "points": 45,
+   "note": "well‑known terrier"
+  },
+  {
+   "name": "Norwegian Buhund",
+   "aliases": [],
+   "familiarity": 25,
+   "points": 75,
+   "note": "recognized breed"
+  },
+  {
+   "name": "Norwegian Elkhound",
+   "aliases": [],
+   "familiarity": 45,
+   "points": 55,
+   "note": "well‑known hunting breed"
+  },
+  {
+   "name": "Norwegian Lundehund",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "obscure breed"
+  },
+  {
+   "name": "Norwich Terrier",
+   "aliases": [],
+   "familiarity": 50,
+   "points": 50,
+   "note": "popular terrier"
+  },
+  {
+   "name": "Nova Scotia Duck Tolling Retriever",
+   "aliases": [
+    "Toller"
+   ],
+   "familiarity": 55,
+   "points": 45,
+   "note": "well‑known retriever"
+  },
+  {
+   "name": "Old English Sheepdog",
+   "aliases": [
+    "Bobtail"
+   ],
+   "familiarity": 60,
+   "points": 40,
+   "note": "popular breed"
+  },
+  {
+   "name": "Otterhound",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "rare hunting breed"
+  },
+  {
+   "name": "Parson Russell Terrier",
+   "aliases": [
+    "Parson Russell"
+   ],
+   "familiarity": 45,
+   "points": 55,
+   "note": "well‑known terrier"
+  },
+  {
+   "name": "Patterdale Terrier",
+   "aliases": [],
+   "familiarity": 25,
+   "points": 75,
+   "note": "obscure terrier"
+  },
+  {
+   "name": "Peruvian Hairless Dog",
+   "aliases": [
+    "Peruvian Inca Orchid",
+    "Chinito",
+    "Inca Orchid"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "valid breed"
+  },
+  {
+   "name": "Petit Basset Griffon Vendéen",
+   "aliases": [
+    "PBGV",
+    "Petit Basset Griffon"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "valid breed"
+  },
+  {
+   "name": "Pharaoh Hound",
+   "aliases": [
+    "Pharaon Hound",
+    "Maltese Hound"
+   ],
+   "familiarity": 45,
+   "points": 55,
+   "note": "valid breed"
+  },
+  {
+   "name": "Plott Hound",
+   "aliases": [
+    "Plott"
+   ],
+   "familiarity": 35,
+   "points": 65,
+   "note": "valid breed"
+  },
+  {
+   "name": "Polish Lowland Sheepdog",
+   "aliases": [
+    "Polish Ovtcharka",
+    "Polish Sheepdog"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "valid breed"
+  },
+  {
+   "name": "Polish Tatra Sheepdog",
+   "aliases": [
+    "Tatra Shepherd"
+   ],
+   "familiarity": 10,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Pomeranian",
+   "aliases": [
+    "Pom"
+   ],
+   "familiarity": 80,
+   "points": 25,
+   "note": "valid breed"
+  },
+  {
+   "name": "Portuguese Podengo Pequeno",
+   "aliases": [
+    "Podengo Pequeno",
+    "Portuguese Podengo Small"
+   ],
+   "familiarity": 12,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Portuguese Water Dog",
+   "aliases": [
+    "PWD",
+    "Portuguese Waterdog"
+   ],
+   "familiarity": 40,
+   "points": 60,
+   "note": "valid breed"
+  },
+  {
+   "name": "Presa Canario",
+   "aliases": [
+    "Canary Mastiff"
+   ],
+   "familiarity": 18,
+   "points": 80,
+   "note": "valid breed"
+  },
+  {
+   "name": "Pumi",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Pyrenean Shepherd",
+   "aliases": [
+    "Barbet"
+   ],
+   "familiarity": 25,
+   "points": 75,
+   "note": "valid breed"
+  },
+  {
+   "name": "Rat Terrier",
+   "aliases": [
+    "American Rat Terrier"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "valid breed"
+  },
+  {
+   "name": "Redbone Coonhound",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "valid breed"
+  },
+  {
+   "name": "Rhodesian Ridgeback",
+   "aliases": [
+    "African Lion Dog"
+   ],
+   "familiarity": 55,
+   "points": 45,
+   "note": "valid breed"
+  },
+  {
+   "name": "Russell Terrier",
+   "aliases": [
+    "Jack Russell Terrier"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "valid breed"
+  },
+  {
+   "name": "Schnauzer",
+   "aliases": [
+    "Miniature Schnauzer",
+    "Standard Schnauzer",
+    "Giant Schnauzer"
+   ],
+   "familiarity": 65,
+   "points": 35,
+   "note": "valid breed"
+  },
+  {
+   "name": "Scottish Deerhound",
+   "aliases": [],
+   "familiarity": 35,
+   "points": 65,
+   "note": "valid breed"
+  },
+  {
+   "name": "Scottish Terrier",
+   "aliases": [
+    "Scottie"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "valid breed"
+  },
+  {
+   "name": "Sealyham Terrier",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "valid breed"
+  },
+  {
+   "name": "Serbian Hound",
+   "aliases": [
+    "Serbian Scent Hound"
+   ],
+   "familiarity": 8,
+   "points": 90,
+   "note": "valid breed"
+  },
+  {
+   "name": "Shetland Sheepdog",
+   "aliases": [
+    "Sheltie"
+   ],
+   "familiarity": 75,
+   "points": 30,
+   "note": "valid breed"
+  },
+  {
+   "name": "Silky Terrier",
+   "aliases": [
+    "Australian Silky Terrier"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "valid breed"
+  },
+  {
+   "name": "Skye Terrier",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Sloughi",
+   "aliases": [
+    "Arabian Greyhound"
+   ],
+   "familiarity": 10,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Small Münsterländer",
+   "aliases": [],
+   "familiarity": 8,
+   "points": 90,
+   "note": "valid breed"
+  },
+  {
+   "name": "Soft-Coated Wheaten Terrier",
+   "aliases": [
+    "Wheaten Terrier"
+   ],
+   "familiarity": 25,
+   "points": 75,
+   "note": "valid breed"
+  },
+  {
+   "name": "Spanish Water Dog",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Spinone Italiano",
+   "aliases": [
+    "Italian Spinone"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "valid breed"
+  },
+  {
+   "name": "St. Bernard",
+   "aliases": [
+    "Saint Bernard"
+   ],
+   "familiarity": 85,
+   "points": 20,
+   "note": "valid breed"
+  },
+  {
+   "name": "Standard Schnauzer",
+   "aliases": [],
+   "familiarity": 55,
+   "points": 45,
+   "note": "valid breed"
+  },
+  {
+   "name": "Swedish Lapphund",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Swedish Vallhund",
+   "aliases": [
+    "Vallhund"
+   ],
+   "familiarity": 12,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Thai Ridgeback",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "valid breed"
+  },
+  {
+   "name": "Tibetan Mastiff",
+   "aliases": [],
+   "familiarity": 45,
+   "points": 55,
+   "note": "valid breed"
+  },
+  {
+   "name": "Tibetan Spaniel",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "valid breed"
+  },
+  {
+   "name": "Tibetan Terrier",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "valid breed"
+  },
+  {
+   "name": "Toy Fox Terrier",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "valid breed"
+  },
+  {
+   "name": "Treeing Walker Coonhound",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "valid breed"
+  },
+  {
+   "name": "Cardigan Welsh Corgi",
+   "aliases": [
+    "Welsh Corgi (Cardigan)",
+    "Cardigan Corgi"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "valid breed"
+  },
+  {
+   "name": "Pembroke Welsh Corgi",
+   "aliases": [
+    "Welsh corgi pembroke",
+    "Pembroke Corgi",
+    "Welsh corgi (pembroke)"
+   ],
+   "familiarity": 85,
+   "points": 20,
+   "note": "well‑known breed"
+  },
+  {
+   "name": "Welsh Springer Spaniel",
+   "aliases": [
+    "Welsh springer",
+    "Springer Spaniel (Welsh)"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Welsh Terrier",
+   "aliases": [],
+   "familiarity": 25,
+   "points": 75,
+   "note": "recognised breed"
+  },
+  {
+   "name": "West Highland White Terrier",
+   "aliases": [
+    "Westie"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "common breed"
+  },
+  {
+   "name": "White Swiss Shepherd Dog",
+   "aliases": [
+    "White Swiss Shepherd",
+    "Weissschafhund"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Wire Fox Terrier",
+   "aliases": [],
+   "familiarity": 55,
+   "points": 45,
+   "note": "well known"
+  },
+  {
+   "name": "Wire‑Haired Pointing Griffon",
+   "aliases": [
+    "Wirehaired Pointing Griffon",
+    "Pointing Griffon"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Xoloitzcuintli",
+   "aliases": [
+    "Xolo",
+    "Mexican Hairless Dog"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "official breed"
+  },
+  {
+   "name": "Yorkshire Terrier",
+   "aliases": [
+    "Yorkie"
+   ],
+   "familiarity": 90,
+   "points": 15,
+   "note": "very common"
+  },
+  {
+   "name": "Affenpinscher",
+   "aliases": [],
+   "familiarity": 15,
+   "points": 80,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Afghan Hound",
+   "aliases": [],
+   "familiarity": 60,
+   "points": 40,
+   "note": "well known"
+  },
+  {
+   "name": "Alaskan Husky",
+   "aliases": [],
+   "familiarity": 35,
+   "points": 65,
+   "note": "type of sled dog"
+  },
+  {
+   "name": "Alpine Dachsbracke",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "rare breed"
+  },
+  {
+   "name": "American Bulldog",
+   "aliases": [],
+   "familiarity": 45,
+   "points": 55,
+   "note": "recognised breed"
+  },
+  {
+   "name": "American English Coonhound",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "recognised breed"
+  },
+  {
+   "name": "American Hairless Terrier",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "recognised breed"
+  },
+  {
+   "name": "American Leopard Hound",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "rare breed"
+  },
+  {
+   "name": "American Mastiff",
+   "aliases": [],
+   "familiarity": 30,
+   "points": 70,
+   "note": "recognised breed"
+  },
+  {
+   "name": "American Toy Terrier",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "rare breed"
+  },
+  {
+   "name": "Anglo‑Français de Petite Vénerie",
+   "aliases": [],
+   "familiarity": 2,
+   "points": 95,
+   "note": "rare French breed"
+  },
+  {
+   "name": "Appenzeller Sennenhund",
+   "aliases": [
+    "Appenzeller"
+   ],
+   "familiarity": 5,
+   "points": 90,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Ariegeois",
+   "aliases": [],
+   "familiarity": 2,
+   "points": 95,
+   "note": "rare Swiss breed"
+  },
+  {
+   "name": "Basset Artésien Normand",
+   "aliases": [
+    "Norman French Basset"
+   ],
+   "familiarity": 5,
+   "points": 90,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Bavarian Mountain Hound",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Beagle Harrier",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Bergamasco Shepherd",
+   "aliases": [
+    "Bergamasco"
+   ],
+   "familiarity": 5,
+   "points": 90,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Berner Sennenhund",
+   "aliases": [
+    "Bernese Mountain Dog"
+   ],
+   "familiarity": 70,
+   "points": 30,
+   "note": "common breed"
+  },
+  {
+   "name": "Bichon Bolognese",
+   "aliases": [
+    "Bolognese"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Black Norwegian Elkhound",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "rare colour variant"
+  },
+  {
+   "name": "Blackmouth Cur",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Brittany Spaniel",
+   "aliases": [
+    "Brittany"
+   ],
+   "familiarity": 55,
+   "points": 45,
+   "note": "well known"
+  },
+  {
+   "name": "Carolina Dog",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Caucasian Shepherd Dog",
+   "aliases": [
+    "Caucasian Shepherd"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Chinese Imperial Dog",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "rare breed"
+  },
+  {
+   "name": "Croatian Sheepdog",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Deutscher Wachtelhund",
+   "aliases": [
+    "German Spaniel"
+   ],
+   "familiarity": 5,
+   "points": 90,
+   "note": "recognised breed"
+  },
+  {
+   "name": "Dogo de la Sierra",
+   "aliases": [
+    "Sierra Dogo",
+    "Spanish Mastiff"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "obscure Spanish breed"
+  },
+  {
+   "name": "Aidi",
+   "aliases": [
+    "Atlas Sheepdog",
+    "Berger des Atlas"
+   ],
+   "familiarity": 12,
+   "points": 85,
+   "note": "rare North African breed"
+  },
+  {
+   "name": "Alano",
+   "aliases": [
+    "Spanish Alano",
+    "Alano Español"
+   ],
+   "familiarity": 8,
+   "points": 90,
+   "note": "obscure Spanish mastiff type"
+  },
+  {
+   "name": "Alaskan Klee Kai",
+   "aliases": [],
+   "familiarity": 40,
+   "points": 60,
+   "note": "moderately known small Alaskan breed"
+  },
+  {
+   "name": "Alpine Mastiff",
+   "aliases": [
+    "Mastino Alpino"
+   ],
+   "familiarity": 5,
+   "points": 90,
+   "note": "very rare Italian breed"
+  },
+  {
+   "name": "American Staghound",
+   "aliases": [],
+   "familiarity": 7,
+   "points": 90,
+   "note": "regional hunting hound"
+  },
+  {
+   "name": "Australian Stumpy Tail Cattle Dog",
+   "aliases": [
+    "Stumpy Tail Cattle Dog",
+    "Cattle Dog"
+   ],
+   "familiarity": 20,
+   "points": 75,
+   "note": "known Australian breed"
+  },
+  {
+   "name": "Berger Blanc Suisse",
+   "aliases": [
+    "White Swiss Shepherd",
+    "White Swiss Shepherd Dog"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "Swiss breed similar to White Shepherd"
+  },
+  {
+   "name": "Berger des Pyrénées",
+   "aliases": [
+    "Pyrenean Shepherd"
+   ],
+   "familiarity": 45,
+   "points": 55,
+   "note": "well‑known French herding breed"
+  },
+  {
+   "name": "Briquet Griffon Vendéen",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "rare French scenthound"
+  },
+  {
+   "name": "Briquet Griffon Français",
+   "aliases": [],
+   "familiarity": 8,
+   "points": 90,
+   "note": "obscure French breed"
+  },
+  {
+   "name": "Briquet du Bourbonnais",
+   "aliases": [],
+   "familiarity": 6,
+   "points": 90,
+   "note": "rare French hound"
+  },
+  {
+   "name": "Briquet de la Vallée",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "obscure French breed"
+  },
+  {
+   "name": "Briquet du Périgord",
+   "aliases": [],
+   "familiarity": 5,
+   "points": 90,
+   "note": "rare French hound"
+  },
+  {
+   "name": "Faroese Sheepdog",
+   "aliases": [
+    "Føroyskur Hundur"
+   ],
+   "familiarity": 4,
+   "points": 90,
+   "note": "very rare Nordic breed"
+  },
+  {
+   "name": "Hovawart",
+   "aliases": [],
+   "familiarity": 12,
+   "points": 85,
+   "note": "German working dog"
+  },
+  {
+   "name": "Japanese Terrier",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "small Japanese breed"
+  },
+  {
+   "name": "Kangal",
+   "aliases": [
+    "Kangal Dog"
+   ],
+   "familiarity": 30,
+   "points": 70,
+   "note": "well‑known Turkish livestock guardian"
+  },
+  {
+   "name": "Norrbottenspets",
+   "aliases": [],
+   "familiarity": 6,
+   "points": 90,
+   "note": "Swedish spitz breed"
+  },
+  {
+   "name": "Olde English Bulldogge",
+   "aliases": [],
+   "familiarity": 20,
+   "points": 75,
+   "note": "modern recreation of bulldog"
+  },
+  {
+   "name": "Polish Hound",
+   "aliases": [
+    "Polski Hound",
+    "Ogar Polski"
+   ],
+   "familiarity": 8,
+   "points": 90,
+   "note": "Polish scent hound"
+  },
+  {
+   "name": "Portuguese Podengo Grande",
+   "aliases": [
+    "Podengo Grande"
+   ],
+   "familiarity": 12,
+   "points": 85,
+   "note": "large Portuguese hunting dog"
+  },
+  {
+   "name": "Ratonero Bodeguero Andaluz",
+   "aliases": [
+    "Bodeguero Andaluz"
+   ],
+   "familiarity": 9,
+   "points": 85,
+   "note": "Spanish rat‑catching breed"
+  },
+  {
+   "name": "Saarloos Wolfdog",
+   "aliases": [
+    "Wolfdog"
+   ],
+   "familiarity": 15,
+   "points": 80,
+   "note": "wolf‑type Dutch breed"
+  },
+  {
+   "name": "Schapendoes",
+   "aliases": [],
+   "familiarity": 7,
+   "points": 90,
+   "note": "Dutch herding spitz"
+  },
+  {
+   "name": "Shikoku",
+   "aliases": [],
+   "familiarity": 10,
+   "points": 85,
+   "note": "Japanese hunting breed"
+  },
+  {
+   "name": "Stabyhoun",
+   "aliases": [],
+   "familiarity": 8,
+   "points": 90,
+   "note": "rare Dutch breed"
+  },
+  {
+   "name": "Tosa Inu",
+   "aliases": [
+    "Tosa"
+   ],
+   "familiarity": 18,
+   "points": 80,
+   "note": "Japanese fighting dog"
+  },
+  {
+   "name": "Toy Manchester Terrier",
+   "aliases": [],
+   "familiarity": 25,
+   "points": 75,
+   "note": "small version of Manchester Terrier"
+  },
+  {
+   "name": "Treeing Tennessee Brindle",
+   "aliases": [
+    "Tennessee Brindle"
+   ],
+   "familiarity": 5,
+   "points": 90,
+   "note": "American treeing hound"
+  },
+  {
+   "name": "Utonagan",
+   "aliases": [],
+   "familiarity": 6,
+   "points": 90,
+   "note": "designer wolf‑type breed"
+  },
+  {
+   "name": "Västgötaspets",
+   "aliases": [],
+   "familiarity": 4,
+   "points": 90,
+   "note": "Swedish spitz"
+  },
+  {
+   "name": "Zuchon",
+   "aliases": [
+    "Shichon",
+    "Teddy Bear Chihuahua"
+   ],
+   "familiarity": 22,
+   "points": 75,
+   "note": "popular designer cross (Bichon Frise + Poodle)"
+  },
+  {
+   "name": "German Spitz",
+   "aliases": [],
+   "familiarity": 35,
+   "points": 65,
+   "note": "common German spitz variety"
+  },
+  {
+   "name": "Rough Collie",
+   "aliases": [
+    "Collie"
+   ],
+   "familiarity": 90,
+   "points": 15,
+   "note": "well‑known classic breed"
+  }
+ ],
+ "rejected": [
+  {
+   "candidate": "Chesapeake bay retriever",
+   "reason": "Not an established dog breed"
+  },
+  {
+   "candidate": "Danish-swedish farmdog",
+   "reason": "Not an official breed"
+  },
+  {
+   "candidate": "Hound",
+   "reason": "Too generic, not a specific breed"
+  },
+  {
+   "candidate": "Hungarian vizsla",
+   "reason": "Recognized breed"
+  },
+  {
+   "candidate": "Alapaha blue blood bulldog",
+   "reason": "not an established breed"
+  },
+  {
+   "candidate": "Balinese dog",
+   "reason": "not a recognized breed"
+  },
+  {
+   "candidate": "Barbado da terra",
+   "reason": "non‑existent name"
+  },
+  {
+   "candidate": "Bordet",
+   "reason": "no such breed"
+  },
+  {
+   "candidate": "Dogo de the Sierra",
+   "reason": "misspelled, not a recognized breed"
+  },
+  {
+   "candidate": "Briquet du Périg\\n\\n",
+   "reason": "contains newline/typo, not a proper breed name"
+  }
+ ],
+ "rarityFlags": [
+  {
+   "name": "Basenji",
+   "current": 35,
+   "suggested": 70,
+   "familiarity": 30
+  },
+  {
+   "name": "Borzoi",
+   "current": 35,
+   "suggested": 75,
+   "familiarity": 25
+  },
+  {
+   "name": "Saluki",
+   "current": 35,
+   "suggested": 75,
+   "familiarity": 20
+  },
+  {
+   "name": "Papillon",
+   "current": 35,
+   "suggested": 65,
+   "familiarity": 35
+  },
+  {
+   "name": "Gordon setter",
+   "current": 35,
+   "suggested": 70,
+   "familiarity": 30
+  },
+  {
+   "name": "Leonberger",
+   "current": 35,
+   "suggested": 75,
+   "familiarity": 25
+  },
+  {
+   "name": "Keeshond",
+   "current": 35,
+   "suggested": 70,
+   "familiarity": 28
+  },
+  {
+   "name": "Schipperke",
+   "current": 35,
+   "suggested": 75,
+   "familiarity": 22
+  },
+  {
+   "name": "Briard",
+   "current": 35,
+   "suggested": 80,
+   "familiarity": 15
+  },
+  {
+   "name": "Beauceron",
+   "current": 35,
+   "suggested": 85,
+   "familiarity": 12
+  },
+  {
+   "name": "Komondor",
+   "current": 35,
+   "suggested": 80,
+   "familiarity": 18
+  },
+  {
+   "name": "Puli",
+   "current": 35,
+   "suggested": 75,
+   "familiarity": 20
+  },
+  {
+   "name": "Kuvasz",
+   "current": 35,
+   "suggested": 85,
+   "familiarity": 10
+  },
+  {
+   "name": "Bouvier des Flandres",
+   "current": 35,
+   "suggested": 90,
+   "familiarity": 8
+  }
+ ]
+}

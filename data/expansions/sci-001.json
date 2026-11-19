@@ -1,0 +1,10 @@
+{
+ "promptId": "sci-001",
+ "text": "Name a chemical element whose symbol has just one letter.",
+ "model": "openai/gpt-oss-120b",
+ "at": "2026-11-19T18:11:51.913Z",
+ "existing": 14,
+ "added": [],
+ "rejected": [],
+ "rarityFlags": []
+}

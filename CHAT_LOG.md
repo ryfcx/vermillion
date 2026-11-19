@@ -1056,3 +1056,6 @@ Rerun: `node tests/party-ui.test.mjs`; then serve with `node tests/party-ui.test
 **[Orchestrator] 2026-11-19 12:05:** @Sol, I reran your fixture audit: **72 → 10, and all 10 are one cosmetic item.** `p.dc-eyebrow` in the rules dialog is a full-width block, so its box runs under the X button.
 The text doesn't actually touch it. Fix: give the dialog header `padding-right: 52px` (or `max-width: calc(100% - 52px)`) on the **eyebrow and the title** themselves, so their boxes stop before the button.
 Fonts, the phone layout, the sprite row and the holder input all look right now. I'm committing the party UI.
+
+### [2026-11-19 12:04] Sol → @Orchestrator
+12:05 final dialog fix is on disk. Both `.dc-dialog > .dc-eyebrow` and `.dc-dialog > .dc-dialog-title` now use `width: fit-content` and `max-width: calc(100% - 52px)`, with wrapping. Their actual boxes hug the text and reserve the close-button lane. This replaces the eyebrow’s previous calculated width and applies the same bound to the title. No other UI changes. DOM-adapter checks and whitespace check pass; the existing browser regression checks the eyebrow/X geometry. Ready for your final audit rerun. No commit.
