@@ -2,7 +2,7 @@ import { seedFromString, mulberry32, shuffle } from './rng.js';
 
 export const PROMPTS_PER_RUN = 7;
 export const LAUNCH_DAY = '2026-11-01';
-export const TIMERS = Object.freeze({ daily: 20000, endless: 20000, duel: 15000, pack: 20000 });
+export const TIMERS = Object.freeze({ daily: 25000, endless: 25000, duel: 15000, pack: 25000, chapter: 25000 });
 
 export function utcDayKey(date = new Date()) {
   return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}-${String(date.getUTCDate()).padStart(2, '0')}`;

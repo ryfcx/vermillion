@@ -1,6 +1,7 @@
 // Vermillion v2 — wiring: routes, run lifecycle, timer loop, settings, ?duel= handling.
 import { loadBank, getPrompt, loadPacks, promptsForPack } from './content.js';
 import { matchAnswer } from './matcher.js';
+import { scoreAnswer } from './score.js';
 import * as modes from './modes.js';
 import * as storage from './storage.js';
 import { shareRun } from './share.js';
@@ -9,6 +10,7 @@ import { createGame } from './game.js';
 import { createUI } from './ui.js';
 import { loadAssets, assets, displayKindFor } from './displays.js';
 import { createRouter, href } from './router.js';
+import { ONLINE } from './config.js';
 
 const root = document.getElementById('root');
 const safe = (fn, fallback) => { try { const v = fn(); return v === undefined ? fallback : v; } catch { return fallback; } };
@@ -109,9 +111,47 @@ function duelLink(r) {
   } catch { return null; }
 }
 
+
+/* ------------------------------------------------------------------ online glue (CONTRACT §8)
+   online.js / rooms.js / score.js belong to other lanes. They are loaded lazily and every call fails soft,
+   so the solo game never depends on them. */
+const OFFLINE_ERR = { ok: false, error: 'Online play isn’t available right now.' };
+let onlineMod = null, roomsMod = null, scoreMod = null;
+let acct = { user: null, profile: null };
+async function loadOnlineModules() {
+  if (!ONLINE.enabled) return;
+  try { onlineMod = await import('./online.js'); } catch { onlineMod = null; }
+  try { roomsMod = await import('./rooms.js'); } catch { roomsMod = null; }
+  try { scoreMod = await import('./score.js'); } catch { scoreMod = null; }
+}
+const onlineAvailable = () => !!(ONLINE.enabled && onlineMod && safe(() => onlineMod.available(), false) === true);
+async function onl(fn, ...args) {
+  try { if (!onlineMod || typeof onlineMod[fn] !== 'function') return OFFLINE_ERR; return (await onlineMod[fn](...args)) || OFFLINE_ERR; }
+  catch (err) { return { ok: false, error: String(err?.message || 'Something went wrong.') }; }
+}
+async function rm(fn, ...args) {
+  try { if (!roomsMod || typeof roomsMod[fn] !== 'function') return OFFLINE_ERR; return (await roomsMod[fn](...args)) || OFFLINE_ERR; }
+  catch (err) { return { ok: false, error: String(err?.message || 'Something went wrong.') }; }
+}
+const roomOf = (d) => { const r = Array.isArray(d) ? d[0] : d; return r && r.room && !r.code ? r.room : r || null; };
+const unwrapUser = (r) => (r && r.ok === false ? null : (r && r.ok === true && 'data' in r ? r.data : r)) || null;
+async function refreshAccount() {
+  if (!onlineMod) { acct = { user: null, profile: null }; return pushAccount(); }
+  let user = null, profile = null;
+  try { user = unwrapUser(await onlineMod.getUser()); } catch { user = null; }
+  if (user && !user.id) user = null;
+  if (user) { const pr = await onl('getProfile'); profile = pr.ok ? pr.data : null; }
+  acct = { user, profile };
+  pushAccount();
+}
+function pushAccount() { ui.setAccount({ enabled: ONLINE.enabled, available: onlineAvailable(), user: acct.user, profile: acct.profile }); }
+
 /* ------------------------------------------------------------------ routing */
 function onRoute(r) {
   stopTimer();
+  screenToken++;
+  if (r.name !== 'room') stopLive();
+  if (r.name !== 'party') unmountParty();
   ui.setRoute(r);
   if (!bank) return;
   try {
@@ -127,11 +167,38 @@ function onRoute(r) {
       case 'guide': return showGuide(r.slug);
       case 'faq': return ui.showFaq({ faq });
       case 'about': return ui.showAbout();
+      case 'account': return showAccount();
+      case 'leaderboard': return showLeaderboard();
+      case 'friends': return showFriends();
+      case 'online': return showOnlineHome();
+      case 'room': return showRoom(r.code);
+      case 'party': return showParty(r.code);
       default: return ui.showNotFound();
     }
   } catch (err) {
     console.error(err);
     ui.showError('Something went wrong drawing this page.', () => router.reload());
+  }
+}
+
+/* DEPTH CHARGE: Sol's UI (src/party-ui.js + styles-party.css) mounts into a blank page; Luna's src/party.js is the data layer. Fails soft. */
+let partyMod = null;
+function unmountParty() { try { partyMod?.unmountParty?.(); } catch { /* ignore */ } }
+async function showParty(code) {
+  if (offlineGate('Depth charge')) return;
+  const token = screenToken;
+  try {
+    const [ui2, party] = await Promise.all([import('./party-ui.js'), import('./party.js')]);
+    if (token !== screenToken) return;
+    partyMod = ui2;
+    const host = ui.showPartyHost();
+    ui2.mountParty(host, {
+      party, online: onlineMod, sprites: assets.sprites, sfx: assets.sfx, bank, settings, code: code || null,
+      navigate: (to) => router.go(typeof to === 'string' && to.startsWith('#') ? to : href.party(to)),
+    });
+  } catch (err) {
+    console.error(err);
+    ui.showError('Depth charge is not available yet.', () => router.reload());
   }
 }
 
@@ -145,6 +212,9 @@ function showHome() {
   const launch = Date.parse(`${modes.LAUNCH_DAY || '2026-11-01'}T00:00:00Z`);
   const days = Math.max(0, Math.floor((Date.parse(`${today()}T00:00:00Z`) - launch) / 86400000));
   const featured = packs.length ? packs[days % packs.length] : null;   // one pack per UTC day, same for everyone
+  const homeToken = screenToken;
+  // a real "N played today" count (leaderboard rows); shown only if the server answers, never invented
+  if (onlineAvailable()) onl('dailyBoard', { day: today(), scope: 'all', limit: 1000 }).then((r) => { if (r.ok && Array.isArray(r.data) && router?.current?.name === 'home' && homeToken === screenToken) ui.setPlayedToday(r.data.length); });
   ui.showHome({ stats: statsNow(), dailyDone: officialFor({ mode: 'daily', dayKey: today() }), dayKey: today(), packDone: packDoneMap(), guides, faq, featured, descent: days + 1 });
 }
 function showPacks() {
@@ -172,6 +242,234 @@ function showHistory() {
     runs, filter: historyFilter,
     onOpen: (i) => showSaved(runs[i]),
   });
+}
+
+
+/* ------------------------------------------------------------------ online screens: account, boards, friends */
+const offlineGate = (title) => {
+  if (!ONLINE.enabled || !onlineAvailable()) { ui.showOffline(title); return true; }
+  return false;
+};
+
+async function showAccount() {
+  if (offlineGate('Account')) return;
+  ui.showLoading('Loading your account');
+  await refreshAccount();
+  const token = ++screenToken;
+  let stats = null;
+  if (acct.user) { const r = await onl('getStats'); stats = r.ok ? r.data : null; }
+  if (token !== screenToken) return;
+  const rerender = async () => { await refreshAccount(); if (router?.current?.name === 'account') showAccount(); };
+  ui.showAccount({
+    user: acct.user, profile: acct.profile, stats,
+    actions: {
+      guest: async () => { const r = await onl('signInGuest'); if (r.ok) await rerender(); return r; },
+      email: (email) => onl('signInEmail', email),
+      upgrade: (email) => onl('upgradeGuest', email),
+      signOut: async () => { const r = await onl('signOut'); if (r.ok) { await rerender(); ui.toast('Signed out.'); } return r; },
+      save: async (patch) => { const r = await onl('updateProfile', patch); if (r.ok) { await refreshAccount(); } return r; },
+    },
+  });
+}
+
+let screenToken = 0;   // guards async screens against a newer navigation
+const lb = { tab: 'daily', scope: 'all' };
+async function showLeaderboard() {
+  if (offlineGate('Leaderboard')) return;
+  const token = ++screenToken;
+  const draw = (state, rows, extra = {}) => ui.showLeaderboard({
+    tab: lb.tab, scope: lb.scope, state, rows: rows || [], meId: acct.user?.id || null, day: today(),
+    signedIn: !!acct.user, error: extra.error,
+    onTab: (t) => { lb.tab = t; showLeaderboard(); },
+    onScope: (sc) => { lb.scope = sc; showLeaderboard(); },
+  });
+  draw('loading');
+  if (!acct.user) await refreshAccount();
+  const r = lb.tab === 'daily'
+    ? await onl('dailyBoard', { day: today(), scope: lb.scope, limit: 500 })
+    : await onl('allTimeBoard', { scope: lb.scope, limit: 500 });
+  if (token !== screenToken) return;
+  if (!r.ok) return draw('error', [], { error: r.error });
+  draw('ok', Array.isArray(r.data) ? r.data : (r.data?.rows || []));
+}
+
+const otherIds = (d) => {
+  const fix = (p) => ({ ...p, id: p.user_id === acct.user?.id ? p.friend_id : p.user_id });
+  return { friends: (d.friends || []).map(fix), incoming: (d.incoming || []).map(fix), outgoing: (d.outgoing || []).map(fix) };
+};
+async function showFriends() {
+  if (offlineGate('Friends')) return;
+  const token = ++screenToken;
+  if (!acct.user) await refreshAccount();
+  if (token !== screenToken) return;
+  if (!acct.user) return ui.showFriends({ state: 'signedout' });
+  ui.showFriends({ state: 'loading' });
+  const [fr, board] = await Promise.all([onl('listFriends'), onl('dailyBoard', { day: today(), scope: 'friends', limit: 200 })]);
+  if (token !== screenToken) return;
+  if (!fr.ok) return ui.showFriends({ state: 'error', error: fr.error });
+  const todayBy = {};
+  for (const row of (Array.isArray(board.data) ? board.data : [])) todayBy[row.user_id] = row;
+  const redo = () => { if (router?.current?.name === 'friends') showFriends(); };
+  ui.showFriends({
+    state: 'ok', data: otherIds(fr.data || {}), todayBy,
+    actions: {
+      add: async (name) => { const r = await onl('requestFriend', name); if (r.ok) redo(); return r; },
+      accept: async (id) => { const r = await onl('acceptFriend', id); if (r.ok) redo(); return r; },
+      remove: async (id) => { const r = await onl('removeFriend', id); if (r.ok) redo(); return r; },
+    },
+  });
+}
+
+/* ------------------------------------------------------------------ play online: create, join, quick match */
+function showOnlineHome() {
+  if (offlineGate('Play online')) return;
+  const token = ++screenToken;
+  const go = async (promise) => {
+    const r = await promise;
+    if (token !== screenToken) return r;
+    const room = r.ok ? roomOf(r.data) : null;
+    if (room?.code) router.go(href.room(room.code));
+    return r.ok && !room?.code ? { ok: false, error: 'The game was made but we couldn’t open it. Try again.' } : (r.ok ? r : { ...r, error: plainRoomError(r.error) });
+  };
+  ui.showOnline({
+    packs, signedIn: !!acct.user,
+    actions: {
+      guest: async () => { const r = await onl('signInGuest'); if (r.ok) await refreshAccount(); return r; },
+      create: (packId) => go(rm('createRoom', { pack: packId || null, public: false })),
+      join: (code) => go(rm('joinRoom', String(code).trim().toUpperCase())),
+      quick: () => go(rm('quickMatch')),
+    },
+  });
+  // refresh once; re-render only if the sign-in state actually changed (otherwise this would loop forever while signed out)
+  if (!acct.user) refreshAccount().then(() => { if (acct.user && token === screenToken && router?.current?.name === 'online') showOnlineHome(); });
+}
+
+/* ------------------------------------------------------------------ live rooms */
+let live = null;
+const PENDING_ROOM = 'vermillion.pendingRoom';
+function stopLive() {
+  if (!live) return;
+  clearInterval(live.timer);
+  try { if (typeof live.unsub === 'function') live.unsub(); } catch { /* ignore */ }
+  live = null;
+  ui.stopLive();
+}
+function plainRoomError(msg) {
+  const m = String(msg || '').toLowerCase();
+  if (m.includes('no room')) return 'We couldn’t find a game with that code. Check the letters and try again.';
+  if (m.includes('already started')) return 'That game has already started. Ask the host to make a new one.';
+  if (m.includes('full')) return 'That game is full (8 players).';
+  return msg || 'Something went wrong. Try again.';
+}
+const inviteLink = (code) => `${location.origin}${location.pathname}${href.room(code)}`;
+const serverNow = () => safe(() => roomsMod.serverNow(), Date.now());
+
+async function showRoom(code) {
+  stopLive();
+  if (offlineGate('Live game')) return;
+  const token = ++screenToken;
+  if (!acct.user) await refreshAccount();
+  if (token !== screenToken) return;
+  if (!acct.user) {
+    return ui.showRoomSignIn({
+      code,
+      actions: {
+        guest: async () => { const r = await onl('signInGuest'); if (r.ok) { await refreshAccount(); if (token === screenToken) showRoom(code); } return r; },
+        email: async (email) => { safe(() => sessionStorage.setItem(PENDING_ROOM, code)); return onl('signInEmail', email); },
+      },
+    });
+  }
+  ui.showLoading(`Joining game ${code}`);
+  const jr = await rm('joinRoom', code);
+  if (token !== screenToken) return;
+  if (!jr.ok) return ui.showError(plainRoomError(jr.error), () => showRoom(code), 'Can’t join that game');
+  const room0 = roomOf(jr.data);
+  if (!room0?.id) return ui.showError('We couldn’t open that game. Try again.', () => showRoom(code), 'Can’t join that game');
+  const L = live = { id: room0.id, code, myId: acct.user.id, state: { room: room0, players: [], answers: [] }, unsub: null, timer: 0, advRound: 0, advAt: 0, finishSeen: null, answer: {}, fresh: room0.status === 'finished' };
+  const apply = (st) => { if (live !== L || !st) return; if (st.ok === false) { if (!L.warned) { L.warned = true; ui.toast(st.error || 'Live updates were interrupted.'); } return; } if (!st.room) return; L.warned = false; L.state = st; if (st.room.status === 'finished' && L.finishSeen == null && !L.fresh) L.finishSeen = serverNow(); drawLive(); };
+  const first = await rm('getRoomState', L.id);
+  if (live !== L) return;
+  if (first.ok) apply(first.data);
+  try { L.unsub = await roomsMod.subscribe(L.id, apply); } catch { /* the 1 s refresh below still advances the screen */ }
+  L.timer = setInterval(() => drawLive(), 100);
+  L.poll = setInterval(async () => { const r = await rm('getRoomState', L.id); if (r.ok) apply(r.data); }, 4000);   // safety net if realtime drops
+  const origStop = L.unsub;
+  L.unsub = () => { clearInterval(L.poll); if (typeof origStop === 'function') origStop(); };
+  drawLive();
+}
+
+function liveView() {
+  const L = live; if (!L) return null;
+  const { room, players = [], answers = [] } = L.state;
+  const now = serverNow();
+  const ids = Array.isArray(room.prompt_ids) ? room.prompt_ids : [];
+  const count = ids.length || modes.PROMPTS_PER_RUN;
+  const prompts = ids.map((id) => byId(id));
+  const active = players.filter((p) => !p.left_at);
+  const me = players.find((p) => p.user_id === L.myId) || null;
+  const host = room.host_id;
+  const base = {
+    room, code: room.code || L.code, players, active, me, myId: L.myId, hostId: host, isHost: host === L.myId, count,
+    pack: room.pack_id ? packById(room.pack_id) : null, link: inviteLink(room.code || L.code), now,
+  };
+  const rowsFor = (r) => players.map((p) => {
+    const a = answers.find((x) => x.user_id === p.user_id && x.round === r);
+    return { player: p, answer: a || null };
+  });
+  if (room.status === 'lobby') return { ...base, kind: 'lobby', actions: liveActions() };
+  const round = room.round || 1;
+  const start = room.round_started_at ? Date.parse(room.round_started_at) : now;
+  const timerMs = room.timer_ms || 25000;
+  const end = start + timerMs;
+  const mine = (r) => L.answer[r] || (answers.find((x) => x.user_id === L.myId && x.round === r) ? { input: answers.find((x) => x.user_id === L.myId && x.round === r).input, answerName: answers.find((x) => x.user_id === L.myId && x.round === r).answer_name } : null);
+  const revealOf = (r) => ({ round: r, prompt: prompts[r - 1] || null, rows: rowsFor(r) });
+  if (room.status === 'finished') {
+    if (L.finishSeen != null && now - L.finishSeen < 6000) return { ...base, kind: 'reveal', ...revealOf(round), nextInMs: 6000 - (now - L.finishSeen), last: true, actions: liveActions() };
+    return { ...base, kind: 'final', actions: liveActions() };
+  }
+  if (now < start) {
+    if (round <= 1) return { ...base, kind: 'countdown', secs: Math.max(1, Math.ceil((start - now) / 1000)), prompt: null, round: 1, actions: liveActions() };
+    return { ...base, kind: 'reveal', ...revealOf(round - 1), nextInMs: start - now, last: false, actions: liveActions() };
+  }
+  const answered = {};
+  for (const p of players) answered[p.user_id] = !!(p.answered === true || p.answered_round === round || answers.some((x) => x.user_id === p.user_id && x.round === round));
+  if (mine(round)) answered[L.myId] = true;
+  if (now >= end) {
+    if (L.advRound !== round || now - L.advAt > 2000) { L.advRound = round; L.advAt = now; rm('advance', L.id, round); }
+    return { ...base, kind: 'round', round, prompt: prompts[round - 1], remainingMs: 0, timerMs, answered, mine: mine(round), closed: true, actions: liveActions() };
+  }
+  return { ...base, kind: 'round', round, prompt: prompts[round - 1], remainingMs: end - now, timerMs, answered, mine: mine(round), closed: false, actions: liveActions() };
+}
+function drawLive() { if (!live) return; const v = liveView(); if (v) ui.renderLive(v); }
+
+function liveActions() {
+  const L = live;
+  return {
+    copyLink: () => copyText(inviteLink(L.state.room.code || L.code), 'Invite link copied. Send it to your friends!'),
+    start: async () => { const r = await rm('startRoom', L.id); if (!r.ok) ui.toast(plainRoomError(r.error)); return r; },
+    leave: async () => { const id = L.id; stopLive(); await rm('leaveRoom', id); router.go(href.online()); },
+    home: async () => { const id = L.id; stopLive(); await rm('leaveRoom', id); router.go(href.home()); },
+    submit: async (text) => {
+      const round = L.state.room.round || 1;
+      if (L.answer[round]) return { ok: true };
+      L.answer[round] = { input: text, pending: true };
+      drawLive();
+      const r = await rm('answer', L.id, round, text);
+      if (r.ok) { L.answer[round] = { input: text, answerName: r.data?.answerName || null, tier: r.data?.tier || null, basePoints: r.data?.basePoints ?? null }; }
+      else if (/already|duplicate|409/i.test(String(r.error))) L.answer[round] = { input: text, answerName: null };
+      else delete L.answer[round];
+      drawLive();
+      return r;
+    },
+    again: async () => {
+      const packId = L.state.room.pack_id || null;
+      const r = await rm('createRoom', { pack: packId, public: false });
+      const room = r.ok ? roomOf(r.data) : null;
+      if (!room?.code) return ui.toast(plainRoomError(r.error));
+      await copyText(inviteLink(room.code), 'New game made. Invite link copied: send it to the same group.');
+      router.go(href.room(room.code));
+    },
+  };
 }
 
 /* ------------------------------------------------------------------ runs */
@@ -229,9 +527,9 @@ function startRun(r) {
     return ui.showError('Not enough questions to start a game yet.', () => router.go(href.home()), 'Not enough questions');
   }
 
-  const limit = modes.TIMERS?.[mode] ?? (mode === 'duel' ? 15000 : 20000);
+  const limit = modes.TIMERS?.[mode] ?? (mode === 'duel' ? 15000 : 25000);
   const game = createGame({
-    prompts, mode, packId: packId || null, timeLimitMs: limit, match: matchAnswer,
+    prompts, mode, packId: packId || null, timeLimitMs: limit, match: matchAnswer, score: scoreAnswer,
     dayKey: mode === 'daily' || mode === 'pack' ? dayKey : null, practice, official,
   });
   const meta = metaFor({ mode, packId, dayKey, practice, official, archive, rival: !!theirs });
@@ -332,13 +630,43 @@ function finish(finishedRun) {
   } else if (finishedRun.mode === 'duel') {
     view.link = duelLink(finishedRun);
   }
+  view.rankSlot = rankSlotFor(finishedRun);
   ui.showRun(view);
+  if (view.rankSlot) afterFinishOnline(finishedRun);
 }
 const slimAnswer = (a) => ({ promptId: a.promptId, input: a.input || '', answerName: a.answerName, points: a.points });
 
 function showSaved(r) {
   if (!r) return ui.showNotFound();
-  ui.showRun(buildView(r, { replay: true, canReplay: r.mode !== 'duel' || true }));
+  const view = buildView(r, { replay: true, canReplay: r.mode !== 'duel' || true });
+  view.rankSlot = rankSlotFor(r);
+  ui.showRun(view);
+  if (view.rankSlot) showRank(r);
+}
+
+/* ---- solo results: send the run to the server, then show "Your rank today" ---- */
+const rankable = (r) => !!(r && r.mode === 'daily' && r.official && !r.practice && r.dayKey);
+function rankSlotFor(r) {
+  if (!ONLINE.enabled || !rankable(r)) return null;
+  if (!onlineAvailable()) return 'offline';
+  return acct.user ? 'loading' : 'signedout';
+}
+async function afterFinishOnline(r) {
+  if (!acct.user || !onlineAvailable() || r.practice) return;
+  const res = await onl('submitRun', r);
+  if (!res.ok && /already/i.test(String(res.error))) { /* already on the board from another device: fine */ }
+  if (rankable(r)) showRank(r, res);
+}
+async function showRank(r, submitRes) {
+  if (!acct.user) { await refreshAccount(); if (!acct.user) return ui.setRank({ kind: 'signedout' }); }
+  const board = await onl('dailyBoard', { day: r.dayKey, scope: 'all', limit: 1000 });
+  const rows = board.ok ? (Array.isArray(board.data) ? board.data : (board.data?.rows || [])) : [];
+  const mine = rows.find((x) => x.user_id === acct.user.id);
+  if (mine) return ui.setRank({ kind: 'ok', rank: mine.rank, of: rows.length >= 1000 ? `${rows.length}+` : rows.length });
+  const sr = submitRes?.data?.rank;
+  if (sr && typeof sr === 'object' && sr.rank) return ui.setRank({ kind: 'ok', rank: sr.rank, of: sr.of ?? sr.total ?? null });
+  if (typeof sr === 'number') return ui.setRank({ kind: 'ok', rank: sr, of: rows.length || null });
+  ui.setRank({ kind: board.ok ? 'queued' : 'offline' });
 }
 
 function playAgain() {
@@ -381,6 +709,14 @@ async function boot() {
   [guides, faq] = await Promise.all([loadJson('./data/guides.json', 'guides'), loadJson('./data/faq.json', 'faq')]);
   ui.setContent({ guides, faq });
 
+  await loadOnlineModules();
+  if (onlineMod) {
+    await refreshAccount();
+    safe(() => onlineMod.onAuth(async () => { await refreshAccount(); const n = router?.current?.name; if (n === 'account') showAccount(); }));
+  } else pushAccount();
+  const syncNet = () => { pushAccount(); const n = router?.current?.name; if (['account', 'leaderboard', 'friends', 'online', 'room'].includes(n || '')) router.reload(); };
+  window.addEventListener('online', syncNet); window.addEventListener('offline', syncNet);
+
   const token = new URLSearchParams(location.search).get('duel');
   router = createRouter(onRoute);
   if (token) {
@@ -391,6 +727,8 @@ async function boot() {
       return ui.showError('This duel link is broken. Ask your rival to send it again, or play a normal game.', () => router.go(href.home()), 'Duel link broken');
     }
   }
+  const pending = acct.user ? safe(() => sessionStorage.getItem(PENDING_ROOM), null) : null;
+  if (pending) { safe(() => sessionStorage.removeItem(PENDING_ROOM)); history.replaceState(null, '', href.room(pending)); }
   router.start();
 }
 

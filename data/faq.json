@@ -14,7 +14,7 @@
     },
     {
       "q": "How long is each question?",
-      "a": "Daily Game, Endless and topic games give you 20 seconds per question. Duel gives you 15 seconds. The clock keeps going if you hide the page."
+      "a": "Daily Game, Endless and topic games give you 25 seconds per question. Duel gives you 15 seconds. The clock keeps going if you hide the page."
     },
     {
       "q": "What is the Daily Game?",
@@ -62,7 +62,7 @@
     },
     {
       "q": "What is Vermi?",
-      "a": "Vermi is the game’s original glowing jellyfish mascot. Vermi moves and changes expression during play."
+      "a": "Vermi is the game’s original vermilion fish mascot. Vermi swims, dives and changes expression during play."
     }
   ]
 }

@@ -69,7 +69,7 @@
       const dailyB = modes.getDailyPrompts(bank, '2026-11-17');
       assert(dailyA.length === 7 && dailyA.map(p => p.id).join() === dailyB.map(p => p.id).join(), 'daily is not repeatable');
       assert(new Set(dailyA.map(p => p.category)).size === 7, 'daily lacks category variety');
-      assert(modes.LAUNCH_DAY === '2026-11-01' && modes.TIMERS.duel === 15000, 'v2 constants mismatch');
+      assert(modes.LAUNCH_DAY === '2026-11-01' && modes.TIMERS.daily === 25000 && modes.TIMERS.endless === 25000 && modes.TIMERS.pack === 25000 && modes.TIMERS.chapter === 25000 && modes.TIMERS.duel === 15000, 'v4 timer constants mismatch');
       assert(modes.listArchiveDays('2026-11-03').join() === '2026-11-03,2026-11-02,2026-11-01', 'archive day range mismatch');
       assert(modes.getEndlessPrompts(bank, dailyA.map(p => p.id), () => 0).length === 7, 'endless count mismatch');
       assert(modes.getPackPrompts(bank, 'c0', () => 0).length === 0, 'undersized pack should not return a partial run');
@@ -124,6 +124,20 @@
         for (let i = 2; i <= 55; i += 1) storage.saveRun({ ...run, mode: 'endless', dayKey: null, finishedAt: i });
         assert(JSON.parse(values.get('vermillion:run-keys')).length === 50, 'run history is not capped at 50');
         assert([...values.keys()].filter(key => /^vermillion:run:/.test(key)).length === 50, 'old run records were not removed');
+        assert(storage.getEndlessLog().nextNumber === 1 && storage.getEndlessLog().games.length === 0, 'empty Endless log should start at game 1');
+        const endlessRun = { ...run, mode: 'endless', official: false, dayKey: null, total: 125, depth: 1250, finishedAt: 70 };
+        assert(storage.appendEndless(endlessRun).number === 1, 'first Endless game was not numbered 1');
+        assert(storage.appendEndless(endlessRun).number === 1 && storage.getEndlessLog().nextNumber === 2, 'duplicate Endless append changed its game number');
+        assert(storage.appendEndless({ ...endlessRun, finishedAt: 71 }).number === 2, 'second Endless game was not numbered 2');
+        assert(storage.getEndlessLog().games[0].score === 125 && storage.getEndlessLog().games[0].depth === 1250, 'Endless log lost score or depth');
+        assert(storage.getChapterProgress('movies').unlocked === 1, 'new topic should unlock only chapter 1');
+        assert(storage.saveChapter('movies', 1, { mode: 'chapter', total: 0, depth: 0, finishedAt: 72 }), 'zero-score chapter attempt was not recorded');
+        assert(storage.getChapterProgress('movies').unlocked === 1, 'zero-score chapter incorrectly unlocked the next chapter');
+        assert(storage.saveChapter('movies', 1, { mode: 'chapter', total: 25, depth: 250, finishedAt: 73 }), 'chapter completion was not saved');
+        assert(storage.getChapterProgress('movies').unlocked === 2 && storage.getChapterProgress('movies').chapters[1].bestScore === 25, 'positive chapter score did not unlock the next chapter or save best score');
+        assert(storage.saveChapter('movies', 2, { mode: 'chapter', total: 10, depth: 100, finishedAt: 74 }), 'unlocked chapter 2 could not be saved');
+        assert(storage.getChapterProgress('movies').unlocked === 3, 'chapter 2 completion did not unlock chapter 3');
+        assert(storage.saveChapter('movies', 4, { mode: 'chapter', total: 50 }) === false, 'locked chapter 4 accepted a run');
         Object.defineProperty(globalThis, 'localStorage', { configurable: true, get() { throw new Error('blocked'); } });
         assert(storage.getDailyResult('x') === null && storage.saveRun(run) === false, 'storage exception was not handled');
       } finally {
@@ -153,18 +167,35 @@
     await check('Original sprite catalog has required sprites and valid pixel maps', async () => {
       const { SPRITES, drawSprite, drawTintedSprite, spriteDataURL, spriteEl } = await import('../src/sprites.js');
       const required = ['logo','mascot','diver','car','runner','plane','rocket','notebook','tree','skyline-tile','daily','endless','duel','stats','archive','guides','settings','share','menu','close','sound-on','sound-off','tier-none','tier-common','tier-uncommon','tier-rare','tier-mythic','star','bubble'];
-      for (const name of ['moon','cloud-a','cloud-b','buoy','wave','fish-a','fish-b','gear','palette','mascot-idle','glyph-archive','glyph-endless','glyph-duel','glyph-down','ray','particle-glow','vermi-pulse','sparkle','hint']) assert(SPRITES[name], `missing scene sprite ${name}`);
+      for (const name of ['moon','cloud-a','cloud-b','buoy','wave','fish-a','fish-b','gear','palette','mascot-idle','mascot-dive','glyph-archive','glyph-endless','glyph-duel','glyph-down','ray','particle-glow','vermi-pulse','sparkle','hint']) assert(SPRITES[name], `missing scene sprite ${name}`);
+      for (const name of ['buddy-vermi','buddy-guppy','buddy-seahorse','buddy-octopus','buddy-lanternfish','buddy-narwhal','buddy-nautilus','buddy-kraken','buddy-abyss-king']) assert(SPRITES[name]?.w === 16 && SPRITES[name]?.h === 16, `missing or invalid buddy sprite ${name}`);
+      assert(SPRITES['charge-idle']?.w === 24 && SPRITES['charge-idle']?.h === 24, 'charge idle sprite must be 24×24');
+      assert(SPRITES['charge-fuse']?.w === 24 && SPRITES['charge-fuse']?.h === 24 && SPRITES['charge-fuse'].frames.length === 2, 'charge fuse needs two 24×24 frames');
+      assert(SPRITES['charge-boom']?.w === 24 && SPRITES['charge-boom']?.h === 24 && SPRITES['charge-boom'].frames.length === 4, 'charge boom needs four 24×24 frames');
+      assert(new Set(SPRITES['charge-boom'].frames.map(frame => frame.join(''))).size === 4, 'charge boom frames must differ');
       for (const name of ['vermi-dive','vermi-squash','vermi-land','speedline','shockwave','gate-dash']) assert(SPRITES[name], `missing dive sprite ${name}`);
       for (const name of required) assert(SPRITES[name], `missing sprite ${name}`);
       for (const pack of ['movies','sports','geography','language','science','history','music','nature','food','games','space','arts','myth','tech']) assert(SPRITES[`pack-${pack}`]?.w === 16 && SPRITES[`pack-${pack}`]?.h === 16, `invalid pack icon ${pack}`);
-      assert(SPRITES.mascot.frames.length >= 3, 'mascot needs 3 animation frames');
+      assert(SPRITES.mascot.w === 16 && SPRITES.mascot.h === 16 && SPRITES.mascot.frames.length === 4, 'mascot needs four 16×16 frames: idle, tail flick, happy and sad');
       assert(SPRITES['mascot-idle']?.frames.length >= 3, 'mascot idle needs bobbing frames');
+      assert(SPRITES['mascot-idle'].w === 16 && SPRITES['mascot-idle'].h === 16 && SPRITES['mascot-idle'].frames.length === 3, 'mascot idle needs three 16×16 swim frames');
+      assert(SPRITES['mascot-dive'].w === 16 && SPRITES['mascot-dive'].h === 16 && SPRITES['mascot-dive'].frames.length === 2, 'mascot dive needs two 16×16 frames');
+      for (const name of ['mascot', 'mascot-idle', 'mascot-dive']) assert(new Set(SPRITES[name].frames.map(frame => frame.join(''))).size === SPRITES[name].frames.length, `${name} animation frames must differ`);
       assert(SPRITES.moon.w === 32 && SPRITES.moon.h === 32, 'moon must be 32×32');
+      assert(!SPRITES.moon.frames[0].join('').includes('c'), 'moon highlight should be muted, not bright cyan');
       assert(SPRITES.star.frames.length === 3, 'star needs three twinkle frames');
       assert(SPRITES['cloud-a'].w >= 32 && SPRITES['cloud-b'].w >= 32, 'cloud bands are too narrow');
       assert(SPRITES.buoy.w === 24 && SPRITES.buoy.h === 24 && SPRITES.buoy.frames.length === 2, 'buoy must be a larger two-frame light');
+      assert(SPRITES.buoy.frames[0].join('').split('p').length - 1 === 1, 'buoy on frame must contain one pink lamp pixel');
+      assert(!SPRITES.buoy.frames[1].join('').includes('p'), 'buoy off frame must not contain a pink lamp');
       assert(SPRITES.wave.w === 32 && SPRITES.wave.h === 8 && SPRITES.wave.frames.length === 3, 'wave must be a three-frame 32×8 tile');
+      assert(SPRITES.wave.frames.every(frame => !frame.join('').includes('c') && !frame.join('').includes('b')), 'wave sprite must not use bright cyan or blue surface pixels');
       for (const name of ['menu','gear','palette','sound-on','sound-off']) assert(SPRITES[name].w === 16 && SPRITES[name].h === 16, `${name} icon must be 16×16`);
+      for (const id of ['daily','endless','past','topics','me','friends','gear','faq','board','live','duel','how','privacy']) {
+        const icon = SPRITES[`ico-${id}`];
+        assert(icon?.w === 16 && icon?.h === 16 && icon.frames.length === 1, `menu icon ${id} must be a 16×16 still`);
+        assert(Object.values(icon.palette).filter(Boolean).length === 1 && new Set(icon.frames[0].join('').replaceAll('.', '').split('')).size === 1, `menu icon ${id} must be monochrome`);
+      }
       for (const name of ['glyph-archive','glyph-endless','glyph-duel','glyph-down']) assert(SPRITES[name].w === 8 && SPRITES[name].h === 8, `${name} must be an 8×8 inline glyph`);
       const downRows = SPRITES['glyph-down'].frames[0];
       assert(downRows[3].replace(/\./g, '').length > downRows[6].replace(/\./g, '').length, 'glyph-down must widen above its lower tip');
@@ -183,10 +214,12 @@
       assert(SPRITES.gear.frames[0][8][8] === '.' && [...SPRITES.gear.frames[0].join('')].filter(pixel => pixel === 'c').length > 35, 'gear needs a clear cog ring and center hole');
       assert(['c','p','y'].every(color => SPRITES.palette.frames[0].join('').includes(color)), 'palette needs three color wells');
       assert(SPRITES['sound-on'].frames[0].join('').includes('p') && SPRITES['sound-off'].frames[0].join('').includes('p'), 'sound icons need visible waves / mute X');
-      for (const frame of SPRITES.mascot.frames.slice(0, 2)) {
-        assert(frame.slice(10).join('').replace(/[.]/g, '').length >= 24, 'Vermi needs 4–6 visible tentacles');
-        assert(frame.join('').includes('d') && frame.join('').includes('c') && frame.join('').includes('v'), 'Vermi needs eyes, a light rim, and a soft glow');
+      for (const frame of SPRITES.mascot.frames) {
+        assert(frame.join('').includes('f') && frame.join('').includes('P') && frame.join('').includes('o'), 'Vermi needs a vermilion body, orchid fins and a blush belly');
+        assert(frame.join('').includes('k') && frame.join('').includes('w'), 'Vermi needs a dark outline and a highlighted eye');
       }
+      assert(SPRITES.mascot.frames[0][8].lastIndexOf('f') > SPRITES.mascot.frames[0][8].indexOf('f'), 'Vermi should face right');
+      assert(SPRITES['mascot-dive'].frames.every(frame => frame.slice(10).join('').includes('f')), 'mascot dive nose should point down');
       for (const frame of SPRITES.wave.frames) assert(frame.every(row => row[0] === row[row.length - 1]), 'wave tile edges do not join');
       for (const [name, sprite] of Object.entries(SPRITES)) for (const frame of sprite.frames) {
         assert(frame.length === sprite.h && frame.every(row => row.length === sprite.w), `invalid pixel map in ${name}`);
@@ -270,10 +303,12 @@
       assert(packResponse.ok && promptResponse.ok, 'pack or prompt data unavailable');
       const [packBank, promptBank] = await Promise.all([packResponse.json(), promptResponse.json()]);
       const { getPackDailyPrompts } = await import('../src/modes.js');
+      const { SPRITES } = await import('../src/sprites.js');
       assert(Array.isArray(packBank.packs) && packBank.packs.length === 14, 'expected 14 packs');
       const packIds = new Set(packBank.packs.map(pack => pack.id));
       for (const pack of packBank.packs) {
         assert(pack.id && pack.name && pack.blurb && pack.icon && pack.display && pack.unit && Number.isFinite(pack.pointsPerUnit) && pack.pointsPerUnit > 0, `invalid pack metadata for ${pack.id}`);
+        assert(SPRITES[`banner-${pack.id}`]?.w === 115 && SPRITES[`banner-${pack.id}`]?.h === 48, `missing 115×48 banner art for ${pack.id}`);
         const count = promptBank.prompts.filter(prompt => prompt.packs?.includes(pack.id)).length;
         assert(count >= 40, `${pack.id} has only ${count} prompts`);
         const eligible = promptBank.prompts.filter(prompt => prompt.packs?.includes(pack.id) && prompt.everyday === true);
@@ -298,6 +333,8 @@
       const faqText = faq.faq.flatMap(item => [item.q, item.a]).join(' ');
       assert(!/\bprompts?\b|\bpacks?\b|\barchive\b|Daily Descent|Endless Descent|Themed packs/i.test(`${guideText} ${faqText}`), 'guides or FAQ still use old game terms');
       assert(faqText.includes('Daily Game') && faqText.includes('Past games') && faqText.includes('topic'), 'guides/FAQ are missing the plain v2.2 terms');
+      const vermiFaq = faq.faq.find(item => item.q === 'What is Vermi?');
+      assert(vermiFaq?.a.includes('vermilion fish') && !/jellyfish/i.test(vermiFaq.a), 'FAQ does not describe Vermi as a vermilion fish');
     });
 
     for (const result of checks) {

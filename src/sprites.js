@@ -2,6 +2,7 @@
 const P = {
   '.': null, p: '#ff4fa3', P: '#b44dff', b: '#3d7bff', c: '#5ee0ff', w: '#e9e6ff',
   d: '#1d1650', v: '#5b2bd6', g: '#5effa1', y: '#ffd35e', r: '#ff5e7a', m: '#8d86b8',
+  f: '#ff4a2e',
   o: '#ff9ad5', k: '#07060d', s: '#8b96ff', t: '#ad7a4a'
 };
 const rows = (...frames) => frames.map(frame => {
@@ -17,11 +18,11 @@ const bitmap = (palette, ...maps) => sprite(maps.map(map => map.trim().split('\n
 function makeCloud(highlight, body, shade) {
   const width = 48, height = 16;
   const pixels = Array.from({ length: height }, () => Array(width).fill('.'));
-  const bands = [[16, 29], [12, 33], [8, 38], [5, 42], [2, 45], [1, 46], [1, 46], [2, 45], [4, 43], [7, 40], [11, 36], [16, 31]];
+  const bands = [[19, 28], [15, 32], [11, 37], [7, 41], [5, 43], [5, 43], [7, 41], [11, 37], [16, 32]];
   bands.forEach(([left, right], y) => {
-    for (let x = left; x <= right; x += 1) pixels[y + 2][x] = y < 3 ? highlight : body;
+    for (let x = left; x <= right; x += 1) pixels[y + 3][x] = y < 2 ? highlight : body;
   });
-  for (let y = 7; y < 11; y += 1) for (let x = 11 + y - 7; x < 35 - (y - 7); x += 1) pixels[y + 2][x] = shade;
+  for (let y = 6; y < 9; y += 1) for (let x = 15 + y - 6; x < 33 - (y - 6); x += 1) pixels[y + 3][x] = shade;
   return pixels.map(row => row.join('')).join('\n');
 }
 
@@ -35,19 +36,19 @@ function makeMoon() {
       if (!outer) { line += '.'; continue; }
       const shadowX = x - 21, shadowY = y - 11;
       const shadow = shadowX * shadowX + shadowY * shadowY < 12.7 * 12.7;
-      line += shadow ? 's' : (y < 9 && x < 15 ? 'c' : 'w');
+      line += shadow ? 's' : (y < 9 && x < 15 ? 'm' : 'w');
     }
     pixels.push(line);
   }
   return sprite([pixels]);
 }
 
-const waveProfile = [3, 3, 3, 3, 2, 1, 1, 2, 3, 4, 4, 4, 3, 3, 3, 3];
+const waveProfile = [3, 3, 2, 2, 2, 2, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4];
 function makeWave(phase) {
   return Array.from({ length: 8 }, (_, y) => Array.from({ length: 32 }, (_, x) => {
     const surface = waveProfile[(x + phase) % waveProfile.length];
-    if (y === surface) return 'c';
-    if (y > surface && y < surface + 2) return 'b';
+    if (y === surface) return 'm';
+    if (y > surface && y < surface + 2) return 'd';
     return '.';
   }).join(''));
 }
@@ -58,59 +59,208 @@ function bobRows(frame, offset) {
   return [...frame];
 }
 
-function makeJelly(phase = 0, mood = 'idle', bob = 0) {
-  const pixels = Array.from({ length: 16 }, () => Array(16).fill('.'));
-  const bands = [[7, 8], [5, 10], [4, 11], [3, 12], [2, 13], [2, 13], [3, 12], [4, 11]];
-  bands.forEach(([left, right], index) => {
-    const y = index + 1;
-    if (left > 0) pixels[y][left - 1] = 'v';
-    if (right < 15) pixels[y][right + 1] = 'v';
-    for (let x = left; x <= right; x += 1) {
-      const rim = index === 7;
-      pixels[y][x] = rim ? (x === left || x === right ? 'c' : 'o') :
-        (index < 3 && x <= left + 2 ? 'o' : (index > 5 && (x === left || x === right) ? 'P' : 'p'));
+function fillPixelPolygon(pixels, points, color) {
+  for (let y = 0; y < 16; y += 1) for (let x = 0; x < 16; x += 1) {
+    let inside = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const [xi, yi] = points[i], [xj, yj] = points[j];
+      if ((yi > y + 0.5) !== (yj > y + 0.5) && x + 0.5 < (xj - xi) * (y + 0.5 - yi) / (yj - yi) + xi) inside = !inside;
     }
-  });
-  for (let x = 4; x <= 11; x += 1) pixels[9][x] = x === 4 || x === 11 ? 'c' : 'o';
-  pixels[0][7] = 'v'; pixels[0][8] = 'v';
-  // A rounded, softly glowing bell with two bright eyes and a tiny expression.
-  pixels[6][6] = 'd'; pixels[6][9] = 'd';
-  pixels[5][6] = 'w'; pixels[5][9] = 'w';
-  if (mood === 'happy') { pixels[7][7] = 'd'; pixels[7][9] = 'd'; pixels[8][8] = 'd'; }
-  else if (mood === 'sad') { pixels[7][8] = 'd'; pixels[8][7] = 'd'; pixels[8][9] = 'd'; }
-  else pixels[7][8] = 'd';
+    if (inside) pixels[y][x] = color;
+  }
+}
 
-  const tentacles = [
-    [4, 3, 4, 5, 4, 3], [6, 7, 6, 5, 6, 7], [8, 9, 8, 7, 8, 9],
-    [10, 11, 10, 9, 10, 11], [11, 12, 13, 12, 11, 10]
-  ];
-  tentacles.forEach((path, index) => {
-    for (let step = 0; step < 6; step += 1) {
-      const x = path[(step + phase) % path.length];
-      const y = step + 10;
-      pixels[y][x] = index % 2 ? 'P' : 'p';
+function outlinePolygon(pixels, points, color) {
+  const filled = Array.from({ length: 16 }, () => Array(16).fill(false));
+  for (let y = 0; y < 16; y += 1) for (let x = 0; x < 16; x += 1) {
+    let inside = false;
+    for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+      const [xi, yi] = points[i], [xj, yj] = points[j];
+      if ((yi > y + 0.5) !== (yj > y + 0.5) && x + 0.5 < (xj - xi) * (y + 0.5 - yi) / (yj - yi) + xi) inside = !inside;
     }
-  });
+    filled[y][x] = inside;
+  }
+  for (let y = 0; y < 16; y += 1) for (let x = 0; x < 16; x += 1) {
+    if (!filled[y][x]) continue;
+    const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !filled[y + dy]?.[x + dx]);
+    pixels[y][x] = edge ? 'k' : color;
+  }
+}
+
+function makeFish({ tail = 0, mood = 'idle', bob = 0 } = {}) {
+  const pixels = Array.from({ length: 16 }, () => Array(16).fill('.'));
+  outlinePolygon(pixels, [[4, 5], [6, 4], [11, 4], [13, 5], [15, 7], [15, 9], [13, 11], [11, 12], [5, 12], [3, 10], [3, 7]], 'f');
+  const tailRows = [
+    [1, 'kPPk............'], [2, 'kPPPk...........'], [3, 'kPPPk...........'],
+    [4, '.kPPk...........'], [5, 'kPPPk...........'], [6, '.kPPk...........']
+  ];
+  for (const [index, pattern] of tailRows) for (let x = 0; x < 5; x += 1) {
+    const pixel = pattern[x];
+    if (pixel !== '.') pixels[index + 3][x] = pixel;
+  }
+  if (tail % 2) { pixels[3][2] = 'P'; pixels[12][2] = 'P'; pixels[4][0] = '.'; pixels[10][0] = '.'; }
+  for (const [y, left, right] of [[2, 7, 9], [3, 6, 10], [4, 7, 9]]) {
+    for (let x = left; x <= right; x += 1) pixels[y][x] = 'P';
+    pixels[y][left - 1] = 'k'; pixels[y][right + 1] = 'k';
+  }
+  for (const [y, left, right] of [[11, 8, 9], [12, 9, 10], [13, 9, 10]]) {
+    for (let x = left; x <= right; x += 1) pixels[y][x] = 'P';
+  }
+  fillPixelPolygon(pixels, [[6, 9], [12, 9], [11, 11], [6, 11]], 'o');
+  // One oversized round eye with a bright highlight, plus a tiny gill and mouth.
+  pixels[6][11] = 'k'; pixels[6][12] = 'k'; pixels[7][11] = 'w'; pixels[7][12] = 'k';
+  pixels[8][10] = 'P'; pixels[8][14] = 'k';
+  if (mood === 'happy') {
+    pixels[6][11] = 'k'; pixels[6][12] = 'k'; pixels[7][11] = 'w'; pixels[7][12] = 'f';
+    pixels[2][14] = 'c'; pixels[1][14] = 'c'; pixels[1][15] = 'c';
+  } else if (mood === 'sad') {
+    pixels[7][11] = 'k'; pixels[7][12] = 'k'; pixels[8][11] = 'w'; pixels[8][12] = 'k';
+    pixels[12][9] = 'P'; pixels[13][10] = 'P';
+  }
   const shifted = Array.from({ length: 16 }, (_, y) => pixels[y - bob] || Array(16).fill('.'));
   return shifted.map(row => row.join(''));
+}
+
+function pointDown(frame) {
+  const pixels = Array.from({ length: 16 }, () => Array(16).fill('.'));
+  frame.forEach((row, y) => [...row].forEach((pixel, x) => { pixels[x][15 - y] = pixel; }));
+  return pixels.map(row => row.join(''));
+}
+
+function squashFish(frame) {
+  return Array.from({ length: 16 }, (_, y) => {
+    if (y < 5 || y > 10) return '................';
+    const sourceY = 5 + Math.round((y - 5) * 1.6);
+    return frame[sourceY];
+  });
+}
+
+function paintEllipse(pixels, cx, cy, rx, ry, color) {
+  for (let y = 0; y < pixels.length; y += 1) for (let x = 0; x < pixels[0].length; x += 1) {
+    const distance = ((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2;
+    if (distance > 1) continue;
+    const edge = [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => {
+      const next = ((x + dx - cx) / rx) ** 2 + ((y + dy - cy) / ry) ** 2;
+      return next > 1;
+    });
+    pixels[y][x] = edge ? 'k' : color;
+  }
+}
+
+function paintLine(pixels, points, color) {
+  for (let i = 0; i < points.length - 1; i += 1) {
+    const [x1, y1] = points[i], [x2, y2] = points[i + 1];
+    const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+    for (let step = 0; step <= steps; step += 1) {
+      const x = Math.round(x1 + (x2 - x1) * step / Math.max(1, steps));
+      const y = Math.round(y1 + (y2 - y1) * step / Math.max(1, steps));
+      if (pixels[y]?.[x] !== undefined) pixels[y][x] = color;
+    }
+  }
+}
+
+function makeBuddy(name) {
+  const pixels = Array.from({ length: 16 }, () => Array(16).fill('.'));
+  const eye = (x, y) => { pixels[y][x] = 'k'; pixels[y - 1][x] = 'w'; };
+  if (name === 'guppy') {
+    outlinePolygon(pixels, [[4, 6], [1, 4], [0, 5], [2, 8], [0, 11], [1, 12], [4, 10]], 'c');
+    paintEllipse(pixels, 8, 8, 5, 3.5, 'b');
+    paintLine(pixels, [[6, 10], [9, 11], [12, 10]], 'o'); eye(11, 7);
+  } else if (name === 'seahorse') {
+    outlinePolygon(pixels, [[6, 13], [5, 10], [7, 8], [6, 5], [8, 3], [11, 4], [12, 7], [10, 9], [12, 11], [10, 14], [7, 14]], 'y');
+    paintLine(pixels, [[6, 12], [3, 13], [2, 11], [4, 10], [6, 11]], 'P');
+    paintLine(pixels, [[10, 5], [12, 4], [14, 5], [12, 6]], 'o'); eye(10, 6);
+  } else if (name === 'octopus') {
+    paintEllipse(pixels, 8, 6, 5, 4, 'P');
+    paintLine(pixels, [[4, 9], [3, 11], [4, 13], [3, 14]], 'p');
+    paintLine(pixels, [[6, 9], [6, 12], [7, 14]], 'p');
+    paintLine(pixels, [[8, 9], [8, 12], [9, 14]], 'p');
+    paintLine(pixels, [[10, 9], [11, 12], [12, 14]], 'p');
+    paintLine(pixels, [[12, 9], [14, 11], [13, 13]], 'p');
+    eye(7, 6); eye(10, 6);
+  } else if (name === 'lanternfish') {
+    outlinePolygon(pixels, [[4, 6], [1, 4], [0, 5], [2, 8], [0, 11], [1, 12], [4, 10]], 'v');
+    paintEllipse(pixels, 8, 8, 5.5, 3.5, 'b');
+    paintLine(pixels, [[8, 4], [9, 2], [11, 1], [12, 3]], 'P');
+    pixels[2][12] = 'y'; pixels[2][13] = 'o';
+    paintLine(pixels, [[6, 10], [9, 11], [12, 10]], 'p'); eye(11, 7);
+  } else if (name === 'narwhal') {
+    outlinePolygon(pixels, [[2, 7], [4, 5], [10, 5], [13, 7], [14, 10], [12, 12], [5, 12], [2, 10]], 'c');
+    outlinePolygon(pixels, [[11, 6], [15, 2], [14, 7]], 'w');
+    paintLine(pixels, [[2, 7], [0, 5], [1, 9], [0, 12], [3, 10]], 'b');
+    pixels[10][8] = 'b'; pixels[10][9] = 'b'; eye(11, 7);
+  } else if (name === 'nautilus') {
+    paintEllipse(pixels, 8, 8, 6, 6, 'o');
+    paintLine(pixels, [[11, 9], [10, 6], [7, 5], [5, 7], [6, 10], [9, 11], [11, 9]], 'P');
+    paintLine(pixels, [[3, 8], [1, 7], [0, 8], [1, 9]], 'c');
+    paintLine(pixels, [[3, 9], [2, 12], [1, 13]], 'c');
+    paintLine(pixels, [[4, 10], [4, 13], [5, 14]], 'c');
+    eye(4, 7);
+  } else if (name === 'kraken') {
+    paintEllipse(pixels, 8, 6, 4.5, 4, 'v');
+    paintLine(pixels, [[5, 9], [2, 10], [1, 13], [3, 14]], 'P');
+    paintLine(pixels, [[7, 9], [6, 12], [7, 14]], 'P');
+    paintLine(pixels, [[9, 9], [10, 12], [9, 14]], 'P');
+    paintLine(pixels, [[11, 9], [14, 10], [15, 13], [13, 14]], 'P');
+    eye(7, 6); eye(10, 6);
+  } else if (name === 'abyss-king') {
+    paintEllipse(pixels, 8, 9, 6, 4.5, 'v');
+    outlinePolygon(pixels, [[4, 5], [5, 2], [7, 4], [9, 1], [11, 4], [13, 2], [13, 6]], 'y');
+    paintLine(pixels, [[4, 12], [3, 14], [5, 13], [7, 15], [9, 13], [11, 15], [13, 13], [14, 14]], 'P');
+    eye(7, 8); eye(10, 8);
+  }
+  return pixels.map(row => row.join(''));
+}
+
+const CHARGE_PALETTE = { ...P, x: '#ffd35e', z: '#fff1ac' };
+function makeCharge(state = 'idle', frame = 0) {
+  const pixels = Array.from({ length: 24 }, () => Array(24).fill('.'));
+  if (state === 'boom') {
+    const radius = 3 + frame * 2;
+    for (let y = 0; y < 24; y += 1) for (let x = 0; x < 24; x += 1) {
+      const distance = Math.hypot(x - 11.5, y - 11.5);
+      if (Math.abs(distance - radius) < 1.3) pixels[y][x] = frame < 2 ? 'x' : (frame === 2 ? 'o' : 'p');
+    }
+    for (let ray = 0; ray < 8; ray += 1) {
+      const angle = ray * Math.PI / 4;
+      for (let step = 0; step < 3; step += 1) {
+        const x = Math.round(11.5 + Math.cos(angle) * (radius + step));
+        const y = Math.round(11.5 + Math.sin(angle) * (radius + step));
+        if (pixels[y]?.[x] !== undefined) pixels[y][x] = step === 0 ? 'z' : 'x';
+      }
+    }
+    if (frame === 0) pixels[11][11] = 'w';
+    return pixels.map(row => row.join(''));
+  }
+  for (let y = 5; y <= 21; y += 1) for (let x = 3; x <= 20; x += 1) {
+    const distance = ((x - 11.5) / 8.5) ** 2 + ((y - 13.5) / 8) ** 2;
+    if (distance <= 1) {
+      const edge = ((x + 1 - 11.5) / 8.5) ** 2 + ((y - 13.5) / 8) ** 2 > 1;
+      pixels[y][x] = edge ? 'k' : ((x + y) % 4 === 0 ? 'f' : 'v');
+    }
+  }
+  paintLine(pixels, [[11, 6], [12, 4], [11, 2]], 'k');
+  paintLine(pixels, [[12, 5], [13, 3]], state === 'fuse' ? (frame % 2 ? 'z' : 'x') : 'y');
+  pixels[10][7] = 'b'; pixels[9][8] = 'b'; pixels[12][10] = 'o'; pixels[13][11] = 'o';
+  if (state === 'fuse') { pixels[1][11] = frame % 2 ? 'x' : 'z'; pixels[2][12] = 'o'; pixels[3][13] = 'x'; }
+  return pixels.map(row => row.join(''));
 }
 
 function makeBuoy(isLit) {
   const pixels = Array.from({ length: 24 }, () => Array(24).fill('.'));
   const set = (x, y, color) => { pixels[y][x] = color; };
-  for (let y = 6; y <= 11; y += 1) { set(11, y, 'w'); set(12, y, 'w'); }
-  for (let x = 9; x <= 14; x += 1) { set(x, 8, 'P'); set(x, 10, 'P'); }
-  set(10, 9, 'P'); set(13, 9, 'P');
+  for (let y = 6; y <= 11; y += 1) { set(11, y, 'k'); set(12, y, 'k'); }
+  for (let x = 9; x <= 14; x += 1) { set(x, 8, 'd'); set(x, 10, 'd'); }
+  set(10, 9, 'd'); set(13, 9, 'd');
   for (let y = 12; y <= 17; y += 1) {
     const inset = y === 12 || y === 17 ? 3 : 1;
-    for (let x = 6 + inset; x <= 17 - inset; x += 1) set(x, y, y % 2 ? 'p' : 'w');
-    set(6 + inset, y, 'p'); set(17 - inset, y, 'p');
+    for (let x = 6 + inset; x <= 17 - inset; x += 1) set(x, y, 'k');
+    set(6 + inset, y, 'd'); set(17 - inset, y, 'd');
   }
   for (let x = 8; x <= 15; x += 1) set(x, 18, 'd');
   for (let x = 10; x <= 13; x += 1) set(x, 19, 'd');
-  const lamp = isLit ? 'p' : 'd';
-  for (let y = 2; y <= 5; y += 1) for (let x = 10; x <= 13; x += 1) set(x, y, lamp);
-  if (isLit) { set(11, 1, 'o'); set(12, 1, 'o'); set(10, 3, 'o'); set(13, 3, 'o'); }
+  set(11, 2, 'k'); set(12, 2, 'k'); set(11, 3, 'd'); set(12, 3, 'd');
+  set(12, 7, isLit ? 'p' : 'd');
   return pixels.map(row => row.join(''));
 }
 
@@ -158,6 +308,37 @@ function makeMenu() {
   for (const y of [3, 7, 11]) for (let x = 2; x <= 13; x += 1) pixels[y][x] = 'c';
   return pixels.map(row => row.join(''));
 }
+
+// Small monochrome route icons. Their single opaque token can be replaced by
+// drawTintedSprite(..., tint) so the caller controls the current text colour.
+function makeMenuIcon(kind) {
+  const pixels = Array.from({ length: 16 }, () => Array(16).fill('.'));
+  const set = (x, y) => { if (pixels[y]?.[x] !== undefined) pixels[y][x] = 'i'; };
+  const line = (x1, y1, x2, y2) => {
+    const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+    for (let step = 0; step <= steps; step += 1) set(Math.round(x1 + (x2 - x1) * step / Math.max(1, steps)), Math.round(y1 + (y2 - y1) * step / Math.max(1, steps)));
+  };
+  const rect = (x, y, w, h, fill = false) => {
+    for (let py = y; py < y + h; py += 1) for (let px = x; px < x + w; px += 1) {
+      if (fill || px === x || px === x + w - 1 || py === y || py === y + h - 1) set(px, py);
+    }
+  };
+  if (kind === 'daily') { line(8, 2, 8, 12); line(4, 8, 8, 12); line(12, 8, 8, 12); line(4, 14, 12, 14); }
+  else if (kind === 'endless') { line(2, 8, 5, 5); line(5, 5, 8, 8); line(8, 8, 11, 11); line(11, 11, 14, 8); line(14, 8, 11, 5); line(11, 5, 8, 8); line(8, 8, 5, 11); line(5, 11, 2, 8); }
+  else if (kind === 'past') { line(4, 5, 2, 8); line(2, 8, 4, 11); line(2, 8, 8, 8); line(8, 8, 12, 5); line(12, 5, 14, 8); line(14, 8, 12, 11); line(5, 3, 11, 3); }
+  else if (kind === 'topics') { rect(2, 2, 5, 5); rect(9, 2, 5, 5); rect(2, 9, 5, 5); rect(9, 9, 5, 5); }
+  else if (kind === 'me') { for (let y = 2; y <= 6; y += 1) for (let x = 6; x <= 9; x += 1) if ((x - 7.5) ** 2 + (y - 4) ** 2 <= 4) set(x, y); line(3, 14, 4, 10); line(4, 10, 6, 8); line(6, 8, 10, 8); line(10, 8, 12, 10); line(12, 10, 13, 14); line(3, 14, 13, 14); }
+  else if (kind === 'friends') { for (const cx of [5, 11]) for (let y = 3; y <= 6; y += 1) for (let x = cx - 1; x <= cx + 1; x += 1) if ((x - cx) ** 2 + (y - 4.5) ** 2 <= 2.3) set(x, y); line(1, 13, 2, 9); line(2, 9, 4, 8); line(4, 8, 6, 8); line(6, 8, 8, 10); line(8, 10, 9, 13); line(7, 13, 9, 9); line(9, 9, 11, 8); line(11, 8, 13, 9); line(13, 9, 15, 13); }
+  else if (kind === 'gear') { for (let y = 2; y < 14; y += 1) for (let x = 2; x < 14; x += 1) { const r = Math.hypot(x - 7.5, y - 7.5); const tooth = Math.abs(x - 7.5) > 5.2 || Math.abs(y - 7.5) > 5.2; if (r >= (tooth ? 4.3 : 5.2) && r <= 6.2) set(x, y); } for (let y = 6; y <= 9; y += 1) for (let x = 6; x <= 9; x += 1) if ((x - 7.5) ** 2 + (y - 7.5) ** 2 <= 3) set(x, y); }
+  else if (kind === 'faq') { line(4, 5, 5, 3); line(5, 3, 8, 2); line(8, 2, 11, 3); line(11, 3, 12, 5); line(12, 5, 8, 9); line(8, 9, 8, 11); set(8, 14); }
+  else if (kind === 'board') { line(2, 13, 14, 13); rect(3, 8, 2, 5, true); rect(7, 5, 2, 8, true); rect(11, 2, 2, 11, true); }
+  else if (kind === 'live') { line(2, 5, 12, 5); line(9, 2, 12, 5); line(9, 8, 12, 5); line(14, 11, 4, 11); line(7, 8, 4, 11); line(7, 14, 4, 11); }
+  else if (kind === 'duel') { line(3, 3, 13, 13); line(12, 3, 3, 12); line(2, 4, 4, 2); line(12, 14, 14, 12); }
+  else if (kind === 'how') { rect(2, 3, 6, 10); rect(8, 3, 6, 10); line(8, 3, 8, 13); line(4, 6, 6, 6); line(10, 6, 12, 6); line(4, 9, 6, 9); line(10, 9, 12, 9); }
+  else if (kind === 'privacy') { line(4, 7, 4, 5); line(4, 5, 6, 3); line(6, 3, 10, 3); line(10, 3, 12, 5); line(12, 5, 12, 7); rect(3, 7, 10, 7); line(8, 9, 8, 11); }
+  return pixels.map(row => row.join(''));
+}
+const menuIconPalette = { '.': null, i: '#e9e6ff' };
 
 function makeRay() {
   return Array.from({ length: 32 }, (_, y) => {
@@ -231,55 +412,6 @@ function makeHint() {
   return pixels.map(row => row.join(''));
 }
 
-const mascotIdle = `................
-......PPPP......
-....PPppPPPP....
-...PppppppPP....
-..PppppppppPP...
-..PppwppwppPP...
-..PppppppppPP...
-...PPppppPP.....
-....PPPPPP......
-.....P..P.......
-....P....P......
-...P......P.....
-................
-................
-................
-................`;
-const mascotHappy = `................
-......PPPP......
-....PPppPPPP....
-...PppppppPP....
-..PppppppppPP...
-..PppwppwppPP...
-..PpppwwpppPP...
-...PPppppPP.....
-....PPPPPP......
-....P....P......
-...P......P.....
-..P........P....
-................
-................
-................
-................`;
-const mascotSad = `................
-......PPPP......
-....PPppPPPP....
-...PppppppPP....
-..PppppppppPP...
-..PppwppwppPP...
-..PpppPPpppPP...
-...PPppppPP.....
-....PPPPPP......
-.....P..P.......
-....P....P......
-...P......P.....
-................
-................
-................
-................`;
-
 // Five-by-seven pixel alphabet used to make the wordmark from original pixel data.
 const GLYPHS = {
   V:['10001','10001','10001','10001','01010','01010','00100'], E:['11111','10000','10000','11110','10000','10000','11111'],
@@ -296,7 +428,7 @@ function wordmark() {
 
 const SPRITES = {
   logo: define(wordmark()),
-  mascot: sprite(rows(mascotIdle, mascotHappy, mascotSad)),
+  mascot: sprite([makeFish(), makeFish({ tail: 1 }), makeFish({ tail: 1, mood: 'happy' }), makeFish({ tail: 0, mood: 'sad' })]),
   diver: define(`......c.........
 .....ccc........
 ......c.........
@@ -731,7 +863,6 @@ yyyyyyyyyyyyyyy.
 ................`)
 };
 
-const idleMap = rows(mascotIdle)[0];
 const rayPalette = { '.': null, a: '#5ee0ff20', b: '#5ee0ff38', c: '#e9e6ff52' };
 const particlePalette = { '.': null, a: '#b44dff24', b: '#3d7bff55', c: '#5ee0ff99', w: '#e9e6ffdd' };
 Object.assign(SPRITES, {
@@ -741,8 +872,8 @@ Object.assign(SPRITES, {
     `................\n................\n.......m........\n................\n....mmmmmmm.....\n.....m...m......\n......m.m.......\n.......m........\n......m.m.......\n.....m...m......\n....mmmmmmm.....\n................\n................\n................\n................\n................`,
     `.......c........\n.......c........\n.......c........\n..ccccccccccc...\n...ccccccccc....\n....cc.....cc...\n....cc.....cc...\n....cc.....cc...\n...ccccccccc....\n..ccccccccccc...\n.......c........\n.......c........\n.......c........\n................\n................\n................`
   ),
-  'cloud-a': define(makeCloud('o', 'p', 'P')),
-  'cloud-b': define(makeCloud('c', 'b', 'v')),
+  'cloud-a': sprite(rows(makeCloud('o', 'p', 'P')), { ...P, o: '#ff9ad555', p: '#ff4fa355', P: '#b44dff44' }),
+  'cloud-b': sprite(rows(makeCloud('P', 'P', 'p')), { ...P, o: '#ff9ad544', p: '#ff4fa344', P: '#b44dff55' }),
   buoy: sprite([makeBuoy(true), makeBuoy(false)], P),
   wave: sprite([makeWave(0), makeWave(1), makeWave(2)], P),
   'fish-a': bitmap(P,
@@ -752,10 +883,11 @@ Object.assign(SPRITES, {
     `................\n................\n.......ddd......\n.....dddddddd...\n.ddddddddddddddd\n.....dddddddd...\n.......ddd......\n................`
   ),
   mascot: sprite([
-    makeJelly(0, 'idle'), makeJelly(1, 'idle', -1),
-    makeJelly(2, 'happy', 0), makeJelly(1, 'sad', 1)
+    makeFish(), makeFish({ tail: 1 }),
+    makeFish({ tail: 1, mood: 'happy' }), makeFish({ tail: 0, mood: 'sad' })
   ], P),
-  'mascot-idle': sprite([makeJelly(0, 'idle', -1), makeJelly(1, 'idle'), makeJelly(2, 'idle', 1)], P),
+  'mascot-idle': sprite([makeFish({ bob: -1 }), makeFish({ tail: 1 }), makeFish({ tail: 0, bob: 1 })], P),
+  'mascot-dive': sprite([pointDown(makeFish()), pointDown(makeFish({ tail: 1 }))], P),
   gear: define(makeGear().join('\n')),
   settings: define(makeGear().join('\n')),
   palette: define(makePalette().join('\n')),
@@ -779,32 +911,11 @@ Object.assign(SPRITES, {
     `...a....\n..abb...\n.abcb...\nabbwbb..\n.abcb...\n..abb...\n...a....\n........`,
     `........\n...a....\n..abc...\n.abcw...\n..abc...\n...a....\n........\n........`
   ),
-  'vermi-dive': sprite(rows(
-    `....p...p.......\n....P...P.......\n.....p.p........\n......p.p.......\n......P.P.......\n.....vppv.......\n....pppppppp....\n...opppppppppo...\n...pppppppppp...\n....cccccccc....\n....d....d......\n.....p..p.......\n......p.p.......\n......P.P.......\n.......p........\n................`,
-    `...p....p.......\n...P....P.......\n....p..p.........\n.....p..p........\n.....P..P........\n....vppv.........\n...pppppppp......\n..opppppppppo.....\n..pppppppppp......\n...cccccccc.......\n...d....d.........\n....p..p..........\n.....p.p..........\n.....P.P..........\n......p...........\n..................`,
-    `.....p....p.....\n.....P....P.....\n......p..p......\n.......p.p......\n.......P.P......\n......vppv......\n.....pppppppp...\n....opppppppppo..\n....pppppppppp...\n.....cccccccc...\n.....d....d.....\n......p..p......\n.......p.p......\n.......P.P......\n........p.......\n................`
-  ), divePalette),
-  'vermi-squash': define(`................
-................
-................
-................
-................
-................
-................
-...opppppppppo...
-..opppppppppppo..
-..pppppppppppp..
-...cccccccccc...
-....d....d......
-.....pppp.......
-....p....p......
-................
-................`),
-  'vermi-land': sprite(rows(
-    `................\n................\n................\n................\n...opppppppppo...\n..opppppppppppo..\n..pppppppppppp..\n...cccccccccc...\n....d....d......\n.....pppp.......\n....p....p......\n................\n................\n................\n................\n................`,
-    `................\n................\n.....vppv.......\n....pppppppp....\n...opppppppppo...\n...pppppppppp...\n....cccccccc....\n....d....d......\n.....p..p.......\n......p.p.......\n......P.P.......\n.......p........\n................\n................\n................\n................`,
-    `................\n................\n................\n....vppppv......\n...opppppppppo...\n...pppppppppp...\n....cccccccc....\n....d....d......\n.....p..p.......\n......p.p.......\n......P.P.......\n.......p........\n................\n................\n................\n................`
-  ), divePalette),
+  'vermi-dive': sprite([
+    pointDown(makeFish()), pointDown(makeFish({ tail: 1 })), pointDown(makeFish({ tail: 0, bob: -1 }))
+  ], divePalette),
+  'vermi-squash': sprite([squashFish(makeFish({ tail: 1 }))], divePalette),
+  'vermi-land': sprite([makeFish(), makeFish({ tail: 1, bob: -1 }), makeFish({ bob: 1 })], divePalette),
   'speedline': bitmap({ '.': null, x: '#5ee0ff', p: '#ff4fa3' },
     `x.......\nx.......\n........\n..x.....\n..x.....\n........\n....p...\n....p...\n........\n......x.\n......x.\n........\n.x......\n.x......\n........\n........`
   ),
@@ -820,6 +931,18 @@ Object.assign(SPRITES, {
   ),
   hint: define(makeHint().join('\n'))
 });
+
+for (const id of ['daily', 'endless', 'past', 'topics', 'me', 'friends', 'gear', 'faq', 'board', 'live', 'duel', 'how', 'privacy']) {
+  SPRITES[`ico-${id}`] = sprite([makeMenuIcon(id)], menuIconPalette);
+}
+
+SPRITES['buddy-vermi'] = SPRITES['mascot-idle'];
+for (const buddy of ['guppy', 'seahorse', 'octopus', 'lanternfish', 'narwhal', 'nautilus', 'kraken', 'abyss-king']) {
+  SPRITES[`buddy-${buddy}`] = sprite([makeBuddy(buddy)], P);
+}
+SPRITES['charge-idle'] = sprite([makeCharge('idle')], CHARGE_PALETTE);
+SPRITES['charge-fuse'] = sprite([makeCharge('fuse', 0), makeCharge('fuse', 1)], CHARGE_PALETTE);
+SPRITES['charge-boom'] = sprite([0, 1, 2, 3].map(frame => makeCharge('boom', frame)), CHARGE_PALETTE);
 
 // Pack icons share the 16x16 contract and have distinct silhouettes/colors.
 const packIcons = {
@@ -839,6 +962,113 @@ const packIcons = {
   tech: `..cccccccccc....\n..c........c....\n..c.pppppp.c....\n..c.p....p.c....\n..c.p....p.c....\n..c.pppppp.c....\n..c........c....\n..cccccccccc....\n......c.........\n......c.........\n................\n................\n................\n................\n................\n................`
 };
 for (const [id, map] of Object.entries(packIcons)) SPRITES[`pack-${id}`] = define(map);
+
+const BANNER_THEMES = {
+  movies: ['film', '#422047', '#da5364', '#110d28', '#ffd35e'],
+  sports: ['stadium', '#164559', '#47b8a0', '#092c35', '#f3d36b'],
+  geography: ['mountain', '#315a78', '#72c4bf', '#102b48', '#f0d38a'],
+  language: ['book', '#693b50', '#e09879', '#2a1a37', '#f5d49b'],
+  science: ['orbit', '#252e70', '#63c9e8', '#0c133d', '#d891ff'],
+  history: ['columns', '#75523d', '#d4a866', '#302039', '#f1d990'],
+  music: ['stage', '#4a2869', '#df69a7', '#1d1239', '#69d6ee'],
+  nature: ['forest', '#23604e', '#75c46c', '#103b38', '#e4df84'],
+  food: ['market', '#694943', '#ed9d52', '#332039', '#f0d778'],
+  games: ['arcade', '#293e7a', '#e659b8', '#101a46', '#73e4de'],
+  space: ['planet', '#232d68', '#a77cff', '#0b1236', '#71d8ee'],
+  arts: ['studio', '#704269', '#e37c9e', '#31203e', '#eac66d'],
+  myth: ['temple', '#4d3867', '#d4a95b', '#20183b', '#ffdc83'],
+  tech: ['circuit', '#1b5060', '#44d4bf', '#0a2c42', '#f58c70']
+};
+
+function makePackBanner(packId) {
+  const [theme, sky, mid, deep, accent] = BANNER_THEMES[packId];
+  const palette = { '.': null, s: sky, m: mid, d: deep, a: accent, h: '#e9e6ff', q: '#5ee0ff', k: '#07060d' };
+  const pixels = Array.from({ length: 48 }, (_, y) => Array(115).fill(y < 15 ? 's' : (y < 31 ? 'm' : 'd')));
+  const set = (x, y, color) => { if (pixels[y]?.[x] !== undefined) pixels[y][x] = color; };
+  const rect = (x, y, w, h, color) => { for (let py = y; py < y + h; py += 1) for (let px = x; px < x + w; px += 1) set(px, py, color); };
+  const line = (x1, y1, x2, y2, color) => {
+    const steps = Math.max(Math.abs(x2 - x1), Math.abs(y2 - y1));
+    for (let step = 0; step <= steps; step += 1) set(Math.round(x1 + (x2 - x1) * step / Math.max(1, steps)), Math.round(y1 + (y2 - y1) * step / Math.max(1, steps)), color);
+  };
+  const triangle = (points, color) => {
+    for (let y = 0; y < 48; y += 1) for (let x = 0; x < 115; x += 1) {
+      let inside = false;
+      for (let i = 0, j = points.length - 1; i < points.length; j = i++) {
+        const [xi, yi] = points[i], [xj, yj] = points[j];
+        if ((yi > y + 0.5) !== (yj > y + 0.5) && x + 0.5 < (xj - xi) * (y + 0.5 - yi) / (yj - yi) + xi) inside = !inside;
+      }
+      if (inside) set(x, y, color);
+    }
+  };
+
+  for (let i = 0; i < 18; i += 1) {
+    const x = (i * 37 + packId.length * 11) % 115, y = 3 + (i * 13 + packId.length) % 22;
+    set(x, y, i % 3 ? 'h' : 'a');
+  }
+  rect(0, 39, 115, 9, 'd');
+  for (let x = 0; x < 115; x += 8) rect(x, 38 + (x % 3), 4, 1, 'a');
+
+  if (theme === 'film') {
+    for (let x = 4; x < 111; x += 12) rect(x, 0, 3, 37, 'd');
+    line(4, 4, 45, 37, 'a'); line(111, 4, 70, 37, 'a');
+  } else if (theme === 'stadium') {
+    for (let y = 8; y < 30; y += 5) for (let x = 5 + (y % 2) * 4; x < 110; x += 10) rect(x, y, 4, 2, y % 2 ? 'h' : 'a');
+    for (let y = 34; y < 47; y += 4) line(0, y, 114, y, 'a');
+  } else if (theme === 'mountain') {
+    triangle([[0, 37], [24, 10], [48, 37]], 'd'); triangle([[37, 38], [71, 7], [106, 38]], 'd');
+    triangle([[16, 30], [24, 19], [33, 30]], 'h'); triangle([[60, 18], [71, 8], [82, 18]], 'h');
+  } else if (theme === 'book') {
+    rect(8, 31, 99, 13, 'a'); line(57, 31, 57, 44, 'h');
+    for (let y = 34; y < 43; y += 3) { line(15, y, 49, y, 'h'); line(65, y, 100, y, 'h'); }
+  } else if (theme === 'orbit' || theme === 'planet') {
+    for (let x = 3; x < 115; x += 17) { set(x, 7 + x % 11, 'h'); set(x + 3, 24 + x % 8, 'a'); }
+    line(8, 28, 28, 12, 'q'); line(86, 34, 108, 14, 'q');
+  } else if (theme === 'columns' || theme === 'temple') {
+    rect(9, 14, 97, 3, 'a'); rect(14, 18, 87, 2, 'h');
+    for (let x = 18; x < 100; x += 18) { rect(x, 20, 5, 17, 'a'); rect(x + 1, 20, 2, 17, 'h'); }
+    rect(7, 37, 101, 3, 'a');
+  } else if (theme === 'stage') {
+    for (let x = 8; x < 108; x += 13) rect(x, 30 - (x * 3 % 15), 5, 16, x % 2 ? 'a' : 'q');
+    rect(0, 43, 115, 5, 'd');
+  } else if (theme === 'forest') {
+    for (let x = 5; x < 110; x += 16) { triangle([[x, 37], [x + 6, 13 + x % 9], [x + 12, 37]], 'a'); rect(x + 5, 35, 3, 8, 'd'); }
+  } else if (theme === 'market') {
+    rect(5, 34, 105, 3, 'a'); rect(10, 37, 4, 10, 'h'); rect(101, 37, 4, 10, 'h');
+    for (let x = 10; x < 108; x += 12) rect(x, 29, 6, 4, x % 2 ? 'a' : 'h');
+  } else if (theme === 'arcade') {
+    rect(29, 4, 57, 39, 'k'); rect(33, 8, 49, 26, 'a'); rect(37, 11, 41, 19, 'd');
+    for (let x = 40; x < 76; x += 8) set(x, 18 + (x % 3) * 2, 'q');
+    rect(42, 36, 31, 3, 'h');
+  } else if (theme === 'studio') {
+    for (const [x, y, color] of [[13, 9, 'a'], [25, 31, 'q'], [94, 11, 'h'], [102, 32, 'a'], [9, 37, 'q']]) {
+      rect(x, y, 8, 6, color); rect(x + 2, y + 2, 4, 2, 'd');
+    }
+    line(14, 36, 23, 25, 'h'); line(88, 33, 98, 22, 'a');
+  } else if (theme === 'circuit') {
+    for (let y = 8; y < 42; y += 10) {
+      line(5, y, 36, y, 'q'); line(79, y + 3, 109, y + 3, 'a');
+      rect(33, y - 2, 4, 4, 'h'); rect(76, y + 1, 4, 4, 'h');
+    }
+  }
+
+  const icon = SPRITES[`pack-${packId}`];
+  const iconChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  const colorTokens = new Map();
+  for (const color of Object.values(icon.palette)) {
+    if (!color || colorTokens.has(color)) continue;
+    const token = [...iconChars].find(char => !Object.hasOwn(palette, char));
+    colorTokens.set(color, token); palette[token] = color;
+  }
+  const scale = 2, left = 57 - icon.w, top = 8;
+  for (let y = 0; y < icon.h; y += 1) for (let x = 0; x < icon.w; x += 1) {
+    const token = colorTokens.get(icon.palette[icon.frames[0][y][x]]);
+    if (!token) continue;
+    rect(left + x * scale, top + y * scale, scale, scale, token);
+  }
+  return sprite([pixels.map(row => row.join(''))], palette);
+}
+
+for (const packId of Object.keys(BANNER_THEMES)) SPRITES[`banner-${packId}`] = makePackBanner(packId);
 // Stable contract spellings use hyphens; keep camel-case aliases for the v1 UI.
 for (const [contractName, alias] of Object.entries({
   'skyline-tile': 'skylineTile', 'sound-on': 'soundOn', 'sound-off': 'soundOff',

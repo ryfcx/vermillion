@@ -99,6 +99,7 @@ Each agent updates only its own section. Add short notes (date, what changed, an
 - ✅ v2.1 Luna items: share summaries append `✨ One in a Vermillion` for mythic answers; `storage.js` exposes matching stats labels while saved tier IDs remain `mythic`. Browser checks assert share, stats and `TIER_INFO` labels, corrected/suggest result shapes and Sol's corpus runner. Latest corpus passes **399/399**, including 240 typo cases. Source syntax and direct label/status checks pass.
 - ✅ v2.2 everyday Daily + plain guide/FAQ wording: both Daily selectors use only `everyday: true` questions when at least seven qualify, then fall back to the full pool. Tests cover filtering/fallbacks and all 14 topic pools. Validator requires boolean flags, ≥150 everyday questions and ≥15 answers each; every question must have ≥3 distinct point values with min ≤15 and max ≥25, and ≥150 questions across the bank must include a 70+ answer. Sol's bank has 510 total / 191 everyday questions and meets these checks. Reworded 17 guides and 16 FAQ entries. Full browser-check script passes **13/13** in the Node DOM/file-fetch shim.
 - ✅ Dive animation assets: `src/sprites.js` now has 3-frame streamlined `vermi-dive`, `vermi-squash`, 3-frame `vermi-land`, vertical `speedline`, 4-frame tintable `shockwave` (`drawTintedSprite`), and horizontally tileable `gate-dash`. `src/sfx.js` adds descending `dive`, indexed rising `gate`, all `land-<tier>` effects, and `bloop`. Added browser catalog/audio API checks; pixel maps, dimensions, tiling, module syntax and a WebAudio-stub check of the descending dive sweep / rising gate pitches pass. Assets are ready for Sonnet to wire into the Dive sequence.
+- ✅ Mascot redraw (2026-11-18 22:11): replaced the jellyfish sprite generator with Vermi the right-facing vermilion fish. Preserved the 16×16 `mascot` four-frame order and 16×16 three-frame `mascot-idle`, added two-frame 16×16 `mascot-dive`, and redrew the related dive/squash/landing forms as fish. Updated the FAQ and regenerated the favicon/social preview from the fish sprite. Sprite dimensions, palette keys, FAQ wording and module syntax checks pass. `mascot-dive` is ready for Sonnet; `docs/CONTRACT.md` still describes the retired jellyfish and needs the Orchestrator's contract update.
 
 ### Sonnet — Play screen redesign (12:30 request) ✅
 - ✅ `scene.js` play mode (`startScene(host, {mode:'play'})` returns `{setDepth, pulse, setRival, relayout}`): waterline at 28% of the viewport; stars, moon and clouds ride up with it. Camera depth uses 0.24 logical px per metre, easing 800 ms in 8 steps. Water goes indigo to void with depth, with faint light rays near the surface, fish, bubbles, a right-edge ruler (0m, -100, -200…) and glowing particles below ~1,200 m. Vermi sits at the lower left, bobbing. On each answer it gets a tier-tinted pulse ring and drifts lower, and mythic answers add a sparkle burst. The buoy stays on the waterline. Duel shows a cyan rival jelly at its own depth.
@@ -141,3 +142,86 @@ Each agent updates only its own section. Add short notes (date, what changed, an
 - Verified at 1280 and 376: a common, a rare and a one-in-a-vermillion answer with the dive mid-frame, wind-up and landing screenshots, a mid-dive Enter skip, a timeout and reduced motion. No console errors, no horizontal scroll. Not tested: the duel rival's dive, audio.
 - ✅ Dive assets swapped in (Luna's 15:42 post): `vermi-squash` (wind-up), `vermi-dive` (3 frames, cycled every 90 ms), `vermi-land` (3 bounce frames), `speedline` (stretched with camera speed), `shockwave` (tier-tinted via `drawTintedSprite`, 4 frames stepped over the pulse) and `gate-dash` (tiled along each gate, tier colour, white on flash). Landing now plays `land-<tier>` (`land-none` for 0 points; the timeout sound is unchanged). Each procedural fallback stays in place in case a sprite is missing. Verified at 1280: common, rare and one-in-a-vermillion dives, a skip, a timeout and reduced motion; no console errors.
 - ✅ Integration-review fix (mobile mid-dive): during a dive the question card (slides up) and the dock (slides down) now go to opacity 0 instead of 30%, so the gates and Vermi read cleanly. Vermi is held at 55% of the screen height on every viewport during wind-up, plunge and landing (it eases there during the wind-up, and returns to its idle position, lower on phones, afterwards). Verified at 376: mid-dive and landing frames show Vermi and gates with nothing overlapping. The dive sprite wiring was already done (see above).
+
+---
+## v3: Accounts + live multiplayer (CONTRACT §8), started 2026-11-18
+Backend is live: schema, RLS, RPCs, realtime, and a 510-question server bank (orchestrator ✅, smoke-tested).
+
+### Orchestrator
+- [x] O1 Supabase schema + RLS + grants + RPCs (`supabase/migrations/`)
+- [x] O2 Vendored supabase-js (`vendor/supabase.js`), `src/config.js`
+- [x] O3 `admin-seed` function + `tools/seed-bank.sh`; bank loaded (510 questions, 191 everyday)
+- [ ] O4 Deploy `submit-run` + `room-answer` once Luna posts them
+- [ ] O5 Two-browser end-to-end test, then commit + push
+
+### Sol
+- [x] S10 `src/score.js` (`scoreAnswer`, `scoreRun`), identical tiers to game.js today
+- [x] S11 Parity test: score.js vs the current game.js scoring over the matcher corpus
+- [x] S12 Every pack has ≥7 prompts in the bank (needed for topic rooms); report any short packs
+- 2026-11-18 17:19: S10 ready; pure scoring API smoke checks pass. S11 parity and S12 pack checks underway.
+- 2026-11-18 17:36: S10–S12 complete. Captured pre-migration game.js and verified all 399 corpus cases: 353 matches have identical name/points/tier/corrected/input; 46 unresolved inputs (15 suggestions) score as misses, matching timeout scoring. Checked canonical YES submissions separately, all 9 tier boundaries, a 7-round mixed run (245 pts / 2,450 m), missing/extra inputs, nonmutation, and all 14,573 production label/point/tier round trips. All 14 packs have 40–101 questions (minimum required 7); everyday pool 191. No bank edits/reseed needed. No commit or push.
+
+### Luna
+- [x] L9 `src/online.js` (auth, profile, stats, submitRun with an offline queue, boards, friends)
+- [x] L10 `src/rooms.js` (RPCs, realtime subscribe + presence, serverNow clock sync)
+- [x] L11 `tools/sync-shared.sh` + `supabase/functions/submit-run` + `room-answer` (Deno, CORS, using `_shared/`)
+- [x] L12 Tests: online/rooms with a fake client (no network), plus a streak-rule parity test between server and storage.js
+- 2026-11-18 17:51: L9–L12 complete. `online.js` and `rooms.js` follow §8.5 with injectable fake-client factories, offline-safe results, queued solo-run submission, friend/profile APIs, room RPCs, realtime refresh/presence, and server-clock offset. `tools/sync-shared.sh` synchronizes matcher/score/RNG/modes; both edge functions use the shared scorer, validate/authenticate requests, and return CORS responses. Added `_shared/streak.js` so server stats use the same archive-safe Daily cursor rule as `storage.js`. Verification: `node tests/v3.test.mjs` passes all fake-client/queue/room/presence/server-clock/streak-parity checks; shared copies match their sources; `deno check` passes both functions using a local Supabase type stub (network unavailable); JS syntax and `bash -n` pass. No Supabase calls, deploy, commit, or push.
+- 2026-11-18 21:57: Integration fix: `getRoomState()` now selects and returns `room_players.answered_round`, with a fake-client assertion covering the field. `node tests/v3.test.mjs` and syntax checks pass; no shared source changed, so no shared sync needed.
+- 2026-11-19 07:04: 00:30 Luna visual assets complete: softened the 32×32 moon highlight, reduced cloud pixel coverage, and replaced the buoy with a dark silhouette and a single pink lamp pixel across its two slow-blink frames. Added atlas assertions for moon and lamp contrast. Scene-only work (gradient, placement, glow, sine wave, ruler, layers and calm animation) belongs to Sonnet's `scene.js` lane; posted integration note. Now beginning L17 with the exact 00:35 API.
+- 2026-11-19 07:10: Added all 13 requested 16×16 monochrome menu sprites (`ico-daily/endless/past/topics/me/friends/gear/faq/board/live/duel/how/privacy`) and atlas assertions for dimensions and one-colour pixel data. `drawTintedSprite` supplies current-colour tint support without duplicate art. Returning to L17.
+
+### Sonnet
+- [x] U13 Account screen + home account chip (code-complete, NOT yet browser-verified)
+- [x] U14 Leaderboard + Friends screens (code-complete, NOT yet browser-verified)
+- [x] U15 Play online: create, join by code, quick match, lobby (code-complete, NOT yet browser-verified)
+- [x] U16 Live round (scoreboard rail, synced timer, 3-2-1), round reveal, final podium (code-complete, NOT yet browser-verified)
+- [x] U17 Solo results "Your rank today", submitRun hook, offline-disabled menu items, menu-search entries (code-complete, NOT yet browser-verified)
+- [x] U18 Switch game.js scoring to `score.js` once Sol posts it (verified by a 600-case parity run in Node)
+
+### Sonnet v3 notes (2026-11-18)
+- Written: routes `#/account #/leaderboard #/friends #/online #/room/CODE` (router.js); account chip, Online menu group, menu-search entries and the home ONLINE button all show "Offline" and are disabled when `ONLINE.enabled` is false or the network is down; screens, lobby, live round, 6 s reveal with a reordering scoreboard, podium and the solo "Your rank today" line (ui.js, main.js, styles.css). Auth magic-link return hashes (`#access_token=…`) route to home.
+- `online.js` and `rooms.js` don't exist yet, so they are imported lazily and every call fails soft ("Online play isn't available right now"). Solo play does not depend on them. `score.js` is wired: game.js takes an optional `score` function and main.js passes `scoreAnswer`.
+- ⚠️ Not verified in a browser: the Chrome extension was not connected this session. Checked only with `node --check` on every file, router parsing, and a 600-case game.js vs score.js parity run. Needs a visual pass at 1280 and 376, plus a two-browser test once Luna's modules land.
+
+### Sonnet: v3 browser pass + title screen rebuild (2026-11-18, evening)
+- ✅ Aligned with the real `online.js` / `rooms.js`: room rows may arrive as an array, friends' `id` is mapped to the other player, `answered_round` drives the rail ✓, subscribe errors show a toast, accepted "Did you mean" answers now store the canonical name in `input` and the typed text in `typed` (so the server rescoring agrees).
+- ✅ Checked in headless Chrome at 376 and 1280 with a temporary harness (since deleted) that fed each screen fake data: account (signed out and in), leaderboard (my row pinned past the top 50, empty, error), friends, play online (signed in and out, readable guest-sign-in error), invite sign-in, lobby, 3-2-1, live round (open and locked), reveal with SHARED ½ and the reordering scoreboard, podium, and offline page. Fixed along the way: avatar set (16×16 sprites only), stats NaN, phone top bar overflow (chip shows avatar only), rail under the HUD on phones, friends rows on phones, centred pages.
+- ⚠️ Not verified: the real routes against live Supabase (headless Chrome hung on the realtime connection) and the real submit-run / room-answer calls. Guest sign-in is still disabled server-side, so no live game was played.
+- ✅ Title screen rebuilt to the krillion.io measurements (part B): 920 px stage, 600 px column, waterline at 55% / 57.8%, VT323 everywhere, 124 px / 66 px wordmark with a pink/cyan split on a gentle arc, tagline, info line, featured card, 66 px primary button with ledge, 3 footer buttons, 34×26 icon stack (Sound, Settings, Account), fish in the water. Compared with `kr-desktop.png` and `kr-phone.png` by eye: elements land within a few px. The old chip and Theme button are hidden on this screen only.
+- Mascot (part A, my side): "jellyfish" copy removed from ui.js and scene.js; the dive uses `mascot-dive` when present (falls back to `vermi-dive`); the sad pose uses `mascot` frame 3. `data/faq.json` still says jellyfish (Luna's file).
+
+
+---
+## v4: Krillion parity (CONTRACT §9), started 2026-11-18 23:40
+### Orchestrator
+- [ ] O6 `friends_daily(p_day)` + `delete_me()` RPCs; room timer default 25 s
+- [ ] O7 DEPTH CHARGE backend (tables, RPCs, `party-answer` function, Elo)
+- [x] O8 `tools/layout-audit.mjs` (`npm run audit:layout`)
+### Sonnet
+- [ ] U19 Layout audit to 0 issues (fix the #/online hang first)
+- [ ] U20 Game screen + answer-result layout (§9.2)
+- [ ] U21 Grid menu modal with search (§9.3)
+- [ ] U22 Endless title screen + game log (§9.4)
+- [ ] U23 My Vermillion / Friends answers / Privacy (§9.7)
+- [ ] U24 Topic journey cards + chapter map (§9.5)
+- [ ] U25 DEPTH CHARGE lobby + game UI (§9.6)
+### Luna
+- [x] L13 Timer 25 s everywhere
+- [x] L14 Buddy sprites (9) + charge sprites (idle/fuse/boom)
+- [x] L15 `banner-<pack>` art (14)
+- [x] L16 Endless log + chapter progress in storage.js
+- [x] L17 `src/party.js` + fake-client tests
+- 2026-11-19 07:12: L17 complete against the 00:35 API: added `createParty()` with exact party room/quick/list/start/tick/leave RPC arguments, four-letter lower-case code validation, `party-answer` body, member room state (local prompt lookup, joined profile data, used answers and ordered events), four-table realtime refresh, typing receive/send, holder/auth gating and 10 Hz throttle. Added `tests/party.test.mjs` for payloads, input validation, state, subscriptions, broadcast and throttle. Also completed the 00:35 chapter follow-up in my lane: `online.js` now accepts unofficial chapter submissions with the topic ID; `submit-run` accepts and stores them as unofficial and verifies every question belongs to the selected topic via the bank's `packs` data. Database mode migration 08 is present. Extended fake-client coverage. Validated 116 sprite entries and all 13 new 16×16 monochrome menu icons, plus module syntax; `node tests/party.test.mjs` and `node tests/v3.test.mjs` pass. `deno check submit-run` could not resolve the npm Supabase package in the offline local Deno cache, so no Deno type-check is claimed. No network calls or deployment.
+- 2026-11-18 v4 progress: L13–L16 complete and posted incrementally in `CHAT_LOG.md`. L13 sets Daily/Endless/topic/chapter timers to 25 s, keeps Duel at 15 s, defaults room creation to 25 s, and updates the FAQ. L14 adds nine buddy sprites plus charge idle/fuse/4-frame boom sprites. L15 adds all 14 115×48 topic banners. L16 adds numbered Endless log and chapter unlock/progress storage APIs. Module, fake-client and storage checks pass. L17 now uses the exact live API from the 00:35 Orchestrator post. The 00:35 chapter sync follow-up is implemented; see completion note above.
+### Sol
+- [ ] S16 DEPTH CHARGE screens (`src/party-ui.js`, `styles-party.css`) + fake-data UI tests and six-size layout audit (07:35 reassignment)
+- [x] S13 Tier flavour lines for the answer-result screen
+- [x] S14 `chapters` in packs.json (≥10 per topic) + new prompts
+- [x] S15 `party: true` flag on questions with ≥40 answers
+
+- 2026-11-18 22:30: S13 ready: `TIER_FLAVOUR` exported from content.js for all five internal tier IDs. S14 expansion/journey construction underway; S15 follows.
+
+- 2026-11-19 00:12 Sol: S14 ready. Bank expanded 510 → 761 questions; all original 510 entries retained unchanged and in order. Added 159 ordered seven-question chapters (10 per topic, Science 19, Art 20), with no repeated ID within a topic journey. Content loader validates chapter shapes/uniqueness. Every reference resolves to a member of its topic, and every full seven-question group is used. All 18,906 answers / 21,148 names and aliases round-trip through matching and pure scoring. Original 191 everyday questions remain available. S15 party eligibility is next.
+
+- 2026-11-19 00:13 Sol: S13–S15 complete, ready for integration/reseed. Final bank: 761 questions, 19,120 answers, 21,362 canonical/alias labels; 191 everyday questions; 51 party pools (13 everyday). Added answers to 12 existing everyday questions for accessible party play; all previous answers/points and all original IDs/order preserved. Each question has an explicit boolean party flag, true exactly at ≥40 answers. Loader rejects invalid flags and undersized party pools. Final checks: 399/399 matcher corpus cases; every label exact-match/score round trip; finite-set sizes and independent complete 0–99 spelling vocabulary; all 159 chapter references/membership/uniqueness/maximal count; v3 fake-client suite. Bounded Oscar/Eurovision/golf questions were tightened to complete named date ranges. No UI edits, commit or deployment. Orchestrator needs to reseed final prompts; Sonnet/Luna can consume chapters and party flags now.

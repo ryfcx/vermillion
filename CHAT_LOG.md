@@ -461,3 +461,476 @@ Regression examples: Saturday **88→10**, Sunday **95→10** in `lan-039`; cale
 Coverage and balance: **279 questions have max ≤40**. Every question satisfies your updated rule (≥3 distinct point values, min ≤15, max ≥25). **201 questions** have at least one ≥70 answer, exceeding the bank-wide minimum of 150 without forcing rare answers into familiar small sets. Top-tier answer entries fell from **2,178 to 25**. Scores are curated judgments, not measured player-frequency percentages. Future additions should follow that policy rather than regenerating a 5–95 curve.
 
 Validation: verified that *only* answer points changed; IDs, ordering, canonical names, aliases, hints/facts, notes, everyday flags and pack membership are intact. All **14,573** canonical/alias labels return the updated points; **399/399** matcher corpus cases pass. The current shared test page passes **12/12 nonvisual checks** in the Node DOM/file-fetch harness, including Luna’s revised score validator; canvas case excluded. Updated PROGRESS.md. No commit or push.
+
+---
+**[Orchestrator] 2026-11-18 17:05: v3 GO: accounts, leaderboards, friends, live multiplayer**
+The user wants accounts and Krillion-style head-to-head play. **Spec: CONTRACT §8.** The Supabase backend is already live and tested:
+tables, RLS, room RPCs, realtime, and the server-side question bank. Your lanes have changed; see TEAM.md.
+- **Sol:** S10–S12. Start with `src/score.js` today, because Luna's server functions and Sonnet's game.js both depend on it.
+  If you change `data/prompts.json`, post that here so I can rerun `tools/seed-bank.sh`.
+- **Luna:** L9–L12. `online.js` and `rooms.js` come first, since Sonnet needs them. Then do the edge functions, which can import
+  `_shared/score.js` once Sol posts it. Post here when they're ready and I'll deploy them. Your sandbox has no network, so
+  test with a fake client.
+- **Sonnet:** U13–U18. Start with the screens, using the §8.5 APIs. Until Luna lands them, stub them behind the same function names.
+- Same rules as before: no CDN except `vendor/supabase.js`, which is already local. Never put a secret key in the repo.
+  Don't commit; I'll commit and push.
+
+### [2026-11-18 17:19] Sol → @Luna, @Sonnet, @Orchestrator
+**S10 ready: `src/score.js` is available now.** Exports `scoreAnswer(prompt, input)` and `scoreRun(prompts, inputs)`. `scoreAnswer` returns exactly {promptId,input,answer,points,tier,corrected}; `answer` is the canonical **name string or null**, input is trimmed as in current game.js, and corrected is always boolean. Suggestions, unknowns and blanks score 0 / tier none / answer null / corrected false. Auto-corrected matcher matches score normally. `scoreRun` takes positionally aligned **string[] inputs**; missing entries count as misses, extras cannot add points; returns {answers,total,depth}. It imports only matcher.js, with no DOM, clock, network, RNG or persistence dependency. Tier thresholds match game.js: 1–20 / 21–50 / 51–80 / 81–100; internal mythic retained. Smoke checks pass. S11 corpus parity and S12 room-pack checks next. No data bank changes and no commit.
+
+### [2026-11-18 18:00] Sonnet → @Orchestrator, @Luna, @Sol: U13-U18 code-complete, but NOT browser-verified
+The Chrome extension wasn't connected, so I couldn't test at localhost:8642. I only ran syntax checks, router parsing and a parity test. Please give it a visual pass.
+- Screens: Account, Leaderboard (Today/All time × Everyone/Friends, my row pinned below the top 50), Friends, Play online, Lobby, live round with a scoreboard rail and a 3-2-1, 6 s reveal with a reordering scoreboard, podium, and "Your rank today" on solo Daily results. Online menu entries, search entries, chip and the home ONLINE button are disabled with an "Offline" label when offline.
+- U18: game.js now scores through `score.js` `scoreAnswer` (passed in from main.js). 600 answers matched the old path exactly. Suggestions ("Did you mean") still use the matcher, since scoreAnswer treats them as misses, then the accepted name is scored.
+- @Luna, I coded against §8.5 and guessed these shapes. Please confirm or tell me what to change:
+  1. Functions return `{ok, data}`. `getUser()` data is `{id,isGuest,email}`. `getProfile()` gives `{id,username,avatar}`. `getStats()` gives the profile_stats row.
+  2. `createRoom({ pack: packId|null, public: false })`, `joinRoom(code)`, `quickMatch()` return the room row `{id, code, ...}`, either as `data` or `data.room`.
+  3. `dailyBoard({day, scope, limit})` and `allTimeBoard({scope, limit})` return `data` as the rows array. I pass `limit: 500` or more so I can find my own rank beyond the top 50.
+  4. `listFriends()` profiles have `id` or `user_id`, plus `username` and `avatar`.
+  5. `subscribe(id, cb)` calls `cb({room, players, answers})` and returns an unsubscribe function. `answer()` data is `{answerName, basePoints, tier}`. I also poll `getRoomState` every 4 s as a safety net.
+  6. **Gap:** RLS hides other players' answers until the round closes, so the ✓ "answered" marker can't come from `room_answers`. I read `players[i].answered === true` or `answered_round === round` if you provide it, for example from presence. Without it only my own ✓ shows.
+  7. Avatars are sprite names stored in `profiles.avatar`: mascot, diver, fish-a, fish-b, buoy, rocket, star, moon, tree, runner, plane, car. Unknown values show Vermi.
+- @Orchestrator: after a magic-link sign-in the app returns to the current page and shows "Check your email" first. A pending room code is kept in sessionStorage and reopened after sign-in. No commit.
+
+### [2026-11-18 17:36] Sol → @Sonnet, @Luna, @Orchestrator
+**S10–S12 complete.** `src/score.js` is ready for browser use and `_shared/` sync. No DOM, Date, random, network or persistence dependencies; only a relative matcher.js import. `answer` is a canonical name string/null, and `scoreRun` inputs are positionally aligned strings. No bank edits, so no reseed is needed for this work.
+
+S11: pinned a copy of game.js **before** Sonnet’s shared-score migration and compared all **399 corpus cases** against it. **353 matches** agree on name, points, tier, corrected and trimmed input. **46 unresolved cases**, including **15 suggestions**, score 0/none/null/false as required for server/rooms; that agrees with the solo game’s timeout result. The rejected raw text is retained by the scorer, while game timeout records an empty input, intentionally. Confirmed YES suggestions were tested by submitting the canonical name, as §8.4 requires. Checked all **9 tier boundaries**, a seven-question mixed run (**245 pts / 2,450 m** on both paths), missing inputs, extra-input exclusion, input nonmutation, and all **14,573 production labels**. All checks pass. Reproducible baseline/harness are `/tmp/vermillion-v3-game-baseline.mjs` and `/tmp/vermillion-v3-score-check.mjs`. @Luna you can add the same scoring boundary/parity cases to your owned test page.
+
+**Important handoff:** current game.js `acceptSuggestion()` records the original typo in `RunAnswer.input`. For a submitted online run, YES must send the **accepted canonical name**, otherwise the server correctly treats the original medium-confidence suggestion as a miss. @Sonnet/@Luna please preserve that final-input rule in U18/submitRun; the original typed text can remain in UI state for the correction caption. For live rooms there is no YES: send exactly what was typed and suggestions get zero.
+
+S12: no short packs. Counts: Movies **47**, Sports **43**, Geography **42**, Words **40**, Science **90**, History **61**, Music **43**, Nature **49**, Food **51**, Games **41**, Space **41**, Art **101**, Mythology **45**, Tech **40**. Everyday pool **191**. All comfortably meet the room minimum of seven. PROGRESS.md updated; no commit or push.
+
+### [2026-11-18 17:51] Luna → @Orchestrator
+L9–L12 are complete; `submit-run` and `room-answer` are ready for your deployment. `src/online.js` and `src/rooms.js` implement the §8.5 APIs with injectable fake clients, fail-soft behavior, run queue, room RPCs/realtime/presence, and response-Date clock correction. `tools/sync-shared.sh` copied `matcher.js`, `score.js`, `rng.js`, and `modes.js` into `_shared/`; verified each copy matches its source. Both functions validate the request and user, use server-side credentials only, import shared scoring, and handle CORS/OPTIONS. Server Daily streak recalculation uses `_shared/streak.js`, including archive-day cursor behavior matching `storage.js`.
+
+Checks passed: `node tests/v3.test.mjs` (online, queue, friend/profile/board, room state/answer/subscription/presence/server clock, and streak parity), `deno check` for both functions with a local Supabase client stub because network access is unavailable, `node --check` for client/test modules, and `bash -n tools/sync-shared.sh`. No live Supabase calls, deployment, commit, or push performed. Functions are ready for you to deploy.
+
+---
+**[Orchestrator] 2026-11-18 18:20: functions deployed + integration fixes**
+- `submit-run` and `room-answer` are **live**. Both reject callers who aren't signed in (401) and handle CORS preflight (204). Players can't read the question bank,
+  and signed-out visitors can't call room RPCs. A full live test needs anonymous sign-in, which the user still has to turn on in the dashboard.
+- **New column `room_players.answered_round int`.** A DB trigger sets it when an answer is saved. It shows that a player answered
+  without revealing the answer, and realtime pushes it. This closes the ✓ gap Sonnet raised in item 6.
+- **@Luna:** add `answered_round` to the `room_players` select in `getRoomState` (rooms.js:99) and to the player objects you return. Rerun your tests.
+  Also run `tools/sync-shared.sh` again if `src/` shared files change, and tell me, because deployed copies don't update on their own.
+- **@Sonnet:** online.js and rooms.js are real now, so stop guessing. Read them and align items 1–5 and 7 with the actual return shapes.
+  For example, players come back as `{user_id, score, joined_at, left_at, answered_round, profile:{username, avatar}}`, and `createRoom` takes `{packId|pack, isPublic|public, timerMs}`.
+  Then do the browser pass you couldn't do earlier: the Chrome extension is connected now.
+  Check every new screen at phone width and desktop width. Online calls will show the "guest sign-in disabled" error until the user enables it.
+  Make sure that error is shown as a readable message, not a crash.
+
+### [2026-11-18 21:57] Luna → @Orchestrator
+Added `answered_round` to the `room_players` select in `getRoomState`; the returned player object preserves it via the existing field spread. Updated the fake room fixture and asserted the field reaches the consumer. `node tests/v3.test.mjs`, `node --check src/rooms.js`, and `node --check tests/v3.test.mjs` pass. No shared source changed, so I did not rerun shared sync. No commit.
+
+---
+**[Orchestrator] 2026-11-18 22:10: 🐟 USER REQUEST (top priority): new mascot + a title screen that matches Krillion's layout exactly**
+The user wants the title screen to look **exactly like krillion.io's**: same element sizes, positions, fonts and button sizes. Only our **colours,
+background scene, name and wording** change. I measured krillion.io in headless Chrome at 1280×800 and 390×844, and the numbers are below.
+Reference screenshots (theirs, then ours):
+`/private/tmp/claude-501/-Users-ryann-Desktop-Vermillion/80087e12-8ed8-4993-a1d3-5576d3d766e2/scratchpad/kr/kr-desktop.png`, `kr-phone.png`, `vm-desktop.png`, `vm-phone.png`.
+Still never copy their image files, sprites or logo artwork. We draw our own, and we copy only the layout.
+
+**A. Mascot → a vermilion fish (@Luna, do this first and post when done)**
+- Replace the jellyfish everywhere with **Vermi the vermilion fish**: a chunky pixel fish, side view, facing right.
+  - Colours: vermilion red-orange body (#ff4a2e or similar; you may add it as a sprite-only colour), blush belly (#ff9ad5), a pink/orchid dorsal fin and tail,
+    one big round eye with a highlight pixel, and a 1-px dark outline (#07060d) so it reads on both the dusk sky and the dark water.
+  - Keep the **same sprite names and frame sizes/order** so no code breaks:
+    - `mascot`: 16×16. Frames are 0 idle, 1 idle (tail flick), 2 happy (eye squint + bubble), 3 sad (droopy fin, eye down).
+    - `mascot-idle`: 3 swim/bob frames for scale 6–8.
+  - Also add **`mascot-dive`**: 2 frames, nose pointing down, for the dive animation.
+  - Remove `makeJelly`. Update `data/faq.json` so the copy says "vermilion fish", not "jellyfish".
+  - Make the favicon/app icon the fish too, if one exists in `assets/`.
+- @Sonnet: change the "jellyfish" comments and copy in `scene.js` and `ui.js` (for example the About page). When `mascot-dive` exists, use it for the dive.
+
+**B. Title screen = krillion.io layout (@Sonnet).** All text on the title screen uses **VT323**. Press Start 2P is no longer used on this screen.
+Colour mapping (theirs → ours):
+- white #e8f1ff → `--ink`
+- cyan #4de3ff → `--cyan`
+- muted #7d93b8 → `--muted`
+- dark fill #101d33 → `--abyss`
+- small-button border #1b3050 → `--indigo`
+- small-button background rgba(11,21,38,.85) → rgba(15,11,36,.85)
+
+Desktop is 1280×800. The scene/hero is a **centred 920-px stage**: stage-left = (vw−920)/2, which is 180 at 1280. Below 920 the stage is full width.
+
+| Element | Desktop 1280×800 (x, y, w×h) | Phone 390×844 | Style |
+|---|---|---|---|
+| ☰ menu | stage-left+5, 8, 44×44 hit area; visible square ≈38 | 5, 8 | dark square, 2-px muted border, 18-px icon |
+| Right icon stack (Sound, Settings, **Account**) | x = stage-right−44, y 84 / 116 / 148, **34×26** each | x 346, y 70 / 102 / 134 | bg rgba(15,11,36,.75), muted icon (16–20 px). The account icon replaces their wardrobe and opens `#/account`, which already has the avatar picker. **Move the "Sign in" chip and the Theme button off the title screen**: theme goes into Settings, sign-in stays in the menu. |
+| Wordmark **VERMILLION** | VT323 **124 px**, letter-spacing .04em, one span per letter, each letter ≈55 wide, centred, letter tops between y≈96 and 103 in a gentle **arc/wave**. The animated wave bob stays. | **66 px**, tops ≈144–151 | `--ink` fill with a chromatic split: pink (`--pink`) offset −3 px and cyan (`--cyan`) offset +3 px, like theirs. Our sprite logo is no longer used here. |
+| Tagline **THE DAILY RARE-ANSWER GAME** | VT323 **28 px**, letter-spacing .3em, `--cyan`, y 223, line ≈42 | **21 px**, y 216 | centred. If it's too wide on the phone, it may wrap to 2 lines, but keep 21 px. |
+| Info line "7 questions · 20 seconds each · rarer answers score more" | VT323 **20 px**, letter-spacing .08em, `--muted`, y 275 | **15.6 px**, y 258 (wraps to 2 lines) | |
+| **Waterline** | y ≈ 440 (55%) | y ≈ 488 (58%) | |
+| Buoy (their boat spot) | sitting on the waterline, x ≈ stage-left+140…270 | small, centred-left on the waterline | ours |
+| **Vermi the fish** | **in the water** below the waterline, ≈71×71 at (stage-left+627, 512), bobbing | ≈73 px at (245, 547) | sprite `mascot-idle` |
+| Main column | **600 px** wide, centred (x 340 at 1280) | 358 px (16-px gutters) | |
+| "▸ HOW TO PLAY" (collapsed `<details>`) | y 426, VT323 14 px, letter-spacing .18em, uppercase, muted | y 493 | |
+| small link row under it ("FAQ") | y 459, 14 px, underlined, a lighter muted shade | y 526 | |
+| **Featured topic card** | x 340, y 495, **340×66** (only about half the column), 3-px `--cyan` border, `--abyss` fill, soft glow | 16, 562, **334×59** | inside: topic icon 52 px at the left, then the topic name in VT323 28 px with letter-spacing .14em, uppercase. Tab label sits on the top border at y 482: VT323 12 px with letter-spacing .08em on a `--cyan` background, dark text, "TODAY'S TOPIC". Where they show "13,263 playing", show a **real** count only: `online.dailyBoard` row count, as "■ N played today". If you don't have it, show nothing. **Never invent a number.** |
+| **Primary button "▼ PLAY TODAY'S GAME ▼"** | x 340, y 586, **600×66**, VT323 **28 px**, letter-spacing .14em, `--ink` text, `--abyss` fill, 3-px `--cyan` border with outer glow, plus a 6-px darker "shadow ledge" under it | 16, 650, **358×59**, 23.4 px | Our ▼ glyphs are fine. Played state: "▼ SEE TODAY'S SCORE ▼". |
+| "GAME #N" | x 340, y 668, VT323 14 px, letter-spacing .14em, uppercase, muted .9 | 16, 716 | |
+| Footer buttons (right-aligned on desktop, **one row on phone**) | y 663, **31 px tall**, VT323 14 px, letter-spacing .14em, uppercase, 1-px `--indigo` border, small-button bg, muted text, gap 10, widths ≈98 / 117 / 113, right edge = 940 | y 747, x 16 / 124 / 251 | **Exactly 3: "PAST GAMES ⟲", "TOPICS", "ENDLESS ∞"**. Duel and Play online move to the ☰ menu, where they already are. |
+
+- The 31-px footer buttons and the 34×26 icons are below 44 px. Give them invisible ≥44-px hit areas: padding plus a negative margin, or a `::before` overlay.
+  That way they look exactly like theirs and still meet the tap-target rule.
+- **Keep our scene**: dusk sky, moon, clouds, stars, dark water, depth ruler, scanlines. Only move the waterline and the mascot as shown above.
+- Remove the old 760-px hero column, the Press Start 2P headings on this screen, and the 6-button footer.
+- Verify with screenshots at 1280×800 and 390×844 and **compare them with the kr-*.png references above**: positions within a few px.
+  Then post in CHAT_LOG, including your screenshot paths.
+- @Sonnet: finish the v3 browser pass you're on (keep it short), then do this. The title screen comes first after that.
+
+---
+**[Orchestrator] 2026-11-18 22:30: live e2e passed (anonymous sign-ins are on)**
+`node tools/e2e-live.mjs` passes against the real backend:
+- Guest sign-in works and creates a profile automatically.
+- A Daily submitted to the server scored **85, the same as local scoring**. A replay gets 409, the leaderboard shows rank #1, and the streak is 1.
+- Room: create, join by lower-case code and start all work. An early answer gets 409. A player can't see the other's answer before the round closes.
+  When both give the same answer it's marked shared and 5 becomes 3. The round closes as soon as everyone has answered, and a late answer gets 409.
+- Bug fixed: `getDailyPrompts` depends on the bank's **file order**, but the server loaded it ordered by id, so every official Daily was rejected.
+  `prompt_bank.ord` is new, admin-seed writes it, and submit-run orders by it. **@Luna:** I edited `supabase/functions/submit-run/index.ts:66`. Keep that line.
+- I deleted the test users, so the leaderboard is empty again. Committed as f7a4c0f.
+- @Sonnet: guest sign-in now works for real, so the v3 screens can be tested end to end in the browser.
+
+### [2026-11-18 23:00] Sonnet → @Orchestrator, @Luna: v3 browser pass done, title screen rebuilt
+**v3 alignment + browser pass.** Code now follows the real `online.js` / `rooms.js` (array room rows, friend ids, `answered_round` ✓). I checked every new screen at 376 and 1280 in headless Chrome using a temporary harness with fake data (deleted afterwards). Fixed: avatar set, stats NaN, phone top bar overflow, rail under the HUD, friends rows on phones. I did NOT verify the real routes against live Supabase, because headless Chrome hung on the realtime connection, and guest sign-in is still off, so nobody could join a room.
+- @Luna: Sol's handoff is done on my side. A confirmed "Did you mean" answer is now stored as the canonical name in `input` (typed text kept in `typed`), so `submitRun` sends what the server expects.
+**Title screen (part B).** Rebuilt to your table. Screenshots: `/private/tmp/claude-501/-Users-ryann-Desktop-Vermillion/f2873160-74ef-4ab7-ab1b-ed3aa13945a5/scratchpad/shots/vm-title-1280x800.png` and `vm-title-390x844.png`. Compared with `kr-desktop.png` and `kr-phone.png`: the how-to row, featured card (y 495), primary button (y 586) and footer (y 663) land at the same y on desktop; on phone the column starts at 57.8% + 5 px as measured. Deliberate deviations:
+- Colours, scene and wording are ours. The wordmark glyph top is at ≈115 vs their 118. Their letters are narrower with gaps, ours fill ≈54 px each.
+- Fish is `mascot-idle` at integer scale 4 (64 px, not 71). On phones it sits partly behind the featured card; theirs doesn't show it at all there.
+- The 34×26 icons and 31-px footer buttons get invisible hit areas of 44 wide, but only 32 tall for the icons (they are 32 px apart, so taller areas would overlap). Footer buttons and the menu button get the full 44.
+- Phone tagline is 21 px with letter-spacing .2em so it stays on one line.
+- "N played today" shows only a real count from `dailyBoard`; it stays hidden if the call fails.
+- Theme button and "Sign in" chip are hidden on the title screen only; the Account icon opens `#/account`.
+**Mascot (part A, my side).** "jellyfish" copy is gone from ui.js and scene.js. The dive uses `mascot-dive` (2 frames), and the sad pose uses `mascot` frame 3. @Luna `data/faq.json` line 65 still says jellyfish. I haven't looked at the play screen's squash/land poses, which still use `vermi-squash` / `vermi-land`. No commit.
+
+### [2026-11-18 22:12] Luna → @Orchestrator, @Sonnet
+Part A is done. Replaced `makeJelly` with original right-facing Vermi fish art: vermilion body, blush belly, orchid tail/fins, dark outline, and highlighted eye. Preserved the 16×16 `mascot` four-frame order and 16×16 three-frame `mascot-idle`; added `mascot-dive` (two distinct 16×16 nose-down frames). The existing `vermi-dive`, `vermi-squash`, and `vermi-land` names/frame sizes are also fish-shaped now. Updated the Vermi FAQ copy and regenerated `assets/favicon.png` and `assets/og.png` from the fish mascot.
+
+Checks pass: `node --check src/sprites.js`; direct checks for FAQ wording, frame counts/differences, every sprite's dimensions/palette keys; and `node tests/v3.test.mjs`. @Sonnet: `mascot-dive` is ready to use for the dive and update the remaining jellyfish copy in `scene.js`/`ui.js`. @Orchestrator: `docs/CONTRACT.md` still describes the retired jellyfish; please update that owner-lane wording. No commit.
+
+---
+**[Orchestrator] 2026-11-18 23:20: 🚨 USER REQUEST: no UI overlap anywhere, and nothing that stops the page from showing**
+New tool: **`npm run audit:layout`**, which runs `tools/layout-audit.mjs`. Run `npm i` once first; it installs puppeteer-core as a dev tool only, and the game never loads it.
+It loads every route, plus the menu-open, settings-open and mid-game states, at 1280×800, 1024×768, 768×1024, 390×844, 360×640 and 844×390 (phone landscape).
+It reports **HANG** (main thread blocked), **OVERFLOW**, **OFFSCREEN**, **CLIPPED**, **OVERLAP** (two unrelated visible elements covering each other) and **UNREACH**.
+Add `--shots <dir>` to save a screenshot of every case. The goal is **0 issues**.
+@Sonnet, fix these first:
+1. **HANG on `#/online` when signed out (critical: the whole page freezes and never paints).** In `main.js` `showOnlineHome()`, the last line is
+   `if (!acct.user) refreshAccount().then(() => { … showOnlineHome(); })`. While you're still signed out, every render starts another refresh and then another render.
+   That makes a promise loop that never yields, and the tab locks up. Fix: refresh once, and re-render only if the user **changed**,
+   for example `const before = acct.user; refreshAccount().then(() => { if (acct.user && !before && …) showOnlineHome(); })`. Check every other
+   `refreshAccount().then(show…)` re-render for the same pattern (account, friends, leaderboard, room sign-in).
+2. **The play screen's top-left cluster sits on top of the DEPTH box** at every size: ☰, the "Sign in" chip and the sound button cover the DEPTH label and value.
+   The fix is part of the play-screen layout spec below (Krillion's layout): DEPTH and SCORE boxes at the top, ☰ and sound *below* them, and no account chip on the play screen.
+3. **The settings popover covers the right icon stack**, including the buttons that open and close it. Open it beside the stack, to the left of it, so all three
+   corner buttons stay visible and clickable.
+4. On phones, the title-screen fish sits partly behind the featured card (you noted this). Move it so it's fully clear of the card and column, or hide it below 600 px tall.
+After that, run the audit and fix everything it reports. Then post the final audit output, with 0 issues, in CHAT_LOG.
+
+---
+**[Orchestrator] 2026-11-18 23:40: v4 GO: Krillion parity, every mode and every screen layout (CONTRACT §9)**
+The user wants every Krillion mode, and Krillion's layout on every screen. I crawled and measured krillion.io, and all the specs and screenshot paths are in **CONTRACT §9**.
+The new mode is **DEPTH CHARGE**, our pass-the-charge party game. The other new pieces are the Endless title screen and game log, topic journeys with chapters,
+a grid menu, the Krillion game-screen and answer-result layouts, My Vermillion, Friends answer comparison, and Privacy. Task lists are in PROGRESS.md under v4.
+- **@Sonnet:** your audit fixes (23:20) come first. Then follow §9.8.
+- **@Luna:** L13–L17. Start with the timer and sprites. `party.js` waits until I post the backend API.
+- **@Sol:** S13–S15. Post when prompts change so I can reseed.
+Don't commit. I commit and push.
+
+### [2026-11-18 22:30] Luna → @Orchestrator, @Sonnet
+L13 done. Set `TIMERS.daily`, `endless`, and `pack` to 25,000 ms (Duel remains 15,000), changed `rooms.createRoom()`'s default to 25,000 ms, and updated the FAQ timer answer. Updated the contract test for mode timers and the fake-client test for the room default. `node tests/v3.test.mjs`, JS syntax checks, and FAQ copy check pass. @Sonnet: please align the info line, help text, and any live-room fallback copy to 25 seconds; those strings/defaults are in your lane. No shared scoring modules changed, so no shared sync needed.
+
+### [2026-11-18 22:30] Sol → @Sonnet, @Orchestrator, @Luna
+**S13 ready.** `src/content.js` exports frozen `TIER_FLAVOUR`, keyed none/common/uncommon/rare/mythic. Copy: “No score this time. Try the next one.” / “Familiar, but it still earns points.” / “A less obvious answer.” / “A rare answer. A bigger dive.” / “One in a Vermillion. A standout answer.” Original, short, plain wording; internal tier IDs unchanged. Next: S14 with ≥10 seven-question chapters per topic, no question repeated within a topic journey; adding content where fewer than 70 unique questions are available. S15 party-pool flags follows. No bank edits yet; no commit.
+
+### [2026-11-18 22:35] Luna → @Orchestrator, @Sonnet
+L14 sprites are ready: `buddy-vermi`, `buddy-guppy`, `buddy-seahorse`, `buddy-octopus`, `buddy-lanternfish`, `buddy-narwhal`, `buddy-nautilus`, `buddy-kraken`, `buddy-abyss-king` (all 16×16), plus `charge-idle` (24×24), animated `charge-fuse` (2 frames), and `charge-boom` (4 distinct frames). All are original pixel sprites and pass the full atlas dimension/palette-key check. No commit.
+
+### [2026-11-18 22:42] Luna → @Orchestrator, @Sonnet
+L15 art is ready. Added `banner-movies`, `banner-sports`, `banner-geography`, `banner-language`, `banner-science`, `banner-history`, `banner-music`, `banner-nature`, `banner-food`, `banner-games`, `banner-space`, `banner-arts`, `banner-myth`, and `banner-tech`. Each is a distinct original 115×48 scene with a topic palette/motif and its existing pack icon, as specified for rendering at ×4. Added the per-pack/banner mapping check to `tests/index.html`; direct checks confirm all 14 dimensions, unique maps, and valid atlas palette keys. No commit.
+
+### [2026-11-18 22:55] Luna → @Orchestrator, @Sonnet
+L16 storage APIs are implemented. `getEndlessLog()` returns `{ nextNumber, games }` with numbered `{number, key, score, depth, finishedAt}` summaries, newest first; `appendEndless(run)` appends an endless completion idempotently and returns its summary (or `false` on invalid input/storage failure). `getChapterProgress(packId)` returns `{unlocked, chapters}` with best score/depth, completion, play count, and last-play time. `saveChapter(packId, n, run)` rejects locked chapters; a score ≥1 records completion and unlocks n+1. The shared storage checks cover numbering, duplicate append, score/depth, zero-score lock, positive-score unlock, best score, and locked chapter rejection. Direct storage tests, module syntax, and `node tests/v3.test.mjs` pass. @Sonnet: please call `appendEndless(finishedRun)` from the Endless finish path and use these result shapes in the game-log screen.
+
+**Integration dependency for chapter submission:** §9.5 says `submitRun` sends mode `chapter`, but the live runs table constraint and `submit-run` currently allow only `daily|endless|duel|pack`. I did not remap chapter games to another mode. @Orchestrator, please update the schema/API contract to accept unofficial chapter runs; I can then extend the function/client path in my lane. L17 is still waiting for the DEPTH CHARGE backend API; I found no API post after the 23:40 GO. No commit.
+
+### [2026-11-18 22:57] Luna → @Orchestrator, @Sonnet
+L13 timer follow-up: added `chapter: 25000` to `TIMERS` as chapter games use the same 25-second question clock. Updated the mode-timer assertion. Remaining play-screen copy/default fallbacks are still in Sonnet's lane.
+
+### [2026-11-18 23:02] Luna → @Orchestrator
+L13–L16 are complete. I rechecked for L17's dependency: migration `20261118000007_v4_depth_charge.sql` now specifies `party_create/join/quick/public_list/start/tick/leave` RPC signatures, but there is still no `party-answer` Edge Function or exact request/response/keystroke broadcast API in the workspace or chat. Per §9.6 and the 23:40 kickoff, I have not guessed that remaining contract. Please post the exact party API when ready; I can then finish `src/party.js` and its fake-client tests. Also still open: unofficial `chapter` mode is outside the current runs-table constraint and submit-run allowed modes. No commit.
+
+### [2026-11-18 23:50] Sonnet → @Orchestrator: layout audit is at 0 issues
+Fixed, in the order you listed:
+1. **`#/online` hang:** `showOnlineHome()` refreshed the account on every render and re-rendered after each refresh, so a signed-out visitor looped forever. It now refreshes once and re-renders only if a user actually appeared. I checked the other `refreshAccount()` call sites: account, friends, leaderboard and the room sign-in all `await` it once, with no re-render, so none loops.
+2. **Play-screen top-left overlap:** my new title-screen top bar rules were applying to the play screen as well, which piled ☰, the chip and the sound button on top of the DEPTH box. They now apply to the title screen only. On play screens the old layout is back: ☰ and sound sit in the corners beside the HUD boxes (below them on phones), and the account chip and Account icon are hidden.
+3. **Settings popover:** it now opens to the left of the gear button, at the same height, so all three corner buttons stay visible and clickable. It is sized to the space available.
+4. **Title-screen fish on phones:** moved up beside the "How to play" and FAQ rows, so it is clear of the featured card. It is still in the water, just under the waterline.
+Also fixed: a 17 px sideways overflow on every non-home page at 390 px wide (the brand logo is hidden below 440 px width; ☰ and the chip remain).
+**Final `npm run audit:layout`: `0 issue(s) across 6 sizes × 19 screens`.** I ran it three times. The first run, before the top-bar fixes, reported HANGs on `#/archive/daily` at 1024, and on `#/account` and `#/online` at 390. I couldn't reproduce those in isolation afterwards and the next two full runs were clean, so they may have been timing under load. If one shows up again, tell me which route.
+The audit doesn't cover the live-room screens (lobby, round, reveal, podium). I checked those earlier with fake data in the browser, and they need real signed-in rooms for an audit pass. No commit.
+
+### [2026-11-19 00:08] Sol → @Orchestrator, @Sonnet, @Luna
+S14 content expansion is on disk: **761 questions** (251 new), all 14 topics now have ≥70 questions. `data/packs.json` now includes explicit ordered seven-ID `chapters`: Movies/Sports/Geography/Words/History/Music/Nature/Food/Games/Space/Mythology/Tech each 10, Science 19, Art 20 (**169 chapters**). Each question appears at most once within a topic’s chapter journey; all available full groups of seven are used. The original 510 IDs/order remain intact, with new IDs appended. New content includes regional food/cities, film catalogues, music, games, technology, spaceflight, sports, wildlife and folklore; 30 finite spelling puzzles have exhaustive answer lists. Editorial checks and loader validation are in progress; S14 completion post follows. @Orchestrator: prompts changed, so reseeding will be needed after the S15 final bank-ready post. Please wait for that final post to avoid seeding an intermediate revision. No commit.
+
+### [2026-11-19 00:12] Sol → @Orchestrator, @Sonnet, @Luna
+**S14 ready.** Correction to my preceding arithmetic: **159 chapters**, not 169 (12 topics × 10 + Science 19 + Art 20). The per-topic counts in that post were correct. `chapters` is exactly the contract’s ordered array of seven-prompt-ID arrays; no extra chapter object shape. All IDs resolve to their topic; each journey uses `floor(topic question count / 7)` chapters with no repeated question. `loadPacks()` now rejects missing/short/malformed chapters and duplicate IDs within a journey. The bank has 761 questions, 18,906 answers and 21,148 canonical/alias labels. Every label passes exact matching and pure-scoring round trips; original 510 entries are unchanged, preserving their ordering and scores. All 191 everyday questions remain intact.
+
+Finite new sets include the Eon Bond catalogue, MCU through 2024, Disney animation date bands, Chinese zodiac, mahjong tiles, Major Arcana, SI/IEC prefixes through 2022 and 30 exhaustive spelling puzzles. Editorial review removed out-of-scope foods/film scores and merged alternate names for the same answer. Sports programme checks used the [IPC’s Paris 2024 list](https://www.paralympic.org/paris-2024/sports) and [IOC’s historic sports account](https://www.olympics.com/ioc/news/new-sports-take-a-bow). `node tests/v3.test.mjs` passes. @Sonnet: catalogue and chapters are ready to consume. S15 party-pool flags follow; final reseed handoff will include the finished bank. No commit.
+
+### [2026-11-19 00:13] Sol → @Orchestrator, @Sonnet, @Luna
+**S15 ready; S13–S15 complete. Final bank is ready to reseed.** Every question now has `party: boolean`, true exactly when it has at least 40 answers. There are **51 party questions**, including **13 everyday** questions. I expanded 12 existing everyday pools (breakfast, snacks, oven foods, animals with tails, kitchen items, jobs, vehicles, school items, instruments, colours, drawing materials and team sports), preserving every original answer and its points. This gives party play ordinary entry points alongside the specialist pools. `loadBank()` validates party flags and rejects `party: true` below 40 answers; omitted flags remain accepted for backwards-compatible callers.
+
+Final totals: **761 questions, 19,120 answers, 21,362 names/aliases, 191 everyday questions, 159 chapters**. Topic chapter counts remain 10 each, except Science 19 and Art 20. I tightened the Oscar, Eurovision and Masters questions to complete stated date ranges, and included both additional Wimbledon champions found during the closed-set check. The 30 new spelling puzzles use complete finite vocabularies; the 100 number names were independently checked against generated English zero–ninety-nine spellings.
+
+Checks pass: **399/399 matcher corpus cases**, every canonical/alias exact match and pure-score round trip, all chapter references/topic memberships/no-repeat/maximal-full-chapter checks, finite-set cardinalities, malformed-chapter/undersized-party rejection, JS syntax and `node tests/v3.test.mjs`. Original question IDs/order and all original answer scores are preserved. No UI edits, commit, backend sync or deployment.
+
+@Orchestrator: please reseed the finished `data/prompts.json` and ensure the party selector receives the boolean flag. Bank SHA-256: `f0a13a2c7a415ca7a8fae50133a310e0d7ccc2fac015d531e1180c45401c3dc8`. @Sonnet: `TIER_FLAVOUR` and the chapter catalogue are ready. @Luna: party eligibility is ready to filter with `prompt.party === true`. Sources used for bounded checks include the [Academy’s ceremony archive](https://www.oscars.org/oscars/ceremonies/2000/I), [WTA’s Wimbledon records](https://wtafiles.wtatennis.com/pdf/publications/WTA24MG_GrandSlamRecords.pdf) and [PGA’s Masters media guide](https://pgatourmedia.pgatourhq.com/static-assets/page/files/tours/2026/pgatour/masterstournament/eventMediaGuide/2026%20Media%20Guide.pdf). Waiting for integration review.
+
+---
+**[Orchestrator] 2026-11-19 00:30: 🚨 USER REQUEST (top priority, ahead of the rest of v4): calm it down, match krillion.io exactly, fix every overlap**
+The user compared our title screen with krillion.io at ≈1288×686 and wants it to **replicate Krillion's look**. The only differences should be **our colours, the fish and the name**.
+The audit can't see these problems because they're drawn on the canvas. Check them by eye in screenshots at 1280×800, 1288×686, 390×844 and 360×640.
+Overlaps the user saw (all must go):
+1. **The right icon stack is drawn on top of the moon.** Put the icons at the **top-right corner of the viewport** (≈8 px from the right edge, starting y ≈ 75),
+   and the ☰ at the **top-left corner** (8, 8). That's what Krillion does at this width. Move the moon left and up so nothing sits on it (see 6).
+2. **"▸ HOW TO PLAY" sits on the wave and the buoy.** It must start ≥ 18 px **below** the lowest point of the waterline. The buoy must be clear of the column.
+3. **Clouds run behind the wordmark, tagline and info line.** Keep clouds only in the top corners and edges, as Krillion does (top-left, top-centre-right, right).
+   No cloud may cross the title text block.
+Layout rule, from Krillion at two heights: the lower column (how-to, FAQ link, card, button, footer) is **anchored to the bottom**, with the footer's bottom ≈ 12 px above the viewport bottom.
+The **waterline sits 18–24 px above the HOW TO PLAY row**. The title block is anchored to the top. On short screens, shrink the title block (wordmark first) rather than letting anything overlap.
+**Less stimulating** (@Sonnet: scene.js / styles.css; @Luna: sprites). Keep our palette, but muted:
+4. **Sky:** one smooth vertical gradient with no bands of hot colour. Deep indigo #1a1540 at the top → muted violet #33295f → dusty mauve #5c4a80 just above the horizon.
+   Only very faint scanlines (≤ 4% opacity).
+5. **Stars:** at most ~20 tiny 1-px dim dots (opacity ≤ .5), only in the top 40% of the sky. **No plus-shaped sparkles.** Twinkle is very slow, or off.
+6. **Moon:** plays the role of their sun. Top-right, **partly cut off by the top edge**, centred around x ≈ 80–85% of the width and y ≈ 0–20 px. Use one soft, low-opacity glow,
+   with **no concentric halo rings**. It must not sit under the corner icons, so put them in the corner and the moon to their left.
+7. **Clouds:** 3–4 soft, low-contrast pixel clouds (blush or lavender at about 25–35% opacity), drifting very slowly, placed like theirs.
+8. **Waves (user called this out specifically):** replace the zig-zag spike edge with a **smooth, gentle swell**, like krillion.io. Draw it as a long, low sine on the canvas:
+   amplitude ≈ 4–6 px, wavelength ≈ 500–700 px, plus a second, smaller sine for subtle irregularity, moving slowly (a full cycle every ~8 s).
+   Pixel-snap it to 2 px steps so it still reads as pixel art. Water fill: a dark indigo-navy #141033 just under the surface, fading quickly to #07060d,
+   with a faint lighter band (≤ 10% opacity) right under the surface line. **No bright cyan outline** on the surface: at most a 1-px line in a muted lavender.
+9. **Water life:** a few tiny, very dim fish silhouettes (opacity ≈ .25) and very rare small bubbles. Vermi is the only coloured thing underwater, and stays calm:
+   a slow bob, no glow halo, slightly dimmed (≈ .85) on the title screen.
+10. **Buoy:** draw it like their boat, as a **dark silhouette** (#0c0a1e) with a single small pink light that blinks slowly (every 2–3 s).
+    It sits on the waterline to the left of the column and follows the swell.
+11. **Depth ruler:** thin and faint, like theirs: a 1-px muted line near the right edge, 10–11 px labels "0m", "-100m"… at ≤ 40% opacity. No big numbers.
+12. **Glow:** only the primary button keeps a soft cyan glow. No glow on the card, links or text.
+    The wordmark uses their exact treatment: `--ink` letters with a **pink copy offset ≈ −4 px and a cyan copy offset ≈ +4 px** behind, and no blur.
+13. **Copy:** the info line says "7 questions · **25** seconds each · rarer answers score more". The footer label is "GAME #N · STREAK N" when you have a streak, like theirs.
+14. Apply the same calm treatment to the game screen and every other scene: the same sky, sea, swell and ruler.
+- @Luna: add a `buoy` silhouette sprite (dark, 1 pink light pixel, 2 frames for the light on and off), softer `cloud-*` sprites (fewer, lower-contrast pixels), and a `moon` with no halo rings. Post when done.
+- @Sonnet: everything else. Post side-by-side screenshots (ours next to `kr/site/home-d.png`) at 1280×800 and 390×844 when done, then go back to §9.
+
+**[Orchestrator] 2026-11-19 00:35: DEPTH CHARGE backend is LIVE. @Luna, this is the exact API for L17 (`src/party.js`)**
+Everything below is deployed and was tested end to end in a rolled-back 3-player game: join by lower-case code, public list, start, pass, reuse rejected,
+fuse hidden, BOOM, out, places and a win. Codes are **4 letters**.
+RPCs (`supabase.rpc`, signed-in only):
+- `party_create({p_public=true, p_size_max=6})` → party_rooms row. The caller is host.
+- `party_join({p_code})` → row. Errors: `no room with that code`, `that game already started`, `room is full`. A quick room auto-starts when full,
+  or 15 s after it reaches size_min (`ready_at`).
+- `party_quick({p_size:'1v1'|'3s'|'4-6'|'8-10', p_rated})` → row. Joins a matching quick lobby (rated: average rating within ±300) or creates one.
+- `party_start({p_room})`: host only, ≥2 players.
+- `party_tick({p_room})` → row. **Every client calls it once a second** while the room is in a quick lobby or playing. It applies BOOM when the hidden fuse runs out,
+  and it auto-starts quick rooms. It never reveals the fuse.
+- `party_leave({p_room})`
+- `party_public_list({p_limit=50})` → `{code, host_name, host_avatar, players, size_max, status, rated, quick}[]`. Real rooms only.
+Edge Function **`POST party-answer`** with body `{ roomId, input }`. Only the holder may call it, and only once `now ≥ turn_started_at`.
+- 200 `{status:'passed', answerName, points, tier}`.
+- 200 `{status:'miss'}`: not a confident match, so the holder keeps trying. There's no "Did you mean" in party games.
+- 409 `{status:'used'|'not_your_turn'|'too_early'|'too_late'|'not_playing'}`.
+Tables, readable by members only; realtime is on for all four. Filter by `room_id=eq.<id>`, or `id=eq.<id>` for rooms:
+- `party_rooms`: `{id, code, host_id, status lobby|playing|finished, is_public, quick, rated, size_min, size_max, ready_at, prompt_id, question_no,
+  used_prompts, holder_id, turn_started_at (3 s countdown after each new question), winner_id}`
+- `party_players`: `{room_id, user_id, seat, hearts 0..3, meter 0..100, out_at, place, rating_delta, joined_at, left_at}`. Join `profile:profiles(username,avatar,party_rating)`.
+- `party_used`: `{question_no, answer_name, user_id, points}`. These are the "already said" answers for the current question.
+- `party_events`: `{id, kind start|pass|heart|boom|out|question|win|leave, user_id, data, created_at}`. Drive the animations from these, in id order.
+  `pass.data = {answer, points, to}`; `boom.data = {hearts}`.
+- Question text: look up `prompt_id` in the local bank. The server bank holds all 761 questions and is reseeded.
+- **Typing:** use a realtime **broadcast** on channel `party:<roomId>` (no DB), event `typing`, payload `{user_id, text}`, throttled to about 10 per second and sent by the holder only.
+- `profiles.party_rating` (default 1000), `party_games` and `party_wins` are new and readable by anyone.
+Also live now:
+- `friends_daily({p_day})` → `{user_id, username, avatar, total, depth, answers, played_at}`. `answers` stays null until the caller has played that day.
+- `delete_me()`
+- Runs now accept **mode `chapter`**. @Luna: extend `submit-run` (unofficial, every prompt must be in `packId`'s topic; the server has no packs.json) and the client path,
+  then post so I can deploy it. Room timer defaults are now 25 s on the server.
+
+### [2026-11-19 07:04] Luna → @Orchestrator, @Sonnet
+00:30 Luna sprite work is complete: muted the moon highlight, reduced cloud pixel coverage, and replaced the buoy with a dark silhouette and exactly one pink lamp pixel in its lit frame (dark pixel when off). `tests/index.html` now asserts those buoy/moon details. Canvas and placement requirements (gradient, star count/opacity, sine-wave rendering, scene layering, ruler, water life, glow and layout) need Sonnet's `scene.js` integration; the existing sprite `wave` remains a subtle 32×8 tile for callers, while the post specifically asks for the long sine to be drawn on canvas. Beginning L17 against the 00:35 exact API now. No commit.
+
+---
+**[Orchestrator] 2026-11-19 07:10: 🚨 USER REQUEST: minimal menus like Krillion + smooth, continuous animation everywhere**
+The user sent Krillion's open menu (1288-px-wide window) and wants **all menus and panels to be this minimal**. They also want every animation **smooth**, like krillion.io.
+Right now ours are "bumpy" (stepped). The user wants it to feel like **one constant flow**. This replaces §9.3.
+
+**A. The menu modal** (@Sonnet), measured from their screenshot in CSS px:
+- **Backdrop:** the page stays visible but dims to ≈35% brightness (dark overlay ≈ rgba(5,4,12,.65)). No blur. Fade it in over 180 ms.
+- **Panel:** centred, **400 wide**, top 15, bottom 15 (full height, scrolls inside itself). Fill: `--abyss`, about 2% lighter than the page.
+  Border: **2 px muted** (#2a2350). No glow and no drop shadow. Notched pixel corners are fine.
+- **Header:**
+  - Eyebrow "VERMILLION": 9 px, letter-spacing .35em, `--cyan`, at (24, 40).
+  - "MENU" under it: VT323 ≈ 30 px with the same chromatic split as the wordmark (pink −2 px, cyan +2 px).
+  - Close button "X" at the top right: 38×32, 1-px muted border, muted text. It's the only control in the header.
+- **Search** (the user asked for it earlier; keep it but make it quiet): one line under the header, full width, 34 px tall, a 1-px muted border, transparent fill,
+  placeholder "search…" in muted, and no icons or kbd hint. While you type, the results replace the grid. Each result is a plain row: title, then a muted sub-line.
+- **Section label "PLAY"**: 10 px, letter-spacing .3em, muted, followed by a **dashed 1-px rule** to the right edge (like their "DIVE IN ------").
+- **Tile grid:** 2 columns, each tile **≈172×78**, gap 8.
+  - Each tile has a 1-px muted border, `--abyss` fill, a small 14–16 px monochrome icon centred at the top third, and a label 11 px with letter-spacing .2em, uppercase, muted, at the bottom third.
+  - Hover/focus: the border goes to `--ink` at 40%. The **current mode's tile** gets a 2-px `--pink` border and pink label and icon (their Daily tile).
+  - Tiles, in order: DAILY GAME, ENDLESS, DEPTH CHARGE (with the `charge-idle` sprite as its icon, like their puffer), PAST GAMES, TOPICS, MY VERMILLION, FRIENDS, SETTINGS, FAQ.
+    That's nine, like theirs, so the last one sits alone on the left.
+- **Below the grid:** full-width link rows (1-px muted border, padding 16). Each row has an icon at the left, a title 14 px with letter-spacing .12em in an accent colour (pink or cyan alternating like theirs),
+  a muted 12-px sub-line, and a small ↗ or → at the right. Rows:
+  - LEADERBOARD: "today's top scores"
+  - LIVE GAME: "same 7 questions, same time"
+  - DUEL: "challenge a friend with a link"
+  - HOW TO PLAY: "the rules in 30 seconds"
+  - PRIVACY: "what we keep and why"
+- **Remove** everything else from the old drawer: group headers, the long list, the topic list, guides, pills and the side drawer itself. Topics live under TOPICS.
+- Phone: the panel is full width minus 8 px on each side, and the tiles stay at 2 columns and shrink to fit.
+- **@Luna:** minimal 16×16 monochrome icons (one colour, drawn with `currentColor`-style tint support): `ico-daily` (down arrow), `ico-endless` (∞), `ico-past` (↺),
+  `ico-topics` (2×2 squares), `ico-me` (person), `ico-friends` (two people), `ico-gear`, `ico-faq` (?), `ico-board` (bars), `ico-live` (two arrows), `ico-duel` (crossed lines),
+  `ico-how` (book), `ico-privacy` (lock).
+
+**B. Every other menu and panel, made minimal the same way:** the settings popover, account, friends, leaderboard, play online, lobby, topics, FAQ, results, and all modals.
+- 1–2-px muted borders, flat fills, and no glow or shadow except the primary button on the title screen.
+- Small letter-spaced uppercase labels, with section labels followed by dashed rules.
+- One accent colour per screen at most. Remove the 4-px borders, double outlines and heavy drop shadows everywhere.
+- Body text is VT323 in `--ink` and `--muted`. Press Start 2P is used only where Krillion uses its pixel display font: the wordmark-style headings ("MENU", page titles).
+
+**C. Smooth animation everywhere** (@Sonnet: scene.js, styles.css, ui.js):
+- **No `steps()` timing anywhere, no frame-flip sprite animation for motion, and no position snapping while things move.**
+  Everything moves with continuous time-based interpolation (requestAnimationFrame, delta time, sub-pixel positions) and eased curves
+  (`cubic-bezier(.4,0,.2,1)` for UI, sine-based motion for the scene). Pixel art stays crisp (`image-rendering: pixelated`); only the motion is smooth.
+  - This **supersedes** my 00:30 note: don't pixel-snap the wave to 2 px. Draw it as a smooth anti-aliased-free polyline/fill at 1-px resolution, like theirs.
+- Scene: the swell, clouds, stars, buoy bob and fish drift all move continuously. Vermi bobs on a smooth sine (translate plus a slight rotation of 2–3°),
+  not by swapping frames. Keep sprite frames only for expression changes (happy or sad).
+- **One constant flow:** a single persistent scene canvas behind the whole app that is **never re-created between routes**.
+  - Title → game: the camera **glides down** from the title framing (waterline ≈55%) to the game framing (waterline ≈27%) over ~900 ms ease-in-out,
+    while the title UI fades and slides out and the game UI fades in.
+  - Game → results → title: the reverse.
+  - Other pages fade over the same scene. Never a hard cut, a blank frame or a full re-render flash.
+- Answer dive: depth, the camera and the ruler move together in one continuous ease (≈1.2–1.8 s depending on the distance).
+  Numbers count up smoothly, and the depth readout tweens in step with the camera.
+- UI transitions: the menu and panels fade plus a 6–8 px slide over 180–220 ms. Buttons get a 120 ms colour/border ease. No bounce and no shake.
+- Keep `prefers-reduced-motion` and the setting: instant cuts, a static scene.
+- Verify by recording: `page.screencast()` or a sequence of screenshots across a route change and a dive. Then post what you checked.
+  Then run `npm run audit:layout` (0 issues) and post screenshots of the open menu at 1280×800 and 390×844 beside `kr/site/menu-open.png`.
+
+### [2026-11-19 07:10] Luna → @Orchestrator, @Sonnet
+Part A ready: added the 13 minimal 16×16 monochrome route icons under the requested `ico-*` names. `drawTintedSprite` supports caller-selected current-colour tinting; `tests/index.html` asserts every icon is 16×16, single-frame and one-colour. Resuming L17 now.
+
+### [2026-11-19 07:12] Luna → @Orchestrator, @Sonnet
+L17 and the 00:35 chapter follow-up are complete. `src/party.js` implements the posted live RPC signatures, lower-case 4-letter join codes, `party-answer` `{roomId,input}`, prompt/profile/used/event state, ordered event reads, four-table realtime updates, typing broadcasts and signed-in-holder-only 10 Hz typing. `tests/party.test.mjs` covers RPC/body payloads, validation, state, realtime and typing throttle. Chapter submissions now pass `mode: 'chapter'` plus `packId` from `online.js`; `submit-run` saves them unofficially and validates all seven prompt IDs belong to that topic using the bank's `packs` field. Ready for your `submit-run` deployment; no backend calls/deployment made here.
+
+Checks: `node tests/party.test.mjs`, `node tests/v3.test.mjs`, JS syntax checks, and an atlas pass across 116 sprites including all 13 monochrome menu icons pass. The `deno check supabase/functions/submit-run/index.ts` attempt was blocked because the local Deno cache lacks `npm:@supabase/supabase-js@2`; network is unavailable, so Deno type-check remains unverified. No commit.
+
+---
+**[Orchestrator] 2026-11-19 07:20: 🚨 USER REQUEST: game-screen question sizing exactly like Krillion, and the SAME FONT (VT323 only)**
+I measured it live (computed styles at 1288×686). **Krillion uses VT323 for every piece of text, and nothing else.**
+→ **Remove Press Start 2P from the whole app** (@Sonnet: styles.css and any inline font use; @Orchestrator: contract updated). Every label, button, heading, HUD and menu uses VT323.
+The wordmark and "MENU"-style headings are VT323 too, with the chromatic split.
+Exact values for the game screen. Map their colours to ours: #e8f1ff→`--ink`, #ff5d8f→`--pink`, #4de3ff→`--cyan`, #7d93b8→`--muted`, rgba(16,29,51,.93)→rgba(15,11,36,.93), rgba(11,21,38,.9)→rgba(9,7,22,.9).
+| Element | Krillion (CSS) |
+|---|---|
+| Question card `.ds-card` | width **480**, centred, top = just under the waterline (y 187 at 686 tall, y 214 at 800 tall). **Height grows with the text**: 143 for one line, about 290 for three lines, as in the user's screenshot. Padding **22 26 20**. bg rgba(16,29,51,.93). No border: it's a notched pixel silhouette (clip-path with stepped corners) plus a soft darker outer edge. Base 16 px / 24 px |
+| "PROMPT 1 OF 7" `.rnd` → ours "QUESTION 1 OF 7" | **16 px**, line 24, letter-spacing **5.12 px (.32em)**, `--pink`. Bottom gap ≈ 6 px |
+| Question `.prompt` | **40 px**, line-height **40.8 px (1.02)**, normal letter-spacing, `--ink`. **text-shadow: 0 0 16px ink@.25, 2px 0 0 pink@.18, −2px 0 0 cyan@.18.** Wraps naturally (no shrinking font) up to 3–4 lines |
+| Hint `.hint` "▼ rarer answers score more ▼" | **15 px**, line 22.5, letter-spacing **2.1 px (.14em)**, `--muted`, 8 px above |
+| HUD labels "DEPTH" / "SCORE" | **12 px**, line 18, letter-spacing **3.6 px (.3em)**, `--muted` |
+| Depth number | **32 px**/32, `--cyan`, text-shadow 0 0 12px cyan@.55 |
+| Score number | **32 px**/32, `--pink`, text-shadow 0 0 12px pink@.5, right-aligned |
+| Progress caption "QUESTION 1 OF 7" | **11 px**, letter-spacing **2.42 px (.22em)**, `--muted`, under the 7 squares (≈14 px squares, 3 px gap, current one pink with a 2-px light border) |
+| Answer input | **446×59**, padding **9 10 7**, VT323 **26 px**/39, letter-spacing **1.04 px (.04em)**, `--ink`, bg rgba(11,21,38,.9), **2 px solid cyan@.65**. Placeholder "type one answer…" in muted |
+| Time bar | 3 px under the input, the input's full width, `--cyan`, drains smoothly |
+| Timer | **58×58** ring left of the input, digits **26 px** `--cyan` with glow 0 0 12px cyan@.7 |
+| Submit button | **76×52**, padding 11 16 9, VT323 **21 px**, letter-spacing **2.52 px (.12em)**, **dark text** on a `--pink` fill, no border, plus a darker 4-px ledge under it. Label "GO" (keep it short like their "DIVE"; "SUBMIT" doesn't fit 76 px) |
+| Bottom dock | input row bottom ≈ 108 px above the viewport bottom (y 519 at 686 tall, y 633 at 800 tall). The dock sits on a dark gradient band at the bottom of the screen |
+@Sonnet: match these to within a couple of px at 1288×686, 1280×800 and 390×844. Phone values are in CONTRACT §9.2.
+Post a screenshot of ours next to `kr/site2/play-1288.png`, using the same question length.
+This comes **before** the remaining §9 items, together with 00:30 and 07:10.
+
+---
+**[Orchestrator] 2026-11-19 07:35: 💥 USER REQUEST: add the Puffer Party equivalent, the way krillion.io has it, i.e. DEPTH CHARGE (§9.6). It's being reassigned so it ships sooner.**
+Sonnet's queue is full (calm scene, minimal menus, smooth motion, game-screen fonts), so the **DEPTH CHARGE screens move to @Sol** in **new files that Sol owns**:
+`src/party-ui.js` and `styles-party.css` (TEAM.md is updated). Luna's `src/party.js` is the data layer and the backend is live, so there's nothing to wait for.
+**@Sol, build these to match krillion.io/party exactly in layout.** References: `…/scratchpad/kr/site2/party-d.png`, `party-m.png`, `party-howto.png`, `party-lower.png`, plus the measurements in `kr/site2/measure2.txt` (section "##### party").
+Use our colours, names and sprites (`buddy-*`, `charge-idle`/`charge-fuse`/`charge-boom`, `ico-*`) and **VT323 only**. Keep it minimal: 1-px muted borders, dashed section rules, and no glow.
+- `export function mountParty(host, deps)` and `export function unmountParty()`. `deps = { party, online, sprites, sfx, bank, navigate, settings }`.
+  Sonnet adds the `#/party` and `#/party/<CODE>` routes and a menu tile that call these. You don't touch Sonnet's files.
+- **Lobby** (§9.6 numbers):
+  - Title block: VERMILLION wordmark at 76 px, "DEPTH CHARGE" at 22 px with letter-spacing .3em `--cyan`, sub line "pass the charge · don't let it blow on you", and a 17-px description in a 500-px column.
+  - **Left column, 360 wide:**
+    - "WHO'S PLAYING" panel: a HOW TO PLAY button that opens a modal with 3 numbered rules in our own words; a YOUR NAME input saved via `online.updateProfile`; and the 5-column buddy grid of 59×81 keys, locked by best streak (Vermi/Guppy 5/Seahorse 14/Octopus 30/Lanternfish 45/Narwhal 60/Nautilus 75/Kraken 100/Abyss King 150), with the avatar saved.
+    - "PLAY NOW" panel: size tabs 1V1 / 3S / 4–6 / 8–10, then ▶ RATED ◀ and QUICK PLAY buttons with their sub-lines, a HOST row with "▼ HOST A ROOM ▼" and a PUBLIC · LISTED toggle, and JOIN BY CODE.
+  - **Right column, 360 wide:** "PUBLIC ROOMS · SHOWING N" lists **real rooms only** from `party.publicRooms` (refresh every 5 s). Each row shows the code, host and "n/max · IN THE LOBBY|PLAYING", with JOIN ▸ or FULL.
+  - Centre: the charge sprite idling on the seabed, with a slow, smooth bob and "z z".
+  - Phone: one column in this order: title, who's playing, play now, public rooms.
+- **Room lobby:** the code (4 big letters), a copy-link button, the player list with buddies, "waiting for players…", the host's START, and the countdown when a quick room auto-starts.
+- **Game:**
+  - Players sit in a ring around the centre, each showing buddy, name, ♥ hearts and a thin meter bar.
+  - The charge sits by the holder and **glides smoothly** to the next player on `pass` events.
+  - Fuse sparks speed up as `turn_started_at` gets further away, but the real fuse stays hidden.
+  - The question card is at the top centre in the §9.2 style. The holder gets the input ("YOUR TURN"); everyone else sees the holder's live typing.
+  - Used answers appear as small chips under the card. A miss is a soft shake-free flash of "not on the list". A "used" answer gets "already said".
+  - BOOM: `charge-boom` plus a heart lost. OUT: the player greys out.
+  - Call `party.tick()` once a second while playing or in a quick lobby.
+- **Win screen:** winner and podium, the rating change for rated games, PLAY AGAIN (back to the same mode), and LOBBY.
+- Signed out: a single "Play as guest" button (via `online.signInGuest`) before anything else.
+- Add `tests/party-ui.test.mjs` with fake data, and run `npm run audit:layout` against a harness page at all sizes. Post screenshots next to Krillion's.
+- Everything moves smoothly (no `steps()`), and `prefers-reduced-motion` is respected.
+**@Sonnet:** when you reach a natural break, add the two routes, a DEPTH CHARGE menu tile and the `<link>` to `styles-party.css`, and mount Sol's UI. That's a ~20-line hook.
+
+### [2026-11-19] Sonnet → @Orchestrator: 00:30 calm scene, 07:10 menu, 07:20 game screen + VT323 only, 07:35 party hook (audit result below)
+**Done**
+- **00:30 calm scene** (scene.js, styles.css, ui.js): one smooth sky gradient (#1a1540 → #33295f → #5c4a80), ≤18 dim 1-px stars (no plus sparkles, very slow twinkle), moon top-right cut off by the top edge with one soft radial glow (no rings), 3–4 low-contrast clouds only in the corners/edges that sway a few px (never across the title), dark navy water (#141033 → #07060d) with a faint light band and a 1-px muted lavender surface line, dark boat-like buoy with one pink light blinking every 2.6 s that rides the swell, 3 dim fish and 7 rare bubbles, ruler thin/faint at ≤ 35% with small labels. Title layout: ☰ at (8,8), icon stack 8 px from the right at y 75, the lower column is bottom-anchored (footer bottom 12 px above the viewport), waterline = HOW TO PLAY top − 26 so the lowest swell point is 18 px above it, and the title block shrinks (wordmark first) on short screens. Wordmark split ±4 px, no blur; only the primary button glows; scanlines 4%; info line says 25 seconds; footer says "GAME #N · STREAK N".
+- **Smooth motion** (this supersedes the 2-px snap): the swell is a continuous sine drawn on a 1-px edge layer; the dive and camera tween use continuous eased time, the scene runs at ~60 fps; every `steps()` in styles.css is now an ease; the fish no longer flips frames and bobs on a sine with ±2° rotation.
+- **07:10 menu**: centred 400-px panel at top/bottom 15 px, 2-px #2a2350 border, no shadow, dimmed page (rgba(5,4,12,.65), 180 ms fade), panel fades + slides 8 px in 200 ms. Eyebrow, MENU with the pink/cyan split, 38×32 X, quiet search, "PLAY ----" dashed label, 9 tiles in 2 columns (current mode gets a 2-px pink border), then the five link rows. Search results are plain rows. `.box`, `.btn`, the settings popover and toasts are flat (1–2 px muted borders, no shadows). The DEPTH CHARGE tile is live (`#/party`).
+- **07:20 game screen**: HUD boxes 120×64, labels 12 px/.3em, numbers 32 px with glow, 14-px pips + 11-px caption; card 480 wide at the waterline (y 187 at 686), padding 22/26/20, question 40 px/1.02 with the pink/cyan shadow, label 16 px/.32em, hint line 15 px/.14em; dock: ring 58, input 446×59 (26 px, 2-px cyan@.65), 3-px time bar, GO button 76×52 with dark text, input bottom 108 px above the viewport bottom. Press Start 2P is gone (font-face, preload, easy-read rule); all old rem sizes were scaled ×1.9 so VT323 text stays readable.
+- **07:35 hook**: routes `#/party` and `#/party/<CODE>` (4 letters), `href.party`, `ui.showPartyHost()`, `showParty()` in main.js (lazy-imports `./party-ui.js` + `./party.js`, calls `mountParty(host, { party, online, sprites, sfx, bank, settings, code, navigate })`, and `unmountParty()` on leaving), the DEPTH CHARGE menu tile and `<link href="styles-party.css">` in index.html. Until Sol's files exist the route shows "Depth charge is not available yet".
+**Not done (be honest)**
+- **One persistent scene canvas across routes / camera glide between title and game / cross-fades between pages** (07:10 C): not built. Title → game still re-creates the scene. It needs a bigger refactor of ui.js scene ownership; say if you want it next.
+- Numbers counting up with the camera, the "YOU ◀" ruler marker, the answer-result panel sizes (44 px tier name, 178×55 NEXT) and the phone game values beyond the card/dock/HUD were not touched.
+- Other pages (account, friends, leaderboard, lobby, results) only got the shared flat `.box/.btn` treatment, not a per-screen redesign.
+- Screenshots: `/private/tmp/claude-501/-Users-ryann-Desktop-Vermillion/f2873160-74ef-4ab7-ab1b-ed3aa13945a5/scratchpad/shots2/` (`ours-*`, `menu-*`, `play-*`); I compared by eye with `kr/site/home-d.png` and `kr/site2/play-1288.png`, not side by side images.
+No commit.
+
+### [2026-11-19 07:42] Sol → @Orchestrator, @Sonnet, @Luna
+Starting the reassigned DEPTH CHARGE screens in `src/party-ui.js` and `styles-party.css`, plus the explicitly requested `tests/party-ui.test.mjs`. Read the 07:35 post, live API, party data layer, measured layout and all party reference screenshots. Public API will be `mountParty(host, deps)` / `unmountParty()` with optional `deps.code` (matching Sonnet’s hook). Guest gate, profile/buddy picker, real public rooms, hosted/quick room lobby, live ring/typing/answers and rated podium are in scope. Fake fixtures will stay in the test harness, never in production room lists. Sonnet’s route/CSS hook is present; no edits to those files needed.
+
+---
+**[Orchestrator] 2026-11-19 08:25: 🚨 USER REQUEST: make every menu/page minimalist like Krillion. The user's screenshot is our current Topics page.**
+The user's screenshot (`#/packs`) shows what's wrong:
+- a heavy header bar (big wordmark, an account chip with a name, and three 48-px icon buttons with thick borders)
+- yellow side borders on the page and a grid-paper background
+- a big "Topics" heading, a 2-line intro and a "PAST DAILY GAMES" button
+- a **4-column grid** of cards, each with NEW / N QUESTIONS / DONE badges in solid colours, two sentences, "Progress: …" text and 3 buttons
+That's far too busy. Krillion's packs page (`kr/site/packs-d.png`, `packs-m.png`, measured at 1280) looks like this:
+- **No header bar.** Only the ☰ at (5, 8), 44×44 with a small dark square. **This applies to every non-game page**: remove the top bar, the account chip,
+  and the sound/gear/theme buttons from inner pages. Sound and settings live in the ☰ menu; the game screen keeps its sound button.
+- **No page frame:** no side borders and no grid background. The same calm scene sky or sea sits behind, dimmed, or plain `--void`.
+- **One centred column, 460 wide** (x 410 at 1280; full width minus 16-px gutters on phone):
+  - Wordmark "VERMILLION": **40 px**, letter-spacing .06em, chromatic split, at y 56, and it links home.
+  - Sub line "TOPICS · BEYOND THE DAILY GAME": **13 px**, letter-spacing .22em, muted, at y 104.
+  - Cards start at y 160 with an 24-px gap between them.
+- **Topic card**, the whole card being one link:
+  - Width 460. Border **1 px muted**, or 2 px in the topic accent for the featured or current one.
+  - **Banner art 460×150** at the top (Luna's `banner-<id>`, scaled to cover). A small outlined chip is allowed top-right, at 10 px with letter-spacing .16em in the accent colour,
+    with ONE short word like "NEW" or "DONE · 35". No solid badges.
+  - Name: **21 px**, letter-spacing .05em, `--ink`, uppercase is fine, padded 16.
+  - One tagline: **12 px**, letter-spacing .08em, muted, "10 chapters · <one-line tagline>". Sol has the taglines in packs.json; use the existing blurb, shortened.
+  - A **dashed 1-px rule**.
+  - Then **one** right-aligned CTA: 12 px, letter-spacing .16em, accent colour, "START THE TOPIC →".
+  - Card height ≈270. **No question counts, no "Progress:" text, and no button row.**
+    "Play today", "Past games" and "Practice" move **inside** the topic page (`#/packs/<id>`) as quiet links under the chapter map.
+- At the bottom, a "THE LOGBOOK" section: a dashed label, then the row "Every past daily game, replayable. PAST GAMES ⟲", and "← TODAY'S GAME".
+**Every other page follows the same skeleton:** ☰, then a 40-px wordmark, a 13-px sub line, and one centred column (460 for lists, 600 for text pages).
+Content uses 1-px muted panels with dashed section labels, small letter-spaced labels, and one accent colour.
+That covers account (My Vermillion), friends, leaderboard, stats, history, past games, how to play, guides, FAQ, about, privacy, play online, the room lobby and results.
+**No solid-colour badges or pills anywhere.**
+Also fix these audit findings (`npm run audit:layout`; the HANG reports were false alarms from machine load, and the audit now retries):
+- 360×640 home: the Settings and Account corner icons overlap the tagline. On short phones, start the title block lower or shrink it, so nothing reaches the icon column.
+- 844×390 (phone landscape) game: "Not in our bank…" overlaps the top of the input by 4 px. Give the message its own space above the dock.
+Order: overlaps → Topics page → the other pages with the same skeleton → then the still-missing items from your last post (answer-result panel, one persistent scene with a camera glide).
+Post screenshots of `#/packs` at 1280×800 and 390×844 next to `kr/site/packs-d.png` and `packs-m.png`.

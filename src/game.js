@@ -12,7 +12,7 @@ export const TIER_INFO = {
   mythic: { label: 'ONE IN A VERMILLION', short: '1 in a Vermillion', emoji: '✨', min: 81, max: 100 },
 };
 
-const DEFAULT_LIMIT_MS = { daily: 20000, endless: 20000, duel: 15000, pack: 20000 };
+const DEFAULT_LIMIT_MS = { daily: 25000, endless: 25000, duel: 15000, pack: 25000, chapter: 25000 };
 
 /** Rarity tier for a point value (the same buckets are used by share text and the UI). */
 export function tierOf(points) {
@@ -36,6 +36,7 @@ export function createGame({
   timeLimit,       // seconds (kept from v1)
   timeLimitMs,     // milliseconds (preferred)
   match,
+  score,           // optional shared scorer (score.js scoreAnswer): the points it returns are the ones recorded
   dayKey = null,
   category = null,
   practice = false,
@@ -120,12 +121,13 @@ export function createGame({
     const prompt = prompts[index];
     const res = match(prompt, input);
     if (res.status === 'match') {
+      const sc = score ? score(prompt, input) : null;   // same function the server uses, so both always agree
       resolve(prompt, {
         promptId: prompt.id,
         input: String(input).trim(),
-        answerName: res.answer.name,
-        points: res.points,
-        corrected: res.corrected === true,
+        answerName: sc && sc.answer ? sc.answer : res.answer.name,
+        points: sc ? sc.points : res.points,
+        corrected: sc ? sc.corrected : res.corrected === true,
       }, false, res.answer);
       return { status: 'match', result: last };
     }
@@ -149,7 +151,8 @@ export function createGame({
     if (timeoutIfExpired(t)) return { status: 'timeout', result: last };
     if (!suggestion) return { status: 'ignored' };
     const prompt = prompts[index], sg = suggestion;
-    resolve(prompt, { promptId: prompt.id, input: sg.input, answerName: sg.answer.name, points: sg.points, corrected: true }, false, sg.answer);
+    const sc = score ? score(prompt, sg.answer.name) : null;   // the accepted suggestion is scored as the canonical name
+    resolve(prompt, { promptId: prompt.id, input: sg.answer.name, typed: sg.input, answerName: sg.answer.name, points: sc && sc.points > 0 ? sc.points : sg.points, corrected: true }, false, sg.answer);
     return { status: 'match', result: last };
   }
   /** NO to "Did you mean X?": forget it and keep playing. */

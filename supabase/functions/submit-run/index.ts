@@ -17,7 +17,7 @@ let cachedAt = 0;
 type AnswerInput = { promptId: string; input: string };
 
 type RequestBody = {
-  mode: 'daily' | 'endless' | 'duel' | 'pack';
+  mode: 'daily' | 'endless' | 'duel' | 'pack' | 'chapter';
   packId?: string | null;
   dayKey?: string | null;
   practice?: boolean;
@@ -75,7 +75,7 @@ async function loadBank(service: ReturnType<typeof serviceClient>) {
 function parseBody(value: unknown): RequestBody | null {
   if (!value || typeof value !== 'object') return null;
   const body = value as Record<string, unknown>;
-  if (!['daily', 'endless', 'duel', 'pack'].includes(String(body.mode))) return null;
+  if (!['daily', 'endless', 'duel', 'pack', 'chapter'].includes(String(body.mode))) return null;
   if (!Array.isArray(body.answers) || body.answers.length !== 7) return null;
   const answers: AnswerInput[] = [];
   for (const raw of body.answers) {
@@ -85,12 +85,12 @@ function parseBody(value: unknown): RequestBody | null {
     answers.push({ promptId: answer.promptId, input: answer.input });
   }
   if (new Set(answers.map(answer => answer.promptId)).size !== answers.length) return null;
-  if (body.mode === 'pack' && (typeof body.packId !== 'string' || !body.packId)) return null;
+  if (['pack', 'chapter'].includes(String(body.mode)) && (typeof body.packId !== 'string' || !body.packId)) return null;
   if (body.dayKey != null && !validDay(body.dayKey)) return null;
   if (typeof body.practice !== 'boolean') return null;
   return {
     mode: body.mode as RequestBody['mode'],
-    packId: body.mode === 'pack' ? String(body.packId) : null,
+    packId: body.mode === 'pack' || body.mode === 'chapter' ? String(body.packId) : null,
     dayKey: body.dayKey == null ? null : String(body.dayKey),
     practice: body.practice,
     answers
@@ -179,7 +179,7 @@ Deno.serve(async (req: Request) => {
       if (expected.length !== 7 || expected.some((prompt, index) => prompt.id !== promptIds[index])) {
         return json({ error: 'These questions do not match that daily game.' }, 400);
       }
-    } else if (body.mode === 'pack' && selectedPrompts.some(prompt => !prompt.packs?.includes(body.packId!))) {
+    } else if ((body.mode === 'pack' || body.mode === 'chapter') && selectedPrompts.some(prompt => !prompt.packs?.includes(body.packId!))) {
       return json({ error: 'A question does not belong to this topic.' }, 400);
     }
 

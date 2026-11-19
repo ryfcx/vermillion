@@ -3,6 +3,15 @@ import { normalize } from './matcher.js';
 const CATEGORIES = new Set(['geography', 'science', 'film', 'music', 'sports', 'history', 'language', 'food', 'nature', 'pop', 'games', 'space', 'arts', 'myth', 'tech', 'animals', 'literature', 'tv']);
 const PACK_IDS = new Set(['movies', 'sports', 'geography', 'language', 'science', 'history', 'music', 'nature', 'food', 'games', 'space', 'arts', 'myth', 'tech']);
 
+/** Original, plain-language copy for the v4 answer-result screen. */
+export const TIER_FLAVOUR = Object.freeze({
+  none: 'No score this time. Try the next one.',
+  common: 'Familiar, but it still earns points.',
+  uncommon: 'A less obvious answer.',
+  rare: 'A rare answer. A bigger dive.',
+  mythic: 'One in a Vermillion. A standout answer.',
+});
+
 /** Fetch and validate a bank before exposing it to the game. */
 export async function loadBank(url = './data/prompts.json') {
   const response = await fetch(url);
@@ -16,6 +25,8 @@ export async function loadBank(url = './data/prompts.json') {
     if (typeof prompt?.id !== 'string' || !prompt.id.trim() || ids.has(prompt.id) ||
         !CATEGORIES.has(prompt.category) || typeof prompt.text !== 'string' || !prompt.text.trim() ||
         typeof prompt.everyday !== 'boolean' || (prompt.everyday && prompt.answers?.length < 15) ||
+        (prompt.party !== undefined && (typeof prompt.party !== 'boolean' ||
+          (prompt.party && prompt.answers?.length < 40))) ||
         !Array.isArray(prompt.packs) || prompt.packs.some(id => !PACK_IDS.has(id)) ||
         new Set(prompt.packs).size !== prompt.packs.length ||
         typeof prompt.hint !== 'string' || !prompt.hint.trim() ||
@@ -61,7 +72,11 @@ export async function loadPacks(url = './data/packs.json') {
   for (const pack of data.packs) {
     if (!PACK_IDS.has(pack?.id) || ids.has(pack.id) ||
         ['name', 'blurb', 'icon', 'display', 'unit'].some(key => typeof pack[key] !== 'string' || !pack[key].trim()) ||
-        !Number.isFinite(pack.pointsPerUnit) || pack.pointsPerUnit <= 0) {
+        !Number.isFinite(pack.pointsPerUnit) || pack.pointsPerUnit <= 0 ||
+        !Array.isArray(pack.chapters) || pack.chapters.length < 10 ||
+        pack.chapters.some(chapter => !Array.isArray(chapter) || chapter.length !== 7 ||
+          chapter.some(id => typeof id !== 'string' || !id.trim())) ||
+        new Set(pack.chapters.flat()).size !== pack.chapters.length * 7) {
       throw new Error(`Invalid pack: ${pack?.id ?? '(missing id)'}.`);
     }
     ids.add(pack.id);

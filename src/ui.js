@@ -6,6 +6,7 @@ import { href } from './router.js';
 import { TIER_INFO, extremes } from './game.js';
 import { startScene, stopScene } from './scene.js';
 import { normalize } from './matcher.js';
+import { ONLINE } from './config.js';
 
 export function h(tag, attrs = {}, ...kids) {
   const el = document.createElement(tag);
@@ -95,13 +96,14 @@ export function createUI(root, on) {
     const brand = h('a', { class: 'brand', href: href.home(), 'aria-label': 'Vermillion home' }, logo, h('span', { class: logo ? 'sr-only' : 'brand-text', text: 'VERMILLION' }));
     menuBtnEl = h('button', { class: 'sq-btn menu-trigger', type: 'button', 'aria-label': 'Open menu', 'aria-controls': 'drawer', 'aria-expanded': 'false', onclick: (e) => { e.stopPropagation(); toggleDrawer(); } }, icon('menu', '☰'));
     stackEl = h('div', { class: 'icon-stack', role: 'toolbar', 'aria-label': 'Sound and display settings' });
-    const top = h('header', { class: 'topbar' }, h('div', { class: 'topbar-inner' }, menuBtnEl, brand, h('span', { class: 'spacer' }), stackEl));
+    chipEl = h('a', { class: 'acct-chip', href: href.account(), hidden: true });
+    const top = h('header', { class: 'topbar' }, h('div', { class: 'topbar-inner' }, menuBtnEl, brand, h('span', { class: 'spacer' }), chipEl, stackEl));
     scrimEl = h('div', { class: 'drawer-scrim', onclick: () => closeDrawer() });
     drawerEl = h('aside', { class: 'drawer', id: 'drawer', 'aria-label': 'Menu', 'data-open': 'false' });
     popEl = h('div', { class: 'settings-pop', id: 'settings-pop', role: 'dialog', 'aria-label': 'Settings', 'data-open': 'false' });
     page = h('main', { class: 'page', id: 'page', tabindex: '-1' });
     const footer = h('footer', { class: 'footer' }, h('div', { class: 'footer-inner' },
-      h('div', {}, h('b', { text: 'Vermillion' }), ' — free, original and ad-free. No accounts. Your scores live only in this browser.'),
+      h('div', {}, h('b', { text: 'Vermillion' }), ' — free, original and ad-free. An account is optional: solo games work offline and save in this browser.'),
       h('div', { class: 'footer-links' }, link('About', href.about(), { cls: '' }), link('Guides', href.guides(), { cls: '' }), link('FAQ', href.faq(), { cls: '' }), link('Stats', href.stats(), { cls: '' }))));
     root.replaceChildren(top, page, footer, scrimEl, drawerEl, popEl, toastHost);
     renderDrawer();
@@ -160,6 +162,7 @@ export function createUI(root, on) {
     add('Modes', 'Endless', 'Fresh questions, as many games as you like.', href.endless(), 'endless', 'endless practice descent');
     add('Modes', 'Duel', 'Send a link and see who scores more.', href.duel(), 'duel', 'duel challenge friend versus');
     for (const p of packs) add('Topics', p.name, p.blurb || '', href.pack(p.id), p.icon, `${p.id} pack packs topic themed ${DISPLAYS[displayKindFor('pack', p.id)]?.title || ''}`);
+    for (const o of ONLINE_PAGES) { add('Online', o.title, o.sub, o.to, o.icon, o.extra); idx[idx.length - 1].disabled = !onlineUsable(); }
     add('Pages', 'All topics', 'Every topic in one place.', href.packs(), 'archive', 'packs themed');
     add('Pages', 'Past games', 'Play any earlier day since launch.', href.archive('daily'), 'archive', 'archive past days history calendar');
     add('Pages', 'My stats', 'Your depths, streaks and rarest answers.', href.stats(), 'stats', 'statistics scores streak');
@@ -175,7 +178,7 @@ export function createUI(root, on) {
   function search(q) {
     const tokens = fold(q).split(' ').filter(Boolean);
     if (!tokens.length) return null;
-    const order = ['Modes', 'Topics', 'Pages', 'Guides', 'FAQ'];
+    const order = ['Modes', 'Online', 'Topics', 'Pages', 'Guides', 'FAQ'];
     const hits = [];
     for (const e of searchIdx) {
       let score = 0;
@@ -205,10 +208,9 @@ export function createUI(root, on) {
     if (!res.groups.length) { box.replaceChildren(h('div', { class: 'sr-empty', role: 'status' }, h('b', { text: 'Nothing down here…' }), h('span', { text: 'Try a topic, a game mode, or a word like “streak”.' }))); return; }
     let n = 0;
     box.replaceChildren(...res.groups.flatMap(([g, list]) => [
-      h('div', { class: 'drawer-group', text: g }),
-      ...list.map((e) => h('a', { class: 'drawer-link result', href: e.to, id: `sr-${n++}`, role: 'option' },
-        e.icon ? px(e.icon, 2) : h('span', { class: 'ico', text: '▸' }),
-        h('span', { class: 'sr-text' }, h('span', { class: 'sr-title' }, highlight(e.title, res.tokens)), e.sub && h('span', { class: 'sr-sub' }, highlight(e.sub, res.tokens))))),
+      h('div', { class: 'm-label' }, h('span', { text: g.toUpperCase() }), h('i', { 'aria-hidden': 'true' })),
+      ...list.map((e) => h(e.disabled ? 'span' : 'a', { class: `drawer-link result${e.disabled ? ' disabled' : ''}`, href: e.disabled ? false : e.to, id: `sr-${n++}`, role: 'option', 'aria-disabled': e.disabled ? 'true' : false },
+        h('span', { class: 'sr-text' }, h('span', { class: 'sr-title' }, highlight(e.title, res.tokens), e.disabled && h('span', { class: 'pill', text: 'Offline' })), e.sub && h('span', { class: 'sr-sub' }, highlight(e.sub, res.tokens))))),
     ]));
     setActive(0);
   }
@@ -222,32 +224,42 @@ export function createUI(root, on) {
   }
 
   function renderDrawer() {
-    const item = (label, to, ico) => h('a', { class: 'drawer-link', href: to, tabindex: drawerOpen ? 0 : -1 }, ico ? px(ico, 2) : h('span', { class: 'ico', text: '▸' }), h('span', { text: label }));
+    // a quiet 2-column tile grid and a few link rows (Krillion-style); monochrome icons, tinted by the text colour
+    const ico = (name, fallback) => (hasSprite(name) ? px(name, 1) : h('span', { class: 'ico', 'aria-hidden': 'true', text: fallback }));
+    const tile = (label, to, name, fallback, extra = {}) => h(to ? 'a' : 'button', { class: `m-tile${extra.disabled ? ' disabled' : ''}`, ...(to ? { href: to } : { type: 'button', onclick: extra.onclick }), ...(extra.disabled ? { 'aria-disabled': 'true', title: extra.title } : {}), tabindex: drawerOpen ? 0 : -1 },
+      h('span', { class: 'm-ico' }, extra.node || ico(name, fallback)), h('span', { class: 'm-lab', text: label }));
+    const row = (title, sub, to, name, fallback, accent, arrow = '→') => h('a', { class: `m-row ${accent}`, href: to, tabindex: drawerOpen ? 0 : -1 },
+      h('span', { class: 'm-ico' }, ico(name, fallback)), h('span', { class: 'm-rt' }, h('b', { text: title }), h('small', { text: sub })), h('span', { class: 'm-arrow', 'aria-hidden': 'true', text: arrow }));
+    const label = (t) => h('div', { class: 'm-label' }, h('span', { text: t }), h('i', { 'aria-hidden': 'true' }));
     searchInput = h('input', {
-      class: 'drawer-search', type: 'search', placeholder: 'search the menu…', 'aria-label': 'Search game modes, topics, pages, guides and FAQ', autocomplete: 'off', spellcheck: 'false',
+      class: 'drawer-search', type: 'search', placeholder: 'search…', 'aria-label': 'Search game modes, topics, pages, guides and FAQ', autocomplete: 'off', spellcheck: 'false',
       role: 'combobox', 'aria-expanded': 'true', 'aria-controls': 'drawer-results',
       oninput: renderResults,
       onkeydown: (e) => {
         if (e.key === 'ArrowDown') { e.preventDefault(); setActive(activeIdx + 1); }
         else if (e.key === 'ArrowUp') { e.preventDefault(); setActive(activeIdx - 1); }
-        else if (e.key === 'Enter') { const el = drawerEl.querySelector('.drawer-results .result.active'); if (el) { e.preventDefault(); el.click(); } }
+        else if (e.key === 'Enter') { const el = drawerEl.querySelector('.drawer-results .result.active'); if (el && !el.classList.contains('disabled')) { e.preventDefault(); el.click(); } }
       },
     });
-    searchBox = h('div', { class: 'drawer-searchbox' }, h('span', { class: 'ico', 'aria-hidden': 'true', text: '⌕' }), searchInput, h('kbd', { 'aria-hidden': 'true', text: '/' }));
+    searchBox = h('div', { class: 'drawer-searchbox' }, searchInput);
+    const chargeNode = hasSprite('charge-idle') ? px('charge-idle', 1) : null;
     defaultNav = h('nav', { class: 'drawer-nav', 'aria-label': 'Site' },
-      h('div', { class: 'drawer-group', text: 'Play' }),
-      item('Home', href.home(), null), item('Daily Game', href.daily(), 'daily'), item('Endless', href.endless(), 'endless'), item('Duel', href.duel(), 'duel'),
-      h('div', { class: 'drawer-group', text: 'Topics' }),
-      packs.map((p) => item(p.name, href.pack(p.id), p.icon)),
-      item('All topics', href.packs(), 'archive'),
-      h('div', { class: 'drawer-group', text: 'Explore' }),
-      item('Past games', href.archive('daily'), 'archive'), item('My stats', href.stats(), 'stats'), item('History', href.history(), 'stats'),
-      item('Guides', href.guides(), 'guides'), item('How to play', href.how(), null), item('FAQ', href.faq(), null), item('About', href.about(), null),
-      h('div', { class: 'drawer-group', text: 'Settings' }),
-      h('button', { class: 'drawer-link', type: 'button', tabindex: drawerOpen ? 0 : -1, onclick: () => { closeDrawer(); openPop(); } }, icon('gear', '⚙'), h('span', { text: 'Settings & display…' })));
+      label('PLAY'),
+      h('div', { class: 'm-grid' },
+        tile('Daily game', href.daily(), 'ico-daily', '▼'), tile('Endless', href.endless(), 'ico-endless', '∞'),
+        tile('Depth charge', href.party(), 'ico-duel', '●', { node: chargeNode }),
+        tile('Past games', href.archive('daily'), 'ico-past', '↺'), tile('Topics', href.packs(), 'ico-topics', '▦'),
+        tile('My Vermillion', href.account(), 'ico-me', '☺'), tile('Friends', href.friends(), 'ico-friends', '☻'),
+        tile('Settings', null, 'ico-gear', '⚙', { onclick: () => { closeDrawer(); openPop(); } }), tile('FAQ', href.faq(), 'ico-faq', '?')),
+      h('div', { class: 'm-rows' },
+        row('LEADERBOARD', "today's top scores", href.leaderboard(), 'ico-board', '▤', 'pink'),
+        row('LIVE GAME', 'same 7 questions, same time', href.online(), 'ico-live', '⇄', 'cyan'),
+        row('DUEL', 'challenge a friend with a link', href.duel(), 'ico-duel', '✕', 'pink', '↗'),
+        row('HOW TO PLAY', 'the rules in 30 seconds', href.how(), 'ico-how', '▯', 'cyan'),
+        row('PRIVACY', 'what we keep and why', href.about(), 'ico-privacy', '◇', 'pink')));
     drawerEl.replaceChildren(
-      h('div', { class: 'drawer-head' }, h('span', { class: 'drawer-title', text: 'MENU' }),
-        h('button', { class: 'sq-btn small', type: 'button', 'aria-label': 'Close menu', tabindex: drawerOpen ? 0 : -1, onclick: () => { closeDrawer(); menuBtnEl.focus(); } }, h('span', { class: 'ico', 'aria-hidden': 'true', text: '✕' }))),
+      h('div', { class: 'drawer-head' }, h('div', {}, h('span', { class: 'm-eyebrow', text: 'VERMILLION' }), h('span', { class: 'm-title', text: 'MENU', 'data-t': 'MENU' })),
+        h('button', { class: 'm-close', type: 'button', 'aria-label': 'Close menu', tabindex: drawerOpen ? 0 : -1, onclick: () => { closeDrawer(); menuBtnEl.focus(); } }, 'X')),
       searchBox,
       h('div', { class: 'drawer-scroll' }, defaultNav, h('div', { class: 'drawer-results', id: 'drawer-results', role: 'listbox', 'aria-label': 'Search results', hidden: true })));
     buildIndex();
@@ -272,7 +284,8 @@ export function createUI(root, on) {
     stackEl.replaceChildren(
       h('button', { class: 'sq-btn', type: 'button', 'aria-pressed': String(!!s.sound), 'aria-label': `Sound ${s.sound ? 'on' : 'off'}`, title: s.sound ? 'Sound on' : 'Sound off', onclick: () => on.toggleSetting('sound') }, icon(s.sound ? 'soundOn' : 'soundOff', s.sound ? '♪' : '×')),
       h('button', { class: 'sq-btn settings-trigger play-hide', type: 'button', 'aria-haspopup': 'dialog', 'aria-expanded': String(popOpen), 'aria-controls': 'settings-pop', 'aria-label': 'Settings', title: 'Settings', onclick: (e) => { e.stopPropagation(); popOpen ? closePop() : openPop(); } }, icon('gear', '⚙')),
-      h('button', { class: 'sq-btn play-hide', type: 'button', 'aria-label': `Display theme: ${THEME_LABEL[s.theme] || 'Neon'}. Click to change.`, title: `Display: ${THEME_LABEL[s.theme] || 'Neon'}`, onclick: () => on.cycleTheme() }, icon('palette', '◐')));
+      h('button', { class: 'sq-btn play-hide theme-btn', type: 'button', 'aria-label': `Display theme: ${THEME_LABEL[s.theme] || 'Neon'}. Click to change.`, title: `Display: ${THEME_LABEL[s.theme] || 'Neon'}`, onclick: () => on.cycleTheme() }, icon('palette', '◐')),
+      h('a', { class: 'sq-btn acct-btn', href: href.account(), 'aria-label': A.user ? `Account: ${nameOf(A.profile)}` : 'Account', title: 'Account' }, avatarEl(A.user && A.available ? A.profile?.avatar : 'mascot')));
     if (popOpen) renderPop(s);
   }
   function renderPop(s = on.getSettings()) {
@@ -288,7 +301,15 @@ export function createUI(root, on) {
       h('label', { class: 'vol' }, h('b', { text: 'Volume' }), vol),
       h('div', { class: 'pop-group' }, h('b', { text: 'Display' }), h('div', { class: 'row' }, themeBtn('neon'), themeBtn('midnight'), themeBtn('crt'))));
   }
-  function openPop() { closeDrawer(); renderPop(); popOpen = true; popEl.dataset.open = 'true'; stackEl.querySelector('.settings-trigger')?.setAttribute('aria-expanded', 'true'); }
+  /* open the popover to the LEFT of the gear button so the corner buttons stay visible and clickable */
+  function placePop() {
+    const b = stackEl && stackEl.querySelector('.settings-trigger');
+    if (!b || !popEl) return;
+    const r = b.getBoundingClientRect(), vw = window.innerWidth;
+    popEl.style.left = 'auto'; popEl.style.right = `${Math.max(8, vw - r.left + 10)}px`; popEl.style.top = `${Math.max(8, r.top)}px`;
+    popEl.style.maxWidth = `${Math.max(180, r.left - 18)}px`; popEl.style.maxHeight = `${Math.max(160, window.innerHeight - r.top - 12)}px`; popEl.style.overflowY = 'auto';
+  }
+  function openPop() { closeDrawer(); renderPop(); popOpen = true; popEl.dataset.open = 'true'; placePop(); stackEl.querySelector('.settings-trigger')?.setAttribute('aria-expanded', 'true'); }
   function closePop() { if (!popEl) return; popOpen = false; popEl.dataset.open = 'false'; stackEl?.querySelector('.settings-trigger')?.setAttribute('aria-expanded', 'false'); }
 
   function toolbar(extra) {
@@ -296,7 +317,7 @@ export function createUI(root, on) {
   }
 
   function mount(...nodes) {
-    stopPlay();
+    stopPlay(); stopLive();
     root.classList.remove('is-home', 'is-play');
     page.className = 'page';
     page.replaceChildren(...nodes.flat(Infinity).filter((n) => n && n.nodeType));
@@ -319,8 +340,9 @@ export function createUI(root, on) {
   function setRoute(r) {
     route = r;
     drawerEl?.querySelectorAll('a').forEach((x) => x.removeAttribute('aria-current'));
-    const to = r.name === 'home' ? href.home() : { packs: href.packs(), guides: href.guides(), guide: href.guides(), how: href.how(), faq: href.faq(), about: href.about(), stats: href.stats(), history: href.history() }[r.name];
-    if (to) drawerEl?.querySelector(`a[href="${to}"]`)?.setAttribute('aria-current', 'page');
+    const to = r.name === 'home' ? href.home() : {  party: href.party(), packs: href.packs(), guides: href.guides(), guide: href.guides(), how: href.how(), faq: href.faq(), about: href.about(), stats: href.stats(), history: href.history(), account: href.account(), leaderboard: href.leaderboard(), friends: href.friends(), online: href.online() }[r.name];
+    const cur = r.name === 'play' ? ({ daily: href.daily(), endless: href.endless(), duel: href.duel() })[r.mode] : to;
+    if (cur) drawerEl?.querySelector(`a[href="${cur}"]`)?.setAttribute('aria-current', 'page');
   }
 
   /* ---------------------------------------------------------------- vermi ---------- */
@@ -366,87 +388,80 @@ export function createUI(root, on) {
       h('div', { class: 'box' }, h('h3', { text: g.title }), h('p', { text: g.summary }), h('a', { class: 'btn small ghost', href: href.guide(g.slug) }, 'Read guide'))));
     const faqPrev = h('div', { class: 'faq-list' }, faq.slice(0, 4).map((f) => h('details', {}, h('summary', { text: f.q }), h('div', { class: 'ans', text: f.a }))));
 
-    /* wordmark: Luna's `logo` sprite at the largest integer scale that fits */
-    const logoDef = hasSprite('logo') ? assets.sprites.SPRITES.logo : null;
-    const wordmark = h('h1', { class: 'wordmark', 'aria-label': 'Vermillion' });
-    const fitLogo = () => {
-      if (!wordmark.isConnected) { window.removeEventListener('resize', fitLogo); return; }
-      if (!logoDef) { wordmark.replaceChildren(h('span', { class: 'wm-text', text: 'VERMILLION' })); return; }
-      const avail = Math.min(window.innerWidth - (window.innerWidth < 560 ? 128 : 32), 720);   // leave room for the icon stack on phones
-      const scale = Math.max(1, Math.min(8, Math.floor(avail / logoDef.w)));
-      const c = px('logo', scale); c.style.width = `${logoDef.w * scale}px`; c.style.height = `${logoDef.h * scale}px`;
-      wordmark.replaceChildren(c);
-    };
-    window.addEventListener('resize', fitLogo);
+    const featuredCard = featured && h('a', { class: 'featured', href: href.pack(featured.id), 'aria-label': `Today's topic: ${featured.name}. Play.` },
+      h('span', { class: 'f-tab', text: "TODAY'S TOPIC" }),
+      h('span', { class: 'f-body' }, px(featured.icon, 4), h('span', { class: 'f-name', text: featured.name }),
+        packDone[featured.id] ? h('span', { class: 'f-count', text: 'Done ✓' }) : h('span', { class: 'f-count', id: 'played-today', hidden: true })));
 
-    /* how-to-play inline explainer */
+    // Inline 8x8 glyph sprites (Luna); until they land, fall back to the plain text character.
+    const glyph = (name, ch) => (hasSprite(name) ? h('span', { class: `glyph${name === 'glyph-down' && downFlipped() ? ' flip' : ''}`, 'aria-hidden': 'true' }, px(name, 2)) : h('span', { class: 'glyph', 'aria-hidden': 'true', text: ch }));
+    const startBtn = h('a', { class: 'descent-btn', href: href.daily() },
+      h('span', { class: 'db-main' }, glyph('glyph-down', '▼'), h('span', { text: dailyDone ? "SEE TODAY'S SCORE" : "PLAY TODAY'S GAME" }), glyph('glyph-down', '▼')));
+
+    const foot = h('div', { class: 'ts-foot' },
+      h('span', { class: 'descent-no', text: `GAME #${descent}${stats?.dailyStreak > 0 ? ` · STREAK ${stats.dailyStreak}` : ''}` }),
+      h('div', { class: 'ts-btns' },
+        h('a', { class: 'ts-btn', href: href.archive('daily'), 'aria-label': 'Past games' }, 'PAST GAMES ', h('span', { 'aria-hidden': 'true', text: '⟲' })),
+        h('a', { class: 'ts-btn', href: href.packs() }, 'TOPICS'),
+        h('a', { class: 'ts-btn', href: href.endless(), 'aria-label': 'Endless' }, 'ENDLESS ', h('span', { 'aria-hidden': 'true', text: '∞' }))));
+
+    /* Vermi the fish swims in the water, below the waterline (integer scale 4, cycles `mascot-idle`) */
+    const vermiEl = h('div', { class: 'vermi-fish', 'aria-hidden': 'true' });
+    let vermiTimer = 0, vermiFrame = 0;
+    const fishSprite = () => (hasSprite('mascot-idle') ? 'mascot-idle' : 'mascot');
+    const placeVermi = () => {
+      if (!vermiEl.isConnected) { clearInterval(vermiTimer); return; }
+      const name = fishSprite(), c = px(name, 4); c.style.width = '64px'; c.style.height = '64px';
+      vermiEl.replaceChildren(c);
+      clearInterval(vermiTimer);
+    };
+
+    /* wordmark: one VT323 span per letter on a gentle arc, with a pink/cyan split */
+    const WORD = [...'VERMILLION'];
+    const wordmark = h('h1', { class: 'wordmark', 'aria-label': 'Vermillion' }, WORD.map((c, i) =>
+      h('span', { class: 'wm-l', 'aria-hidden': 'true', style: `--i:${i};--arc:${Math.round(7 * (1 - Math.sin(Math.PI * i / (WORD.length - 1))))}px`, text: c })));
+
+    /* how-to-play inline explainer (collapsed by default) */
     const steps = h('ol', { class: 'ts-steps', id: 'ts-steps', hidden: true },
       h('li', {}, h('b', { text: '1 · READ' }), ' Seven questions a day, the same for everyone. Each one names a topic.'),
       h('li', {}, h('b', { text: '2 · TYPE' }), ' One answer, 20 seconds. Press Enter to submit.'),
       h('li', {}, h('b', { text: '3 · BE RARE' }), ' Correct answers score 1 to 100. The obvious ones score low; the rare ones score high.'),
       h('li', {}, h('b', { text: '4 · SCORE' }), ' Points become metres. Your depth is your score.'));
-    const howBtn = h('button', { class: 'ts-link', type: 'button', 'aria-expanded': 'false', 'aria-controls': 'ts-steps', onclick: () => {
+    const howBtn = h('button', { class: 'ts-link how', type: 'button', 'aria-expanded': 'false', 'aria-controls': 'ts-steps', onclick: () => {
       const open = steps.hidden; steps.hidden = !open; howBtn.setAttribute('aria-expanded', String(open)); howBtn.firstChild.textContent = open ? '▾ ' : '▸ ';
     } }, '▸ ', 'HOW TO PLAY');
 
-    const featuredCard = featured && h('a', { class: 'featured', href: href.pack(featured.id), 'aria-label': `Today's featured topic: ${featured.name}. Play.` },
-      h('span', { class: 'f-tab', text: "TODAY'S FEATURED TOPIC" }),
-      h('span', { class: 'f-body' }, px(featured.icon, 4), h('span', { class: 'f-name', text: featured.name }),
-        h('span', { class: 'f-go', text: packDone[featured.id] ? 'Done ✓' : 'Play →' })));
-
-    // Inline 8x8 glyph sprites (Luna); until they land, fall back to the plain text character.
-    const glyph = (name, ch) => (hasSprite(name) ? h('span', { class: `glyph${name === 'glyph-down' && downFlipped() ? ' flip' : ''}`, 'aria-hidden': 'true' }, px(name, 2)) : h('span', { class: 'glyph', 'aria-hidden': 'true', text: ch }));
-    const startBtn = h('a', { class: 'descent-btn', href: href.daily() },
-      h('span', { class: 'db-main' }, glyph('glyph-down', '▼'), h('span', { text: dailyDone ? "SEE TODAY'S SCORE" : "PLAY TODAY'S GAME" }), glyph('glyph-down', '▼')),
-      dailyDone && h('span', { class: 'db-sub', text: `You reached ${fmt(dailyDone.depth)} m` }));
-
-    const foot = h('div', { class: 'ts-foot' },
-      h('span', { class: 'descent-no', text: `GAME #${descent}` }),
-      h('div', { class: 'ts-btns' },
-        h('a', { class: 'ts-btn', href: href.archive('daily'), 'aria-label': 'Past games' }, 'PAST GAMES', glyph('glyph-archive', '⟲')),
-        h('a', { class: 'ts-btn', href: href.packs() }, 'TOPICS'),
-        h('a', { class: 'ts-btn', href: href.endless(), 'aria-label': 'Endless' }, 'ENDLESS', glyph('glyph-endless', '∞')),
-        h('a', { class: 'ts-btn', href: href.duel(), 'aria-label': 'Duel' }, 'DUEL', glyph('glyph-duel', '⚔'))));
-
-    /* Vermi sits on the waterline as a crisp DOM sprite (integer scale 6 desktop / 4 phones) */
-    const vermiEl = h('div', { class: 'vermi-surface', 'aria-hidden': 'true' });
-    let vermiTimer = 0, vermiFrame = 0;
-    const placeVermi = () => {
-      if (!vermiEl.isConnected) { window.removeEventListener('resize', placeVermi); clearInterval(vermiTimer); return; }
-      const sc = window.innerWidth < 560 ? 4 : 6;
-      const c = px('mascot', sc); c.style.width = `${16 * sc}px`; c.style.height = `${16 * sc}px`;
-      // find the lowest painted row so the tentacle tips just dip under the waterline
-      let low = 11;
-      try { const d = assets.sprites.SPRITES.mascot; low = Math.max(...d.frames.slice(0, 2).map((f) => f.reduce((m, row, i) => (/[^.]/.test(row) ? i : m), 0))); } catch { /* keep default */ }
-      vermiEl.style.setProperty('--vs', `${sc}px`);
-      vermiEl.style.setProperty('--sink', `${(16 - low - 1) * sc - Math.round(sc * 0.6)}px`);
-      vermiEl.replaceChildren(c);
-      vermiEl._sc = sc;
-      clearInterval(vermiTimer);
-      vermiTimer = setInterval(() => {
-        if (document.hidden || document.documentElement.classList.contains('reduce-motion')) return;
-        vermiFrame = (vermiFrame + 1) % 2;
-        try { const g = c.getContext('2d'); g.clearRect(0, 0, c.width, c.height); assets.sprites.drawSprite(g, 'mascot', 0, 0, sc, vermiFrame); } catch { /* ignore */ }
-      }, 900);
-    };
-    window.addEventListener('resize', placeVermi);
-
-    const sky = h('div', { class: 'ts-sky' },
-      vermiEl,
+    const stage = h('div', { class: 'ts-stage' },
       wordmark,
       h('p', { class: 'tagline', 'aria-label': 'The daily rare-answer game' }, 'THE DAILY RARE-ANSWER GAME'),
-      h('p', { class: 'infoline', text: '7 questions · 20 seconds each · rarer answers score more' }));
-    const water = h('div', { class: 'ts-water' },
+      h('p', { class: 'infoline', text: '7 questions · 25 seconds each · rarer answers score more' }),
+      vermiEl,
       h('div', { class: 'ts-col' },
-        h('div', { class: 'ts-links' }, howBtn, h('a', { class: 'ts-link', href: href.faq() }, 'FAQ')),
-        steps, featuredCard, startBtn, foot));
-    const screen = h('section', { class: 'title-screen', 'aria-label': 'Vermillion title screen' }, sky, water, h('div', { class: 'scanlines', 'aria-hidden': 'true' }));
+        h('div', { class: 'ts-howrow' }, howBtn), h('div', { class: 'ts-faqrow' }, h('a', { class: 'ts-link small', href: href.faq() }, 'FAQ')), steps,
+        featuredCard, startBtn, foot));
+    const screen = h('section', { class: 'title-screen', 'aria-label': 'Vermillion title screen' }, stage, h('div', { class: 'scanlines', 'aria-hidden': 'true' }));
 
     mount(screen);
     root.classList.add('is-home');
     page.classList.add('home');
-    fitLogo(); placeVermi();
-    startScene(screen, { getWaterY: () => sky.offsetHeight, getVermiX: () => { const r = vermiEl.getBoundingClientRect(), hr = screen.getBoundingClientRect(); return r.left + r.width / 2 - hr.left; } });
+    placeVermi();
+    startScene(screen, {
+      // the lower column is anchored to the bottom; the swell sits 18 px (at its lowest) above the HOW TO PLAY row
+      getWaterY: () => {
+        const how = stage.querySelector('.ts-howrow'), hr = screen.getBoundingClientRect();
+        const y = how ? how.getBoundingClientRect().top - hr.top - 26 : screen.clientHeight * 0.55;
+        screen.style.setProperty('--wy', `${Math.round(y)}px`);
+        return y;
+      },
+      // the buoy sits on the waterline, left of the column
+      getVermiX: () => { const col = stage.querySelector('.ts-col'), hr = screen.getBoundingClientRect(); const cl = col ? col.getBoundingClientRect().left - hr.left : 100; return window.innerWidth <= 560 ? hr.width * 0.2 : Math.max(60, cl - 56); },
+    });
+  }
+  /** "N played today": only ever a real count (leaderboard rows), never an invented number. */
+  function setPlayedToday(n) {
+    const el = root.querySelector('#played-today');
+    if (!el || !(n > 0)) return;
+    el.hidden = false; el.replaceChildren(h('i', { 'aria-hidden': 'true' }), `${fmt(n)} played today`);
   }
 
   function showPacks({ packDone = {}, counts = {} }) {
@@ -593,7 +608,7 @@ export function createUI(root, on) {
         h('p', {}, 'Vermillion is a rare-answer trivia game. You score by naming correct answers that few other people would think of, and every point pulls you deeper. It belongs to a genre of “pick something uncommon” word-and-trivia games, but every question, answer, line of copy, sprite and sound here is our own.'),
         h('h2', { text: 'Free, always' }), h('p', {}, 'No ads, no paywalls, no accounts, no locked modes. Every topic and past game is open to everyone.'),
         h('h2', { text: 'Your data' }), h('p', {}, 'Scores, settings and history are saved only in your browser’s local storage. Nothing is sent anywhere. Clearing site data resets your stats.'),
-        h('h2', { text: 'Made with' }), h('ul', {}, h('li', { text: 'Plain HTML, CSS and JavaScript: no frameworks, no build step.' }), h('li', { text: 'Pixel art and chiptune sound effects made in code.' }), h('li', { text: 'Fonts: Press Start 2P and VT323, both under the SIL Open Font License.' }), h('li', { text: 'Mascot: Vermi, a small glowing jellyfish who loves a deep cut.' })),
+        h('h2', { text: 'Made with' }), h('ul', {}, h('li', { text: 'Plain HTML, CSS and JavaScript: no frameworks, no build step.' }), h('li', { text: 'Pixel art and chiptune sound effects made in code.' }), h('li', { text: 'Font: VT323, under the SIL Open Font License.' }), h('li', { text: 'Mascot: Vermi, a small glowing vermilion fish who loves a deep cut.' })),
         h('div', { class: 'cta-row' }, h('a', { class: 'btn primary', href: href.daily() }, 'Play Daily'), h('a', { class: 'btn ghost', href: href.faq() }, 'FAQ')))));
   }
 
@@ -681,7 +696,7 @@ export function createUI(root, on) {
       h('button', { class: 'sg-btn no', type: 'button', onclick: () => { dismissSuggest(); P && P.input.focus({ preventScroll: true }); } }, 'NO'));
     const form = h('form', { class: 'dock', onsubmit: (e) => { e.preventDefault(); if (P && P.suggestOn) return acceptSuggest(); on.submit(input.value); } },
       msg, suggest,
-      h('div', { class: 'dock-in' }, ringWrap, h('div', { class: 'dock-field' }, input, timerBar), h('button', { class: 'sink-btn', type: 'submit' }, 'SUBMIT')));
+      h('div', { class: 'dock-in' }, ringWrap, h('div', { class: 'dock-field' }, input, timerBar), h('button', { class: 'sink-btn', type: 'submit' }, 'GO')));
 
     page.replaceChildren(...[hud, miniHost, stage, form].filter(Boolean));
     window.scrollTo(0, 0);
@@ -853,7 +868,7 @@ export function createUI(root, on) {
     } else {
       sections.push(
         h('div', { class: 'fb-answer', text: r.answerName }),
-        r.corrected && h('div', { class: 'fb-corrected', text: `Autocorrected from “${r.input}”` }),
+        r.corrected && h('div', { class: 'fb-corrected', text: `Autocorrected from “${r.typed || r.input}”` }),
         h('div', { class: 'fb-points' }, ptsEl, h('span', { class: 'unit', text: `· ${unitText}` })),
         rv.rank != null && h('div', {}, h('div', { class: 'meter' }, h('i', { style: `--w:${Math.max(4, rv.rank)}%` })), h('div', { class: 'meter-label' }, h('span', { text: 'common' }), h('span', { text: rv.rarerThan != null ? `Rarer than ${rv.rarerThan} of the ${rv.totalAnswers} answers in our bank` : '' }), h('span', { text: 'rarest' }))));
     }
@@ -884,7 +899,7 @@ export function createUI(root, on) {
 
   /* ---------------------------------------------------------------- results ---------- */
   function showRun(view) {
-    const { run, promptOf, kind, meta = {}, stats, link, duel, nextPack, replay, canReplay, canChallenge } = view;
+    const { run, promptOf, kind, meta = {}, stats, link, duel, nextPack, replay, canReplay, canChallenge, rankSlot } = view;
     const u = units(kind, duel ? duel.myTotal : run.total);
     pageTitle('Results');
     sfx(duel ? (duel.myTotal >= duel.theirTotal ? 'duelWin' : 'duelLose') : (replay ? 'click' : 'finish'));
@@ -901,6 +916,13 @@ export function createUI(root, on) {
         h('div', { class: 'sqs', role: 'img', 'aria-label': 'Tier squares' }, run.answers.map((a) => h('span', { class: `sq t-${a.tier || tierName(a.points)}` }))),
         h('div', { class: 'chips', style: 'justify-content:center;margin-top:12px' }, banners)),
     ];
+    // "Your rank today" for an official Daily (filled in by setRank once the server answers)
+    P2.rank = null;
+    if (rankSlot && rankSlot !== 'offline') {
+      P2.rank = h('div', { class: 'rank-line', role: 'status', 'aria-live': 'polite' });
+      body.push(P2.rank);
+      setRank({ kind: rankSlot });
+    }
     // quick replay strip: one mini dive bar per question, coloured by tier
     body.push(h('div', { class: 'dive-strip', role: 'img', 'aria-label': 'Your seven dives' },
       run.answers.map((a, i) => h('div', { class: `ds-col t-${a.tier || tierName(a.points)}`, style: `--i:${i};--h:${Math.max(4, a.points)}` }, h('i'), h('span', { text: String(a.points) })))));
@@ -929,7 +951,7 @@ export function createUI(root, on) {
       const theirA = duel && duel.theirAnswers[i];
       const cells = [
         h('td', {}, h('div', { text: `${i + 1}. ${p ? p.text : a.promptId}` }), h('div', { class: 'q', text: p?.category || '' })),
-        h('td', {}, h('span', { class: `dot t-${a.tier || tierName(a.points)}` }), a.answerName || (a.timedOut ? 'No answer (timed out)' : a.input || 'No answer'), a.usedHint && h('span', { class: 'pill', style: 'margin-left:8px', text: 'hint' }), a.corrected && h('div', { class: 'q', text: `autocorrected from “${a.input}”` }), hit && h('div', { class: 'pill', style: 'margin-top:4px', text: 'same answer, halved' })),
+        h('td', {}, h('span', { class: `dot t-${a.tier || tierName(a.points)}` }), a.answerName || (a.timedOut ? 'No answer (timed out)' : a.input || 'No answer'), a.usedHint && h('span', { class: 'pill', style: 'margin-left:8px', text: 'hint' }), a.corrected && h('div', { class: 'q', text: `autocorrected from “${a.typed || a.input}”` }), hit && h('div', { class: 'pill', style: 'margin-top:4px', text: 'same answer, halved' })),
         h('td', { class: 'num', text: duel ? `${duel.mine[i]}` : `${a.points}` }),
       ];
       if (duel) cells.push(h('td', {}, theirA?.answerName || 'No answer', h('div', { class: 'q', text: `${duel.theirs[i]} pts` })));
@@ -972,11 +994,498 @@ export function createUI(root, on) {
     if (kind === 'arcade') countUp(numSpan, u.value, (n) => String(n).padStart(6, '0').replace(/(\d{3})(\d{3})/, '$1,$2'), 1200);
     else countUp(numSpan, u.value, (n) => `${fmt(n)}${u.unit ? ' ' + (u.value === 1 && DISPLAYS[kind].unit1 ? DISPLAYS[kind].unit1 : u.unit) : ''}`, 1200);
   }
-  const P2 = { toast: null };
+  const P2 = { toast: null, rank: null };
+  function setRank(r) {
+    const el = P2.rank;
+    if (!el || !el.isConnected) return;
+    if (r.kind === 'loading') { el.replaceChildren(h('span', { class: 'muted', text: 'Checking your rank…' })); return; }
+    if (r.kind === 'signedout') { el.replaceChildren(h('a', { href: href.account(), text: 'Sign in to join the leaderboard' }), h('span', { class: 'muted', text: ' and see where you rank today.' })); return; }
+    if (r.kind === 'ok') { el.replaceChildren(h('b', { text: `Your rank today: #${fmt(r.rank)}${r.of ? ` of ${r.of}` : ''}` }), ' ', h('a', { href: href.leaderboard(), text: 'See the leaderboard' })); return; }
+    if (r.kind === 'queued') { el.replaceChildren(h('span', { class: 'muted', text: 'Your score is saved. Your rank will show once it reaches the leaderboard. ' }), h('a', { href: href.leaderboard(), text: 'Check the board' })); return; }
+    el.replaceChildren();
+  }
   function inlineToast(text) { if (P2.toast && P2.toast.isConnected) P2.toast.textContent = text; else toast(text); }
   function depthName(d) {
     return d <= 0 ? 'still at the surface' : d < 1000 ? 'shallow water' : d < 2500 ? 'deep water' : d < 4500 ? 'very deep water' : d < 6000 ? 'near the bottom' : 'the deepest part';
   }
+
+  /* ================================================================ v3: accounts, boards, friends, live rooms (CONTRACT §8.6) ================ */
+  const AVATARS = [['mascot', 'Vermi'], ['diver', 'Diver'], ['rocket', 'Rocket'], ['star', 'Star'], ['tree', 'Tree'], ['plane', 'Plane'], ['pack-space', 'Alien'], ['pack-nature', 'Pine'], ['pack-science', 'Mushroom'], ['pack-games', 'Pixel face'], ['pack-sports', 'Ring'], ['pack-geography', 'Eye']];
+  const avatarId = (id) => (id === 'vermi' ? 'mascot' :  (AVATARS.some(([a]) => a === id) ? id : 'mascot'));
+  const avatarEl = (id, cls = '') => h('span', { class: `avatar ${cls}`, 'aria-hidden': 'true' }, px(avatarId(id), 2));
+  const CROWN = ['..X.X.X..', '.XX.XXX.X', '.XXXXXXXX', '.XXXXXXXX', '.XXXXXXXX'];
+  function crownEl() {
+    const sc = 3, c = document.createElement('canvas');
+    c.width = 9 * sc; c.height = CROWN.length * sc; c.className = 'px crown'; c.setAttribute('role', 'img'); c.setAttribute('aria-label', 'Host');
+    const g = c.getContext('2d');
+    CROWN.forEach((row, y) => [...row].forEach((ch, x) => { if (ch === 'X') { g.fillStyle = y === 0 || (y === 1 && row[x] === 'X' && x % 4 === 1) ? '#fff2b0' : '#ffd35e'; g.fillRect(x * sc, y * sc, sc, sc); } }));
+    return c;
+  }
+  let A = { enabled: false, available: false, user: null, profile: null };
+  let chipEl = null;
+  const nameOf = (p) => (p && (p.username || p.profile?.username || p.name)) || 'Diver';
+  const pidOf = (p) => (p && (p.id ?? p.user_id)) || '';
+
+  /* an "Offline" pill on every online menu entry, which then can't be opened */
+  const ONLINE_PAGES = [
+    { title: 'Play online', sub: 'Create or join a live game with friends.', to: href.online(), icon: 'duel', extra: 'multiplayer live room code quick match versus friends' },
+    { title: 'Leaderboard', sub: 'Today and all-time rankings.', to: href.leaderboard(), icon: 'stats', extra: 'rank ranking top scores board' },
+    { title: 'Friends', sub: 'Add friends and compare scores.', to: href.friends(), icon: 'daily', extra: 'friend requests username' },
+    { title: 'Account', sub: 'Your name, avatar and saved stats.', to: href.account(), icon: 'settings', extra: 'sign in sign up guest email profile username avatar' },
+  ];
+  const onlineUsable = () => A.enabled && A.available;
+
+  function renderChip() {
+    if (!chipEl) return;
+    chipEl.replaceChildren();
+    if (!A.enabled) { chipEl.hidden = true; return; }
+    chipEl.hidden = false;
+    const label = !A.available ? 'Offline' : A.user ? nameOf(A.profile) : 'Sign in';
+    chipEl.classList.toggle('off', !A.available);
+    chipEl.setAttribute('aria-label', !A.available ? 'Account (offline)' : A.user ? `Account: ${label}` : 'Sign in');
+    chipEl.append(A.user && A.available ? avatarEl(A.profile?.avatar) : icon('settings', '☺'), h('span', { class: 'chip-name', text: label }));
+  }
+  function setAccount(a) {
+    A = { ...A, ...a };
+    renderChip(); renderStack();
+    if (drawerEl) { renderDrawer(); }
+  }
+
+  /* ---------------------------------------------------------------- shared small pieces ---------- */
+  const rowMsg = () => h('p', { class: 'form-msg', role: 'status', 'aria-live': 'polite' });
+  function setMsg(el, text, kind) { el.textContent = text || ''; el.className = `form-msg${kind ? ` ${kind}` : ''}`; }
+  /** Run an async action on a button: disables it, shows the error message if it fails. */
+  async function withBusy(btn, msgEl, fn, okText) {
+    const label = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Working…'; setMsg(msgEl, '');
+    let r;
+    try { r = await fn(); } catch { r = { ok: false, error: 'Something went wrong. Try again.' }; }
+    if (btn.isConnected) { btn.disabled = false; btn.textContent = label; }
+    if (msgEl.isConnected) { if (r && r.ok) setMsg(msgEl, okText || '', 'good'); else setMsg(msgEl, (r && r.error) || 'Something went wrong. Try again.', 'bad'); }
+    return r;
+  }
+  function emailForm({ cta, note, onSend }) {
+    const msg = rowMsg();
+    const input = h('input', { class: 'text-in', type: 'email', placeholder: 'you@example.com', 'aria-label': 'Email address', autocomplete: 'email', required: true, maxlength: '120' });
+    const btn = h('button', { class: 'btn primary', type: 'submit' }, cta);
+    const form = h('form', { class: 'inline-form', onsubmit: async (e) => {
+      e.preventDefault();
+      const v = input.value.trim();
+      if (!/^\S+@\S+\.\S+$/.test(v)) return setMsg(msg, 'Type a full email address, like name@example.com.', 'bad');
+      const r = await withBusy(btn, msg, () => onSend(v));
+      if (r && r.ok) { form.replaceChildren(h('div', { class: 'sent-note', role: 'status' }, h('b', { text: 'Check your email' }), h('span', { text: ` We sent a link to ${v}. Open it on this device to finish. You can close this tab.` }))); }
+    } }, input, btn);
+    return h('div', {}, note && h('p', { class: 'muted', text: note }), form, msg);
+  }
+  function statsCard(st) {
+    const s = st || {};
+    const cell = (v, l) => h('div', { class: 'stat' }, h('b', { text: fmt(v) }), h('span', { text: l }));
+    return h('div', { class: 'stat-grid' },
+      cell(s.runs, 'Games played'), cell(s.total_points, 'Total points'), cell(s.best_depth, 'Best depth (m)'),
+      cell(s.daily_streak, 'Daily streak'), cell(s.best_streak, 'Best streak'), cell(s.rare_count, 'Rare answers'), cell(s.mythic_count, 'One in a Vermillion'));
+  }
+
+  /** An empty page for Sol's DEPTH CHARGE UI (src/party-ui.js) to mount into. */
+  function showPartyHost() { pageTitle('Depth charge'); const host = h('div', { class: 'party-host' }); mount(host); return host; }
+  function showOffline(title = 'This page') {
+    pageTitle(title);
+    mount(h('div', { class: 'box hi error-box page-narrow', style: 'margin:30px auto' }, vermi(6, 2), h('h2', { text: 'You’re offline' }),
+      h('p', { text: ONLINE_OFF_TEXT() }),
+      h('div', { class: 'actions' }, h('a', { class: 'btn primary', href: href.daily() }, 'Play the Daily Game'), h('a', { class: 'btn ghost', href: href.home() }, 'Home'))));
+  }
+  const ONLINE_OFF_TEXT = () => (A.enabled ? 'Online features need a connection. Your solo games still work and are saved in this browser.' : 'Online features are switched off. Your solo games still work and are saved in this browser.');
+
+  /* ---------------------------------------------------------------- account ---------- */
+  function showAccount({ user, profile, stats, actions }) {
+    pageTitle('Account');
+    const head = h('div', { class: 'section-head' }, h('div', {}, h('span', { class: 'eyebrow', text: 'Online' }), h('h1', { class: 'page-title', text: 'Account' })));
+    if (!user) {
+      const guestMsg = rowMsg();
+      const guestBtn = h('button', { class: 'btn primary', type: 'button', onclick: () => withBusy(guestBtn, guestMsg, actions.guest) }, 'Play as guest');
+      mount(h('div', { class: 'page-narrow acct' }, head,
+        h('section', { class: 'box hi' }, h('div', { class: 'acct-hero' }, vermi(6, 1), h('div', {}, h('h2', { text: 'Join the dive' }), h('p', { text: 'An account is optional. It puts you on the leaderboards, lets you add friends and play live games. Solo play never needs one.' }))),
+          h('div', { class: 'actions' }, guestBtn), guestMsg, h('p', { class: 'muted small', text: 'A guest gets a random name. You can add an email later to keep your progress.' })),
+        h('section', { class: 'box section' }, h('h2', { text: 'Sign in with email' }),
+          emailForm({ cta: 'Send sign-in link', note: 'We email you a link. No password to remember.', onSend: actions.email }))));
+      return;
+    }
+    // signed in
+    let pick = avatarId(profile?.avatar);
+    const nameIn = h('input', { class: 'text-in', type: 'text', value: profile?.username || '', maxlength: '16', 'aria-label': 'Username', autocomplete: 'off', spellcheck: 'false', 'aria-describedby': 'name-help' });
+    const saveMsg = rowMsg();
+    const grid = h('div', { class: 'avatar-grid', role: 'radiogroup', 'aria-label': 'Avatar' });
+    const paint = () => grid.replaceChildren(...AVATARS.map(([id, label]) => h('button', { class: 'av-opt', type: 'button', role: 'radio', 'aria-checked': String(id === pick), 'aria-label': label, title: label, onclick: () => { pick = id; paint(); sfx('click'); } }, px(id, 3))));
+    paint();
+    const saveBtn = h('button', { class: 'btn primary', type: 'submit' }, 'Save');
+    const form = h('form', { class: 'box hi', onsubmit: async (e) => {
+      e.preventDefault();
+      const name = nameIn.value.trim();
+      if (!/^[A-Za-z0-9_]{3,16}$/.test(name)) return setMsg(saveMsg, 'Use 3 to 16 letters, numbers or underscores.', 'bad');
+      const r = await withBusy(saveBtn, saveMsg, () => actions.save({ username: name, avatar: pick }), 'Saved.');
+      if (r && r.ok) sfx('next');
+    } },
+      h('div', { class: 'acct-top' }, avatarEl(pick, 'big'), h('div', {}, h('h2', { text: nameOf(profile) }), h('span', { class: `pill ${user.isGuest ? '' : 'good'}`, text: user.isGuest ? 'Guest' : 'Signed in' }), user.email && h('span', { class: 'muted small', text: ` ${user.email}` }))),
+      h('label', { class: 'field' }, h('b', { text: 'Username' }), nameIn, h('small', { id: 'name-help', class: 'muted', text: '3 to 16 letters, numbers or underscores.' })),
+      h('div', { class: 'field' }, h('b', { text: 'Avatar' }), grid),
+      h('div', { class: 'actions' }, saveBtn), saveMsg);
+    const out = rowMsg();
+    const outBtn = h('button', { class: 'btn ghost', type: 'button', onclick: () => withBusy(outBtn, out, actions.signOut) }, 'Sign out');
+    mount(h('div', { class: 'page-narrow acct' }, head, form,
+      h('section', { class: 'box section' }, h('h2', { text: 'Your stats' }), statsCard(stats),
+        h('div', { class: 'actions', style: 'margin-top:12px' }, h('a', { class: 'btn small', href: href.leaderboard() }, 'Leaderboard'), h('a', { class: 'btn small ghost', href: href.stats() }, 'This browser’s stats'))),
+      user.isGuest && h('section', { class: 'box cyan section' }, h('h2', { text: 'Save your progress: add email' }),
+        emailForm({ cta: 'Add email', note: 'Add an email so you can sign in on another device and keep your games and name.', onSend: actions.upgrade })),
+      h('div', { class: 'actions section' }, outBtn), out));
+  }
+
+  /* ---------------------------------------------------------------- leaderboard ---------- */
+  function showLeaderboard({ tab, scope, state, rows, meId, day, signedIn, error, onTab, onScope }) {
+    pageTitle('Leaderboard');
+    const tabBtn = (id, label, cur, fn) => h('button', { class: `tab-btn${cur ? ' on' : ''}`, type: 'button', 'aria-pressed': String(cur), onclick: fn }, label);
+    const bar = h('div', { class: 'lb-bar' },
+      h('div', { class: 'tabs', role: 'group', 'aria-label': 'Time range' }, tabBtn('daily', 'Today', tab === 'daily', () => onTab('daily')), tabBtn('all', 'All time', tab === 'all', () => onTab('all'))),
+      h('div', { class: 'tabs', role: 'group', 'aria-label': 'Who' }, tabBtn('all', 'Everyone', scope === 'all', () => onScope('all')), tabBtn('friends', 'Friends', scope === 'friends', () => onScope('friends'))));
+    const body = [];
+    if (state === 'loading') body.push(h('p', { class: 'muted', role: 'status', text: 'Loading the board…' }));
+    else if (state === 'error') body.push(h('div', { class: 'box hi', role: 'alert' }, h('p', { text: error || 'Couldn’t load the board.' }), h('button', { class: 'btn small', type: 'button', onclick: () => (tab === 'daily' ? onTab('daily') : onTab('all')) }, 'Try again')));
+    else {
+      const TOP = 50;
+      const score = (r) => (tab === 'daily' ? `${fmt(r.depth ?? r.total * 10)} m` : `${fmt(r.total)} pts`);
+      const sub = (r) => (tab === 'daily' ? `${fmt(r.total)} pts` : `${fmt(r.games)} game${r.games === 1 ? '' : 's'}`);
+      const rowEl = (r) => h('li', { class: `lb-row${r.user_id === meId ? ' me' : ''}${r.rank <= 3 ? ` top${r.rank}` : ''}` },
+        h('span', { class: 'lb-rank', text: `#${r.rank}` }), avatarEl(r.avatar), h('span', { class: 'lb-name' }, nameOf(r), r.user_id === meId && h('span', { class: 'pill pink', text: 'You' })),
+        h('span', { class: 'lb-score' }, h('b', { text: score(r) }), h('small', { text: sub(r) })));
+      const shown = rows.slice(0, TOP);
+      const mine = rows.find((r) => r.user_id === meId);
+      if (!rows.length) {
+        body.push(h('div', { class: 'box' }, h('p', { text: scope === 'friends' ? (signedIn ? 'None of your friends have a score here yet.' : 'Sign in to see how your friends are doing.') : tab === 'daily' ? 'Nobody has played today’s Daily Game yet. Be the first!' : 'No scores yet.' }),
+          h('div', { class: 'actions' }, scope === 'friends' && signedIn && h('a', { class: 'btn small', href: href.friends() }, 'Add friends'), tab === 'daily' && h('a', { class: 'btn small primary', href: href.daily() }, 'Play today’s game'))));
+      } else {
+        body.push(h('ol', { class: 'lb-list', 'aria-label': `${tab === 'daily' ? `Today (${day})` : 'All time'} ${scope === 'friends' ? 'friends' : 'everyone'}` }, shown.map(rowEl)));
+        if (mine && rows.indexOf(mine) >= TOP) body.push(h('div', { class: 'lb-gap', 'aria-hidden': 'true', text: '· · ·' }), h('ol', { class: 'lb-list' }, rowEl(mine)));
+        if (rows.length > TOP && !mine) body.push(h('p', { class: 'muted small', text: `Showing the top ${TOP} of ${rows.length}.` }));
+      }
+      if (!mine && state === 'ok') {
+        if (!signedIn) body.push(h('p', { class: 'lb-note' }, h('a', { href: href.account(), text: 'Sign in' }), ' to join the leaderboard.'));
+        else if (tab === 'daily' && rows.length) body.push(h('p', { class: 'lb-note' }, 'You haven’t played today’s Daily Game. ', h('a', { href: href.daily(), text: 'Play it now' }), ' to get on the board.'));
+      }
+    }
+    mount(h('div', { class: 'page-narrow' }, h('div', { class: 'section-head' }, h('div', {}, h('span', { class: 'eyebrow', text: 'Online' }), h('h1', { class: 'page-title', text: 'Leaderboard' }))), bar, h('div', { class: 'lb' }, body)));
+  }
+
+  /* ---------------------------------------------------------------- friends ---------- */
+  function showFriends({ state, error, data, todayBy = {}, actions }) {
+    pageTitle('Friends');
+    const wrap = (...k) => mount(h('div', { class: 'page-narrow' }, h('div', { class: 'section-head' }, h('div', {}, h('span', { class: 'eyebrow', text: 'Online' }), h('h1', { class: 'page-title', text: 'Friends' }))), k));
+    if (state === 'loading') return wrap(h('p', { class: 'muted', role: 'status', text: 'Loading…' }));
+    if (state === 'signedout') return wrap(h('div', { class: 'box hi' }, h('p', { text: 'Sign in (or play as a guest) to add friends.' }), h('div', { class: 'actions' }, h('a', { class: 'btn primary', href: href.account() }, 'Account'))));
+    if (state === 'error') return wrap(h('div', { class: 'box hi', role: 'alert' }, h('p', { text: error || 'Couldn’t load your friends.' }), h('a', { class: 'btn small', href: href.friends() }, 'Try again')));
+    const { friends = [], incoming = [], outgoing = [] } = data;
+    const addMsg = rowMsg();
+    const nameIn = h('input', { class: 'text-in', type: 'text', placeholder: 'their username', 'aria-label': 'Friend’s username', maxlength: '16', autocomplete: 'off', spellcheck: 'false' });
+    const addBtn = h('button', { class: 'btn primary', type: 'submit' }, 'Add friend');
+    const addForm = h('form', { class: 'inline-form', onsubmit: async (e) => {
+      e.preventDefault();
+      const v = nameIn.value.trim();
+      if (!v) return setMsg(addMsg, 'Type your friend’s username.', 'bad');
+      const r = await withBusy(addBtn, addMsg, () => actions.add(v), `Request sent to ${v}.`);
+      if (r && r.ok) nameIn.value = '';
+    } }, nameIn, addBtn);
+    const person = (p, ...right) => h('li', { class: 'fr-row' }, avatarEl(p.avatar), h('span', { class: 'fr-name', text: nameOf(p) }), h('span', { class: 'fr-right' }, right));
+    const act = (label, cls, fn) => { const b = h('button', { class: `btn small ${cls}`, type: 'button', onclick: async () => { b.disabled = true; const r = await fn(); if (r && !r.ok && b.isConnected) { b.disabled = false; toast(r.error || 'Couldn’t do that. Try again.'); } } }, label); return b; };
+    const sections = [h('section', { class: 'box hi' }, h('h2', { text: 'Add a friend' }), addForm, addMsg)];
+    if (incoming.length) sections.push(h('section', { class: 'box cyan section' }, h('h2', { text: `Requests (${incoming.length})` }), h('ul', { class: 'fr-list' },
+      incoming.map((p) => person(p, act('Accept', 'primary', () => actions.accept(pidOf(p))), act('Decline', 'ghost', () => actions.remove(pidOf(p))))))));
+    sections.push(h('section', { class: 'box section' }, h('h2', { text: `Your friends (${friends.length})` }),
+      friends.length ? h('ul', { class: 'fr-list' }, friends.map((p) => {
+        const t = todayBy[pidOf(p)];
+        return person(p, h('span', { class: `fr-today${t ? '' : ' none'}`, text: t ? `${fmt(t.total)} pts today` : 'Hasn’t played today' }), act('Remove', 'ghost', () => actions.remove(pidOf(p))));
+      })) : h('p', { class: 'muted', text: 'No friends yet. Add someone by their username.' })));
+    if (outgoing.length) sections.push(h('section', { class: 'box section' }, h('h2', { text: 'Waiting for a reply' }), h('ul', { class: 'fr-list' }, outgoing.map((p) => person(p, h('span', { class: 'muted', text: 'Pending' }), act('Cancel', 'ghost', () => actions.remove(pidOf(p))))))));
+    wrap(sections);
+  }
+
+  /* ---------------------------------------------------------------- play online ---------- */
+  function showOnline({ packs: plist, signedIn, actions }) {
+    pageTitle('Play online');
+    const msg = rowMsg();
+    const sel = h('select', { class: 'text-in', 'aria-label': 'Question set' }, h('option', { value: '', text: 'Everyday questions' }), (plist || []).map((p) => h('option', { value: p.id, text: p.name })));
+    const mk = h('button', { class: 'btn primary', type: 'button', onclick: () => withBusy(mk, msg, () => actions.create(sel.value)) }, 'Create game');
+    const code = h('input', { class: 'text-in code-in', type: 'text', placeholder: 'ABCDE', 'aria-label': 'Game code', maxlength: '5', autocomplete: 'off', autocapitalize: 'characters', spellcheck: 'false',
+      oninput: () => { code.value = code.value.replace(/[^A-Za-z]/g, '').toUpperCase(); } });
+    const jn = h('button', { class: 'btn', type: 'submit' }, 'Join');
+    const joinForm = h('form', { class: 'inline-form', onsubmit: (e) => { e.preventDefault(); if (code.value.length !== 5) return setMsg(msg, 'A game code has 5 letters.', 'bad'); withBusy(jn, msg, () => actions.join(code.value)); } }, code, jn);
+    const qk = h('button', { class: 'btn cyan', type: 'button', onclick: () => withBusy(qk, msg, actions.quick) }, 'Quick match');
+    const gMsg = rowMsg();
+    const gBtn = h('button', { class: 'btn primary', type: 'button', onclick: () => withBusy(gBtn, gMsg, actions.guest) }, 'Play as guest');
+    const gate = !signedIn && h('section', { class: 'box hi', style: 'margin-bottom:18px' }, h('h2', { text: 'One quick step' }), h('p', { text: 'Live games need a name. Play as a guest in one tap, or sign in with your email.' }),
+      h('div', { class: 'actions' }, gBtn, h('a', { class: 'btn ghost', href: href.account() }, 'Sign in with email')), gMsg);
+    const card = (title, text, ...kids) => h('section', { class: 'box online-card' }, h('h2', { text: title }), h('p', { class: 'muted', text }), kids);
+    mount(h('div', { class: 'page-narrow' }, h('div', { class: 'section-head' }, h('div', {}, h('span', { class: 'eyebrow', text: 'Online' }), h('h1', { class: 'page-title', text: 'Play online' }))),
+      h('p', { class: 'lede', text: 'Everyone gets the same 7 questions at the same time. Pick answers few others will pick. If two players give the same answer, both get half the points.' }),
+      gate,
+      h('div', { class: `online-grid${signedIn ? '' : ' locked'}`, inert: signedIn ? false : true },
+        card('Create a game', 'Pick a question set, then share the code or link.', h('label', { class: 'field' }, h('b', { text: 'Questions' }), sel), mk),
+        card('Join with code', 'Got a 5-letter code from a friend?', joinForm),
+        card('Quick match', 'Jump into an open game with other players, or start one.', qk)),
+      msg));
+  }
+
+  function showRoomSignIn({ code, actions }) {
+    pageTitle(`Game ${code}`);
+    const gMsg = rowMsg();
+    const gBtn = h('button', { class: 'btn primary', type: 'button', onclick: () => withBusy(gBtn, gMsg, actions.guest) }, 'Play as guest');
+    mount(h('div', { class: 'page-narrow' }, h('section', { class: 'box hi', style: 'margin-top:20px' }, h('span', { class: 'eyebrow', text: 'You’re invited' }), h('h1', { class: 'page-title', text: `Join game ${code}` }),
+      h('p', { text: 'Pick a name to play. A guest gets a random one, and you can change it later.' }), h('div', { class: 'actions' }, gBtn), gMsg),
+      h('section', { class: 'box section' }, h('h2', { text: 'Or sign in with email' }), emailForm({ cta: 'Send sign-in link', note: 'When you open the link we’ll bring you back to this game.', onSend: actions.email }))));
+  }
+
+  /* ---------------------------------------------------------------- live games ---------- */
+  let LV = null;   // live screen refs: { key, ... }
+  function stopLive() { if (LV && LV.cleanup) LV.cleanup(); LV = null; }
+
+  const placeOf = (list, score) => 1 + list.filter((p) => p.score > score).length;
+  const sortPlayers = (list) => list.slice().sort((a, b) => (b.score || 0) - (a.score || 0) || String(a.joined_at || '').localeCompare(String(b.joined_at || '')));
+  const packLabel = (v) => (v.pack ? v.pack.name : 'Everyday questions');
+
+  function renderLive(v) {
+    const key = v.kind === 'round' ? `round-${v.round}` : v.kind === 'reveal' ? `reveal-${v.round}${v.last ? '-last' : ''}` : v.kind;
+    if (!LV || LV.key !== key) {
+      keepScene = v.kind !== 'lobby'; stopPlay(); keepScene = false; stopLiveInner();
+      ({ lobby: buildLobby, countdown: buildCountdown, round: buildRound, reveal: buildReveal, final: buildFinal })[v.kind](v, key);
+    }
+    if (LV && LV.update) LV.update(v);
+  }
+  function stopLiveInner() { if (LV && LV.cleanup) LV.cleanup(); LV = null; }
+
+  /* ---- lobby */
+  function buildLobby(v, key) {
+    pageTitle(`Game ${v.code}`);
+    const code = h('div', { class: 'room-code', role: 'img', 'aria-label': `Game code ${v.code.split('').join(' ')}` }, [...v.code].map((c) => h('span', { text: c })));
+    const link = h('input', { class: 'text-in', type: 'text', readonly: true, value: v.link, 'aria-label': 'Invite link', onfocus: (e) => e.target.select() });
+    const copyBtn = h('button', { class: 'btn small primary', type: 'button', onclick: () => v.actions.copyLink() }, 'Copy invite link');
+    const list = h('ul', { class: 'player-list', 'aria-label': 'Players' });
+    const hint = h('p', { class: 'muted', role: 'status' });
+    const startBtn = h('button', { class: 'btn primary big', type: 'button' }, 'START GAME');
+    const msg = rowMsg();
+    startBtn.onclick = async () => { const r = await withBusy(startBtn, msg, () => v.actions.start()); if (r && r.ok) sfx('next'); };
+    const leave = h('button', { class: 'btn ghost', type: 'button', onclick: () => LV.last.actions.leave() }, 'Leave');
+    mount(h('div', { class: 'page-narrow lobby' },
+      h('section', { class: 'box hi' }, h('span', { class: 'eyebrow', text: 'Game lobby' }), h('p', { class: 'muted', style: 'margin:0 0 6px', text: 'Friends join with this code:' }), code,
+        h('div', { class: 'linkbox' }, link, copyBtn), h('p', { class: 'muted small', style: 'margin:10px 0 0', id: 'lobby-set' })),
+      h('section', { class: 'box section' }, h('h2', {}, 'Players ', h('span', { class: 'pill', id: 'lobby-count' })), list),
+      h('div', { class: 'actions section' }, startBtn, leave), hint, msg));
+    let sig = '';
+    LV = {
+      key, last: v, cleanup() {},
+      update(view) {
+        LV.last = view;
+        const s = view.active.map((p) => `${p.user_id}|${p.username}|${p.avatar}`).join(',') + view.hostId;
+        if (s !== sig) {
+          sig = s;
+          list.replaceChildren(...view.active.map((p) => h('li', { class: `pl-row${p.user_id === view.myId ? ' me' : ''}` }, avatarEl(p.avatar), h('span', { class: 'pl-name' }, nameOf(p), p.user_id === view.myId && h('span', { class: 'pill pink', text: 'You' })), p.user_id === view.hostId && crownEl())));
+          if (view.active.length > (LV.n || 0)) sfx('click'); LV.n = view.active.length;
+        }
+        root.querySelector('#lobby-count').textContent = `${view.active.length} / ${view.room.max_players || 8}`;
+        root.querySelector('#lobby-set').textContent = `${packLabel(view)} · ${view.count} questions · ${Math.round((view.room.timer_ms || 25000) / 1000)} seconds each`;
+        startBtn.hidden = !view.isHost; startBtn.disabled = view.active.length < 2 || startBtn.dataset.busy === '1';
+        hint.textContent = view.isHost ? (view.active.length < 2 ? 'You need at least 2 players to start. Share the code!' : 'Ready when you are.') : 'Waiting for the host to start the game…';
+      },
+    };
+  }
+
+  /* ---- play-style frame shared by countdown / round / reveal */
+  function liveFrame(v, { rail = true } = {}) {
+    root.classList.add('is-home', 'is-play');
+    page.className = 'page play-page live-page';
+    const me = v.me ? (v.me.score || 0) : 0;
+    if (sceneCtl && sceneHost && sceneHost.isConnected) sceneCtl.setDepth(me * 10, { instant: false }); else ensurePlayScene(me * 10, true);
+    const hudDepth = h('span', { class: 'hud-val cyan', text: `${fmt(me * 10)} m` });
+    const hudScore = h('span', { class: 'hud-val pink', text: fmt(me) });
+    hudDepth._v = me * 10; hudScore._v = me;
+    const pips = h('div', { class: 'hud-pips', 'aria-hidden': 'true' });
+    const count = h('div', { class: 'hud-count', 'aria-live': 'polite' });
+    const hud = h('header', { class: 'hud', 'aria-label': 'Game status' }, notch('hud-panel', h('span', { class: 'hud-label', text: 'DEPTH' }), hudDepth), h('div', { class: 'hud-mid' }, pips, count), notch('hud-panel', h('span', { class: 'hud-label', text: 'SCORE' }), hudScore));
+    const railEl = rail ? h('aside', { class: 'rail', 'aria-label': 'Live scoreboard' }, h('div', { class: 'rail-title', text: 'SCOREBOARD' }), h('ol', { class: 'rail-list' })) : null;
+    return { hud, hudDepth, hudScore, pips, count, railEl };
+  }
+  function paintRail(F, v) {
+    if (!F.railEl) return;
+    const sorted = sortPlayers(v.active);
+    F.railEl.querySelector('.rail-list').replaceChildren(...sorted.map((p) => h('li', { class: `rail-row${p.user_id === v.myId ? ' me' : ''}${v.answered && v.answered[p.user_id] ? ' done' : ''}` },
+      h('span', { class: 'rr-place', text: String(placeOf(sorted, p.score || 0)) }), avatarEl(p.avatar), h('span', { class: 'rr-name', text: nameOf(p) }), h('b', { class: 'rr-score', text: fmt(p.score || 0) }),
+      v.kind === 'round' && h('span', { class: 'rr-check', 'aria-label': v.answered && v.answered[p.user_id] ? 'answered' : 'thinking', text: v.answered && v.answered[p.user_id] ? '✓' : '…' }))));
+  }
+  function paintPips(F, v, round) {
+    F.pips.replaceChildren(...Array.from({ length: v.count }, (_, i) => h('i', { class: `pip${i + 1 === round && v.kind === 'round' ? ' cur' : ''}${i + 1 < round ? ' t-common' : ''}` })));
+    F.count.textContent = `QUESTION ${Math.min(round, v.count)} OF ${v.count}`;
+  }
+  function paintHud(F, v) {
+    const me = v.me ? (v.me.score || 0) : 0;
+    tween(F.hudDepth, me * 10, (n) => `${fmt(n)} m`);
+    tween(F.hudScore, me, (n) => fmt(n));
+  }
+
+  /* ---- 3-2-1 */
+  function buildCountdown(v, key) {
+    pageTitle('Get ready');
+    const F = liveFrame(v);
+    const num = h('div', { class: 'cd-num', 'aria-hidden': 'true' });
+    const say = h('div', { class: 'sr-only', role: 'status', 'aria-live': 'assertive' });
+    const card = h('div', { class: 'cd-overlay' }, h('div', { class: 'cd-label', text: 'GET READY' }), num, h('div', { class: 'cd-sub', text: `${packLabel(v)} · first answer in ${Math.round((v.room.timer_ms || 20000) / 1000)} seconds` }), say);
+    page.replaceChildren(F.hud, F.railEl, h('main', { class: 'stage', id: 'stage', tabindex: '-1' }, card));
+    paintPips(F, v, 1);
+    let lastN = null;
+    LV = { key, cleanup() {}, update(view) {
+      paintRail(F, view); paintHud(F, view);
+      if (view.secs !== lastN) { lastN = view.secs; num.textContent = String(view.secs); num.classList.remove('pop'); void num.offsetWidth; num.classList.add('pop'); say.textContent = String(view.secs); sfx(view.secs <= 1 ? 'next' : 'tick'); }
+    } };
+  }
+
+  /* ---- a live question */
+  function buildRound(v, key) {
+    pageTitle(`Question ${v.round}`);
+    const F = liveFrame(v);
+    const p = v.prompt || { text: '…', category: '' };
+    const card = playCard('prompt-card',
+      h('div', { class: 'pc-label', text: `QUESTION ${v.round} OF ${v.count} · LIVE` }),
+      h('h1', { class: `prompt-text${p.text.length > 140 ? ' xlong' : p.text.length > 90 ? ' long' : ''}`, text: p.text }),
+      h('div', { class: 'pc-foot' }, h('span', { class: 'rare-line' }, gdown(), ' rarer answers score more ', gdown()), h('span', { class: 'muted small', text: 'One answer, no hints' })));
+    const stage = h('main', { class: 'stage', id: 'stage', tabindex: '-1' }, h('div', { class: 'card-slot' }, card));
+    const ringNum = h('span', { class: 'ring-num', 'aria-hidden': 'true' });
+    const ring = h('div', { class: 'ring', 'aria-hidden': 'true' });
+    const ringWrap = h('div', { class: 'ring-wrap', role: 'timer', 'aria-label': 'Time left' }, ring, ringNum);
+    const input = h('input', { class: 'answer-input', type: 'text', id: 'answer', name: 'answer', placeholder: 'type one answer…', autocomplete: 'off', autocapitalize: 'none', autocorrect: 'off', spellcheck: 'false', enterkeyhint: 'go', 'aria-label': 'Your answer', maxlength: '80', onkeydown: (e) => { if (e.key.length === 1) sfx('type'); } });
+    const timerFill = h('i');
+    const msg = h('div', { class: 'dock-msg', role: 'status', 'aria-live': 'polite' });
+    const sub = h('button', { class: 'sink-btn', type: 'submit' }, 'GO');
+    const form = h('form', { class: 'dock', onsubmit: async (e) => {
+      e.preventDefault();
+      const t = input.value.trim();
+      if (!t) { msg.textContent = 'Type an answer first.'; msg.classList.add('on'); return; }
+      msg.classList.remove('on'); input.disabled = true; sub.disabled = true;
+      const r = await LV.last.actions.submit(t);
+      if (r && !r.ok && form.isConnected) { input.disabled = false; sub.disabled = false; input.focus(); msg.textContent = r.error || 'That didn’t send. Try again.'; msg.classList.add('on'); }
+    } }, msg, h('div', { class: 'dock-in' }, ringWrap, h('div', { class: 'dock-field' }, input, h('div', { class: 'dock-bar', 'aria-hidden': 'true' }, timerFill)), sub));
+    page.replaceChildren(F.hud, F.railEl, stage, form);
+    window.scrollTo(0, 0);
+    paintPips(F, v, v.round);
+    input.focus({ preventScroll: true });
+    let lastSecs = null, locked = false, lockedText = '';
+    LV = { key, last: v, cleanup() {}, update(view) {
+      LV.last = view;
+      paintRail(F, view);
+      const frac = view.timerMs ? Math.max(0, Math.min(1, view.remainingMs / view.timerMs)) : 0;
+      ring.style.setProperty('--f', (Math.ceil(frac * 24) / 24).toFixed(3));
+      timerFill.style.width = `${frac * 100}%`;
+      const secs = Math.ceil(view.remainingMs / 1000);
+      if (secs !== lastSecs) { ringNum.textContent = String(secs); if (secs <= 5 && secs > 0 && lastSecs != null) sfx('tick'); lastSecs = secs; }
+      ringWrap.classList.toggle('crit', secs <= 5 && !view.closed); form.classList.toggle('crit', secs <= 5 && !view.closed);
+      const m = view.mine;
+      if (m) {
+        if (!locked) { locked = true; input.disabled = true; sub.disabled = true; sfx('next'); }
+        lockedText = m.pending ? 'Sending…' : `Locked in: ${m.answerName || m.input}.${m.tier ? ` ${TIER_INFO[m.tier] ? TIER_INFO[m.tier].label : ''}.` : ''} Waiting for the others…`;
+        msg.textContent = lockedText; msg.classList.add('on');
+        if (input.value !== m.input) input.value = m.input;
+      } else if (view.closed) {
+        input.disabled = true; sub.disabled = true; msg.textContent = 'Time’s up. Waiting for the others…'; msg.classList.add('on');
+      }
+    } };
+  }
+
+  /* ---- 6 s reveal */
+  function buildReveal(v, key) {
+    pageTitle(`Round ${v.round} results`);
+    const F = liveFrame(v);
+    const standings = h('ol', { class: 'standings', 'aria-label': 'Standings' });
+    const answersEl = h('ul', { class: 'rv-list', 'aria-label': 'Everyone’s answers' });
+    const bar = h('i'), barWrap = h('div', { class: 'rv-bar', 'aria-hidden': 'true' }, bar);
+    const nextLine = h('p', { class: 'muted rv-next', role: 'status' });
+    const p = v.prompt;
+    const card = playCard('reveal-card',
+      h('div', { class: 'pc-label', text: `QUESTION ${v.round} OF ${v.count} · RESULTS` }), h('h2', { class: 'rv-q', text: p ? p.text : '' }), answersEl,
+      h('div', { class: 'fb-sub', text: 'Standings' }), standings, nextLine, barWrap);
+    page.replaceChildren(F.hud, h('main', { class: 'stage', id: 'stage', tabindex: '-1' }, h('div', { class: 'card-slot' }, card)));
+    paintPips(F, { ...v, kind: 'reveal' }, v.round + 1);
+    F.count.textContent = `RESULTS ${v.round}/${v.count}`;
+    let sig = '', animated = false, order = [], ROW = 44;
+    const pointsOf = (r) => (r.answer ? r.answer.points || 0 : 0);
+    const paintStand = (view, final) => {
+      const gain = new Map(view.rows.map((r) => [r.player.user_id, pointsOf(r)]));
+      const pl = view.active.concat(view.players.filter((q) => q.left_at && (q.score || 0) > 0 && !view.active.includes(q)));
+      const withScore = pl.map((q) => ({ q, score: final ? (q.score || 0) : (q.score || 0) - (gain.get(q.user_id) || 0), gain: gain.get(q.user_id) || 0 }));
+      withScore.sort((a, b) => b.score - a.score || String(a.q.joined_at || '').localeCompare(String(b.q.joined_at || '')));
+      standings.style.height = `${withScore.length * ROW}px`;
+      withScore.forEach((s, i) => {
+        let row = standings.querySelector(`[data-id="${CSS.escape(s.q.user_id)}"]`);
+        if (!row) {
+          row = h('li', { class: 'st-row', 'data-id': s.q.user_id }, h('span', { class: 'st-place' }), avatarEl(s.q.avatar), h('span', { class: 'st-name', text: nameOf(s.q) }), h('span', { class: 'st-gain' }), h('b', { class: 'st-score' }));
+          standings.append(row);
+        }
+        row.classList.toggle('me', s.q.user_id === view.myId);
+        row.style.top = `${i * ROW}px`;
+        row.querySelector('.st-place').textContent = String(1 + withScore.filter((x) => x.score > s.score).length);
+        row.querySelector('.st-score').textContent = fmt(s.score);
+        row.querySelector('.st-gain').textContent = final && s.gain ? `+${s.gain}` : '';
+      });
+      order = withScore;
+    };
+    const fill = (view) => {
+      const rows = view.rows.slice().sort((a, b) => pointsOf(b) - pointsOf(a));
+      answersEl.replaceChildren(...rows.map((r) => {
+        const a = r.answer, pts = a ? a.points || 0 : 0, tier = tierName(a ? a.base_points || a.points || 0 : 0);
+        return h('li', { class: `rv-row${r.player.user_id === view.myId ? ' me' : ''}${a && a.shared ? ' shared' : ''}` }, avatarEl(r.player.avatar), h('span', { class: 'rv-name', text: nameOf(r.player) }),
+          h('span', { class: 'rv-ans' }, h('span', { class: `dot t-${a ? tier : 'none'}` }), a ? (a.answer_name || (a.input ? `${a.input} (not counted)` : 'No answer')) : 'No answer', a && a.shared && h('span', { class: 'pill', text: 'SHARED ½' })),
+          h('b', { class: 'rv-pts', text: pts ? `+${pts}` : '0' }));
+      }));
+    };
+    LV = { key, cleanup() { clearTimeout(LV && LV.t); }, update(view) {
+      LV.last = view;
+      const s = view.rows.map((r) => `${r.player.user_id}:${r.answer ? r.answer.points : '-'}`).join(',');
+      if (s !== sig) {
+        sig = s; fill(view);
+        if (!animated) {
+          animated = true; paintStand(view, false);
+          const go = () => { paintStand(view, true); sfx('next'); };
+          if (reducedMotion()) go(); else LV.t = setTimeout(() => { if (LV && LV.key === key) go(); }, 1100);
+        } else paintStand(view, true);
+        paintHud(F, view);
+      }
+      const total = view.last ? 6000 : 6000;
+      const left = Math.max(0, view.nextInMs);
+      bar.style.width = `${Math.max(0, Math.min(100, (left / total) * 100))}%`;
+      nextLine.textContent = view.last ? 'Final results in a moment…' : `Next question in ${Math.ceil(left / 1000)}…`;
+    } };
+  }
+
+  /* ---- podium */
+  function buildFinal(v, key) {
+    pageTitle('Final standings');
+    root.classList.add('is-home', 'is-play');
+    page.className = 'page play-page live-page';
+    const sorted = sortPlayers(v.players.filter((p) => !p.left_at || (p.score || 0) > 0));
+    const me = v.me ? (v.me.score || 0) : 0;
+    if (sceneCtl && sceneHost && sceneHost.isConnected) sceneCtl.setDepth(me * 10, { instant: false }); else ensurePlayScene(me * 10, true);
+    const place = (p) => placeOf(sorted, p.score || 0);
+    const top = sorted.filter((p) => place(p) <= 3).slice(0, 3);
+    const slot = (p, cls) => p && h('li', { class: `pod ${cls}` }, h('div', { class: 'pod-who' }, avatarEl(p.avatar, 'big'), h('b', { text: nameOf(p) }), h('span', { text: `${fmt(p.score || 0)} pts` })),
+      h('div', { class: 'pod-block' }, h('span', { text: String(place(p)) })));
+    const first = top.find((p) => place(p) === 1), second = top.find((p) => place(p) === 2 && p !== first), third = top.find((p) => place(p) === 3 && p !== second && p !== first);
+    const podium = h('ol', { class: 'podium', 'aria-label': 'Top three' }, slot(second, 'second'), slot(first, 'first'), slot(third, 'third'));
+    const iWon = v.me && place(v.me) === 1 && sorted.length > 1;
+    const msg = rowMsg();
+    const again = h('button', { class: 'btn primary', type: 'button', onclick: () => withBusy(again, msg, async () => { await v.actions.again(); return { ok: true }; }) }, 'Play again');
+    const card = playCard('results-card final-card',
+      h('span', { class: 'eyebrow', text: 'Game over' }), h('h1', { class: 'page-title', text: iWon ? 'You won!' : 'Final standings' }), podium,
+      h('ol', { class: 'final-list', 'aria-label': 'All players' }, sorted.map((p) => h('li', { class: `fl-row${p.user_id === v.myId ? ' me' : ''}` }, h('span', { class: 'lb-rank', text: `#${place(p)}` }), avatarEl(p.avatar), h('span', { class: 'lb-name', text: nameOf(p) }), p.left_at && h('span', { class: 'muted small', text: 'left' }), h('b', { text: `${fmt(p.score || 0)} pts` })))),
+      h('div', { class: 'actions' }, again, h('button', { class: 'btn ghost', type: 'button', onclick: () => LV.last.actions.home() }, 'Home')), msg,
+      h('p', { class: 'muted small', text: 'Play again makes a new game and copies its invite link. Send it to the same group.' }));
+    page.replaceChildren(h('main', { class: 'stage results-stage', id: 'stage', tabindex: '-1' }, card));
+    window.scrollTo(0, 0);
+    sfx(iWon ? 'duelWin' : 'finish');
+    LV = { key, last: v, cleanup() {}, update(view) { LV.last = view; } };
+  }
+  /* ================================================================ end v3 ================ */
 
   /* ---------------------------------------------------------------- settings sync ---------- */
   function applySettings(s = {}) {
@@ -998,9 +1507,10 @@ export function createUI(root, on) {
   function init() { buildShell(); }
 
   return {
+    setAccount, showPartyHost, showOffline, showAccount, showLeaderboard, showFriends, showOnline, showRoomSignIn, renderLive, stopLive, setRank,
     init, setPacks, setContent, setRoute, applySettings, toast, inlineToast, showLoading, showError, showNotFound,
     showHome, showPacks, showArchive, showStats, showHistory, showHow, showGuides, showGuide, showFaq, showAbout,
-    showInvite, beginPlay, showPrompt, updateTimer, showHint, showReject, showSuggest, showResult, showRun, stopPlay,
+    setPlayedToday, showInvite, beginPlay, showPrompt, updateTimer, showHint, showReject, showSuggest, showResult, showRun, stopPlay,
     get playing() { return !!P; },
     get playRefs() { return P; },
     TIER_COLOR,

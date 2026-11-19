@@ -21,23 +21,16 @@ function lerpStops(stops, t) {
   return mix(stops[stops.length - 1][1], stops[stops.length - 1][1], 0);
 }
 
+// Calm palette (Orchestrator 00:30): one smooth sky gradient, dark navy water, muted lavender details.
+const WATER = [[0, '#141033'], [0.25, '#0b0921'], [1, '#07060d']];
 const THEMES = {
-  neon: {
-    sky: [[0, '#3d7bff'], [0.55, '#b44dff'], [1, '#ff9ad5']],
-    water: [[0, '#2a2190'], [0.35, '#1d1650'], [1, '#07060d']],
-    cloudA: '#c98bff', cloudB: '#ffb6e0', star: '#e9e6ff', moon: '#f3ecff', moonShade: '#cdbdf2', crest: '#ffd0ec', foam: '#8fa6ff',
-  },
-  midnight: {
-    sky: [[0, '#0b0a2a'], [0.55, '#2a1a7a'], [1, '#7a3aa8']],
-    water: [[0, '#1a1458'], [0.35, '#120d38'], [1, '#050409']],
-    cloudA: '#4a3a9a', cloudB: '#7a4aa0', star: '#d9d4ff', moon: '#e6e2ff', moonShade: '#a9a3dc', crest: '#b79af0', foam: '#5a62c8',
-  },
-  crt: {
-    sky: [[0, '#2f6bf0'], [0.55, '#a343f0'], [1, '#ff8fd0']],
-    water: [[0, '#241c80'], [0.35, '#180f48'], [1, '#050409']],
-    cloudA: '#b97af2', cloudB: '#ffa6d8', star: '#dff6ff', moon: '#eaf7ff', moonShade: '#b5d4ec', crest: '#ffc4e6', foam: '#79a0ff',
-  },
+  neon: { sky: [[0, '#1a1540'], [0.55, '#33295f'], [1, '#5c4a80']], water: WATER, cloudA: '#c9a6e8', cloudB: '#f0b8d0', star: '#cfc9f0', moon: '#f3ecff', moonShade: '#cdbdf2', crest: '#7a6fb8', foam: '#6f78b8' },
+  midnight: { sky: [[0, '#0f0c2e'], [0.55, '#241d4c'], [1, '#463a68']], water: WATER, cloudA: '#9a86d0', cloudB: '#c89ab8', star: '#c4bfe8', moon: '#e6e2ff', moonShade: '#a9a3dc', crest: '#6a5fa0', foam: '#5f68a8' },
+  crt: { sky: [[0, '#1a1a48'], [0.55, '#33306a'], [1, '#5a5088']], water: WATER, cloudA: '#b8a6e8', cloudB: '#f0b8d8', star: '#d4e8f4', moon: '#eaf7ff', moonShade: '#b5d4ec', crest: '#7a78c0', foam: '#6f88c0' },
 };
+const EDGE = 40;                         // css px of water the edge canvas paints below the waterline
+// A long, low swell: a ~600 px sine plus a smaller 230 px one, a full cycle every ~8 s, continuous (not snapped).
+const swell = (x, T) => 5 * Math.sin(2 * Math.PI * (x / 600 - T / 8)) + 1.8 * Math.sin(2 * Math.PI * (x / 230 - T / 5.3) + 1);
 
 // 3x5 digits + 'm' for the depth ruler
 const GLYPH = {
@@ -73,19 +66,15 @@ const sw = (name) => (hasSprite(name) ? assets.sprites.SPRITES[name] : null);
 
 /* ---------------------------------------------------------------- procedural art ---------- */
 function makeCloud(w, h, seed, color) {
-  // A flat-bottomed pixel cloud built from a few stacked blobs, cached to a tiny canvas.
+  // A flat-bottomed pixel cloud: a few overlapping round humps, cached to a tiny canvas.
   const c = document.createElement('canvas'); c.width = w; c.height = h;
-  const g = c.getContext('2d'); const r = rng(seed);
-  const blobs = Math.max(3, Math.round(w / 14));
-  for (let i = 0; i < blobs; i++) {
-    const bw = 10 + Math.floor(r() * 16), bh = 3 + Math.floor(r() * (h - 4));
-    const bx = Math.floor((w - bw) * (i / Math.max(1, blobs - 1)));
-    for (let y = 0; y < bh; y++) {
-      const inset = Math.round((1 - Math.sqrt(1 - Math.pow((y + 0.5 - bh) / bh, 2))) * bw * 0.45);
-      g.fillStyle = color; g.fillRect(bx + inset, h - 1 - y, Math.max(1, bw - inset * 2), 1);
-    }
+  const g = c.getContext('2d'); const r = rng(seed); g.fillStyle = color;
+  const humps = [[0.22, 0.55], [0.42, 0.95], [0.62, 0.7], [0.8, 0.45]];
+  for (const [fx, fh] of humps) {
+    const rx = Math.round(w * (0.16 + r() * 0.06)), ry = Math.max(2, Math.round((h - 1) * fh * (0.85 + r() * 0.2))), cx = Math.round(w * fx);
+    for (let y = 0; y < ry; y++) { const half = Math.round(rx * Math.sqrt(1 - Math.pow((ry - 1 - y) / ry, 2))); g.fillRect(cx - half, h - 2 - (ry - 1 - y) , half * 2, 1); }
   }
-  g.globalAlpha = 1;
+  g.fillRect(Math.round(w * 0.06), h - 2, Math.round(w * 0.88), 2);
   return c;
 }
 
@@ -135,14 +124,21 @@ export function startScene(host, opts = {}) {
   canvas.setAttribute('aria-hidden', 'true');
   host.prepend(canvas);
   const g = canvas.getContext('2d');
+  const edge = document.createElement('canvas');   // 2 px-resolution layer: the swell, the surface line and the depth ruler
+  edge.className = 'scene-canvas scene-edge';
+  edge.setAttribute('aria-hidden', 'true');
+  canvas.after(edge);
+  const eg = edge.getContext('2d');
+  let band = null, sub = null;                      // cached water-colour column under the surface / light band
   const base = document.createElement('canvas');   // cached sky + water gradients
   const bg = base.getContext('2d');
   const st = S = {
-    host, canvas, g, base, bg, W: 0, H: 0, scale: 4, water: 0, th: THEMES[themeName()] || THEMES.neon,
+    host, canvas, edge, g, base, bg, W: 0, H: 0, scale: 4, water: 0, th: THEMES[themeName()] || THEMES.neon,
     play: opts.mode === 'play', trail: [], dive: null, sad: null, banner: null, prevCam: null, rivalTween: null, cam: 0, camTween: null, depthM: 0, rival: null, answered: 0, pulse: null, glow: [], raf: 0, last: 0, t: 0, stars: [], clouds: [], bubbles: [], fish: [], moonImg: null, opts,
     getWaterY: opts.getWaterY || (() => host.clientHeight * 0.62), stopped: false, observers: [],
   };
 
+  const waterAt = (dy) => lerpStops(st.th.water, Math.min(1, Math.max(0, dy) / 300));
   function layout() {
     const cw = host.clientWidth, ch = host.clientHeight;
     if (!cw || !ch) return;
@@ -150,144 +146,140 @@ export function startScene(host, opts = {}) {
     st.W = Math.ceil(cw / st.scale); st.H = Math.ceil(ch / st.scale);
     canvas.width = st.W; canvas.height = st.H; base.width = st.W; base.height = st.H;
     canvas.style.width = `${st.W * st.scale}px`; canvas.style.height = `${st.H * st.scale}px`;
-    st.water = st.play ? Math.round(st.H * 0.28) : Math.round(st.getWaterY() / st.scale);
+    st.EW = cw; st.EH = ch;
+    edge.width = st.EW; edge.height = st.EH; edge.style.width = `${cw}px`; edge.style.height = `${ch}px`;
+    st.wyCss = st.play ? Math.round(st.H * 0.28) * st.scale : st.getWaterY();
+    st.water = Math.round(st.wyCss / st.scale);
     if (st.play) st.cam = Math.round(st.depthM * PX_PER_M);
     st.th = THEMES[themeName()] || THEMES.neon;
     paintBase(); seed(); frame(true);
   }
 
   function paintBase() {
-    const { W, H, water, th } = st; const BAND = 3;
-    for (let y = 0; y < water; y += BAND) rect(bg, 0, y, W, BAND, lerpStops(th.sky, y / Math.max(1, water - 1)));
-    // dithered seam between sky bands, for that chunky pixel-gradient look
-    for (let y = BAND; y < water; y += BAND) for (let x = (y / BAND) % 2; x < W; x += 2) { rect(bg, x, y - 1, 1, 1, lerpStops(th.sky, y / Math.max(1, water - 1))); }
-    for (let y = water; y < H; y += BAND) rect(bg, 0, y, W, BAND, lerpStops(th.water, Math.min(1, (y - water) / Math.max(1, (H - water) * 0.9))));
+    const { W, H, water, th, scale } = st;
+    const seam = Math.floor((st.wyCss + EDGE - 2) / scale);    // the sky runs on under the swell; the edge layer paints the water over it
+    for (let y = 0; y < Math.min(H, seam); y++) rect(bg, 0, y, W, 1, lerpStops(th.sky, y / Math.max(1, water - 1)));
+    for (let y = seam; y < H; y++) rect(bg, 0, y, W, 1, waterAt(y * scale - st.wyCss));
     st.moonImg = makeMoon(th);
+    // the edge layer's water column: the same colours as the water below it, so the join is invisible
+    const bandTop = Math.floor(st.wyCss - 12), rows = EDGE + 12;
+    band = document.createElement('canvas'); band.width = 1; band.height = rows;
+    const bgx = band.getContext('2d');
+    for (let r = 0; r < rows; r++) { bgx.fillStyle = waterAt(bandTop + r - st.wyCss); bgx.fillRect(0, r, 1, 1); }
+    st.bandTop = bandTop; st.bandRows = rows;
+    sub = document.createElement('canvas'); sub.width = 1; sub.height = 16;
+    const sgx = sub.getContext('2d');
+    for (let r = 0; r < 16; r++) { sgx.globalAlpha = 0.09 * (1 - r / 16); sgx.fillStyle = '#9a8fe0'; sgx.fillRect(0, r, 1, 1); }
   }
 
   function seed() {
-    const { W, H, water, th } = st; const r = rng(1337 + W);
-    st.stars = Array.from({ length: Math.round((W * water) / 700) }, () => ({ x: Math.floor(r() * W), y: Math.floor(r() * water * 0.8), p: r() * 6, big: r() < 0.18 }));
-    const cl = (name, sc, tint, seed) => (sw(name) ? spriteCanvas(name, sc) : makeCloud(Math.round(48 * sc * 0.8), Math.round(12 * sc * 0.8), seed, tint));
-    st.clouds = [
-      { img: cl('cloud-a', 1, th.cloudA, 3), x: r() * W, y: water * 0.5, v: 2.2, a: 0.55 },
-      { img: cl('cloud-b', 1, th.cloudB, 7), x: r() * W, y: water * 0.64, v: 3.6, a: 0.6 },
-      { img: cl('cloud-a', 1, th.cloudA, 11), x: r() * W, y: water * 0.42, v: 1.4, a: 0.4 },
-      { img: cl('cloud-b', 1, th.cloudB, 19), x: r() * W, y: water * 0.78, v: 5, a: 0.5 },
-    ];
+    const { W, H, water, scale } = st; const r = rng(1337 + W);
+    const skyH = Math.round(water * 0.4);
+    st.stars = Array.from({ length: 18 }, () => ({ x: Math.floor(r() * W), y: Math.floor(r() * skyH), p: r() * 6 }));
+    // 3-4 soft clouds, only in the top corners and edges (never across the title block); they sway a few px, they don't travel
+    const cl = (name, tint, sd) => makeCloud(48, 12, sd, tint);   // our own soft clouds: low contrast, flat-bottomed
+    const narrow = W * scale < 600;
+    const spots = narrow
+      ? [['cloud-a', 0.0, 26, 0.3], ['cloud-b', 0.46, -4, 0.28], ['cloud-a', 0.7, 24, 0.26]]
+      : [['cloud-a', 0.03, 22, 0.32], ['cloud-b', 0.55, -2, 0.28], ['cloud-a', 0.86, 92, 0.3], ['cloud-b', -0.02, 96, 0.25]];
+    st.clouds = spots.map(([name, fx, y, a], i) => ({ img: cl(name, name === 'cloud-a' ? st.th.cloudA : st.th.cloudB, 3 + i * 4), x: Math.round(W * fx), y: Math.round(y / scale), a, ph: i * 1.7 }));
 
     const depth = H - water;
-    st.bubbles = Array.from({ length: Math.max(8, Math.round(W / 9)) }, () => ({ x: Math.floor(r() * (W - 14)), y: water + r() * depth, v: 5 + r() * 9, ph: r() * 6, s: r() < 0.25 ? 2 : 1 }));
-    st.fish = Array.from({ length: 5 }, (_, i) => ({ y: water + 14 + (depth - 28) * (0.12 + i * 0.19) + r() * 6, x: r() * W, v: (i % 2 ? -1 : 1) * (4 + r() * 6), big: i % 2 === 0, name: i % 2 ? 'fish-b' : 'fish-a' }));
+    st.bubbles = Array.from({ length: 7 }, () => ({ x: Math.floor(r() * (W - 14)), y: water + r() * depth, v: 2 + r() * 3, ph: r() * 6, s: 1 }));
+    st.fish = Array.from({ length: 3 }, (_, i) => ({ y: water + 12 + (depth - 24) * (0.2 + i * 0.28) + r() * 6, x: r() * W, v: (i % 2 ? -1 : 1) * (2 + r() * 2), big: i % 2 === 0, name: i % 2 ? 'fish-b' : 'fish-a' }));
     st.glow = Array.from({ length: 48 }, () => ({ x: r() * W, y: r() * H, v: 2 + r() * 5, ph: r() * 6, c: r() < 0.6 ? '#5ee0ff' : '#ff9ad5' }));
-    st.moonX = Math.round(W * 0.8 - 16); st.moonY = Math.max(8, Math.round(water * 0.09));
+    st.moonX = Math.round(W * 0.82 - 16); st.moonY = -Math.round(14 * 4 / scale);
+  }
+
+  /* Shared by the title screen and the game: stars, moon and clouds (they ride up with the waterline in play). */
+  function drawSky(T, shift, wy, reduced) {
+    const { W, th } = st;
+    for (const s of st.stars) {
+      const y = s.y + shift; if (y < 0 || y >= wy) continue;
+      g.globalAlpha = reduced ? 0.35 : 0.2 + 0.3 * (0.5 + 0.5 * Math.sin(T * 0.45 + s.p));
+      rect(g, s.x, y, 1, 1, th.star);
+    }
+    g.globalAlpha = 1;
+    const my = st.moonY + shift;
+    if (my > -40) {
+      const cx = st.moonX + 16, cy = my + 16, gr = g.createRadialGradient(cx, cy, 6, cx, cy, 44);
+      gr.addColorStop(0, 'rgba(243,236,255,0.16)'); gr.addColorStop(1, 'rgba(243,236,255,0)');
+      g.fillStyle = gr; g.fillRect(cx - 46, cy - 46, 92, 92);
+      g.globalAlpha = 0.85;
+      if (sw('moon') && sprite(g, 'moon', st.moonX, my, 1)) { /* Luna's moon */ } else g.drawImage(st.moonImg, st.moonX, my);
+      g.globalAlpha = 1;
+    }
+    for (const c of st.clouds) {
+      const x = c.x + (reduced ? 0 : Math.round(Math.sin(T * 0.07 + c.ph) * 5));
+      g.globalAlpha = c.a; g.drawImage(c.img, x, Math.round(c.y + shift)); g.globalAlpha = 1;
+    }
+  }
+
+  /* The swell and the depth ruler, on the 2 px layer. wyCss = the waterline in css px (can be off-screen in play). */
+  function drawEdge(wyCss, T, rulerStep) {
+    const EW = st.EW, EH = st.EH;
+    eg.clearRect(0, 0, EW, EH);
+    if (wyCss < -30 || wyCss > EH * 2 + 30 || !band) return;
+    const dBand = Math.floor(wyCss - 12) - st.bandTop;   // the cached column was built for st.wyCss; in play it slides with the camera
+    for (let x = 0; x < EW; x++) {
+      const top = Math.round(wyCss + swell(x, T));
+      const r0 = top - (st.bandTop + dBand); const h = Math.min(st.bandRows - r0, EH - top);
+      if (r0 >= 0 && h > 0) eg.drawImage(band, 0, r0, 1, h, x, top, 1, h);
+      eg.drawImage(sub, 0, 0, 1, 16, x, top, 1, 16);
+      eg.globalAlpha = 0.5; eg.fillStyle = st.th.crest; eg.fillRect(x, top, 1, 1); eg.globalAlpha = 1;
+      // below the cached band the page background (painted by the main canvas) is already the right water colour
+    }
+    // depth ruler: a thin faint line near the right edge, small labels
+    const lx = EW - 14, y0 = Math.max(0, Math.round(wyCss));
+    eg.globalAlpha = 0.22; eg.fillStyle = '#8fa6ff'; eg.fillRect(lx, y0, 1, EH - y0);
+    eg.globalAlpha = 0.35;
+    for (let k = 0; ; k++) {
+      const y = Math.round(wyCss + k * rulerStep); if (y >= EH) break; if (y < 0) continue;
+      const major = k % 4 === 0;
+      eg.fillRect(lx - (major ? 6 : 3), y, major ? 6 : 3, 1);
+      if (major && st.scale > 3) { const label = k === 0 ? '0m' : `-${(k / 4) * 100}m`; text(eg, label, lx - 10 - label.length * 8, y + (k === 0 ? 4 : -5), '#8fa6ff', 2); }
+    }
+    eg.globalAlpha = 1;
+  }
+
+  /* A dark silhouette with one pink light that blinks every ~2.6 s; it rides the swell. */
+  function drawBuoy(cxCanvas, wyCanvasSurface, T, reduced) {
+    const x = Math.round(cxCanvas), y = Math.round(wyCanvasSurface) + 1;
+    const col = '#0c0a1e';
+    rect(g, x - 8, y - 2, 16, 3, col); rect(g, x - 7, y - 3, 14, 1, col); rect(g, x - 9, y - 4, 4, 2, col);   // hull
+    rect(g, x - 3, y - 8, 7, 5, col); rect(g, x + 3, y - 15, 1, 7, col);                                        // cabin + mast
+    const on = reduced ? true : (T % 2.6) < 1.1;
+    if (on) rect(g, x + 2, y - 17, 3, 2, '#ff4fa3');
   }
 
   function frame(still) {
     if (st.play) return framePlay();
-    const { W, H, water, th, t } = st;
+    const { W, H, water, th, t, scale } = st;
     const reduced = isReduced();
     g.clearRect(0, 0, W, H);
     g.drawImage(base, 0, 0);
     const T = reduced ? 0 : t;
+    drawSky(T, 0, water, reduced);
 
-    // stars
-    for (const s of st.stars) {
-      const f = reduced ? 1 : Math.floor(T * 1.6 + s.p) % 3;   // steps(): dim / normal / bright
-      g.globalAlpha = f === 0 ? 0.35 : f === 1 ? 0.75 : 1;
-      rect(g, s.x, s.y, 1, 1, th.star);
-      if (s.big && f === 2) { rect(g, s.x - 1, s.y, 3, 1, th.star); rect(g, s.x, s.y - 1, 1, 3, th.star); }
-    }
-    g.globalAlpha = 1;
-
-    // moon with a stepped glow
-    for (let i = 3; i >= 1; i--) { g.globalAlpha = 0.07; const r = 16 + i * 5; for (let y = -r; y <= r; y += 1) { const w = Math.floor(Math.sqrt(r * r - y * y)); rect(g, st.moonX + 16 - w, st.moonY + 16 + y, w * 2, 1, th.moon); } }
-    g.globalAlpha = 1;
-    if (sw('moon') && sprite(g, 'moon', st.moonX, st.moonY, 1)) { /* Luna's moon */ } else g.drawImage(st.moonImg, st.moonX, st.moonY);
-
-    // clouds, slow parallax drift (wrap)
-    for (const c of st.clouds) {
-      const w = c.img.width; const x = ((c.x + T * c.v) % (W + w)) - w;
-      g.globalAlpha = c.a; g.drawImage(c.img, Math.round(x), Math.round(c.y)); g.globalAlpha = 1;
-    }
-
-    // moon reflection on the water
-    for (let i = 0; i < 9; i++) {
-      const y = water + 4 + i * 4, w = Math.max(2, 14 - i), off = reduced ? 0 : (Math.floor(T * 2 + i) % 3) - 1;
-      g.globalAlpha = 0.28 - i * 0.025; rect(g, st.moonX + 16 - w / 2 + off * 2, y, w, 1, th.moon);
-    }
-    g.globalAlpha = 1;
-
-    // deep water life: fish silhouettes + bubbles
+    // a few tiny, dim fish and very rare bubbles
     for (const f of st.fish) {
       const span = W + 30; const x = ((f.x + T * f.v) % span + span) % span - 15;
-      g.globalAlpha = 0.34;
+      g.globalAlpha = 0.25;
       if (sw(f.name)) sprite(g, f.name, x, f.y, 1); else drawFishShape(g, Math.round(x), Math.round(f.y), f.v > 0 ? 1 : -1, '#4a3fb0', f.big);
       g.globalAlpha = 1;
     }
     for (const b of st.bubbles) {
       const depth = H - water;
-      const y = water + 4 + (((b.y - water - T * b.v) % depth) + depth) % depth;
-      const x = b.x + (reduced ? 0 : Math.round(Math.sin(T * 1.4 + b.ph) * 1.5));
-      g.globalAlpha = 0.5; rect(g, x, y, b.s, b.s, '#9fd8ff');
-      if (b.s === 2) rect(g, x, y, 1, 1, '#ffffff'); g.globalAlpha = 1;
+      const y = water + 8 + (((b.y - water - T * b.v) % depth) + depth) % depth;
+      const x = b.x + (reduced ? 0 : Math.round(Math.sin(T * 1.2 + b.ph)));
+      g.globalAlpha = 0.25; rect(g, x, y, 1, 1, '#9fb4e8'); g.globalAlpha = 1;
     }
 
-    // Vermi + buoy at the waterline
-    const wave = reduced ? 0 : Math.floor(T * 3) % 3;
-    const bob = reduced ? 0 : Math.round(Math.sin(T * 1.9) * 2);
-    // splash ripple under Vermi (the jellyfish itself is a DOM sprite): rings widen in 3 steps, in time with its bob
-    const vcx = Math.round((st.opts.getVermiX ? st.opts.getVermiX() : W * st.scale * 0.5 - 100) / st.scale);
-    const rp = reduced ? 1 : Math.floor(T * 1.6) % 4;
-    for (let k = 0; k < 3; k++) {
-      const ph = (rp + k) % 4, w = 10 + ph * 6 + k * 2;
-      g.globalAlpha = 0.65 - ph * 0.15; rect(g, vcx - w / 2, water + 1 + k * 2, w, 1, th.crest);
-    }
-    g.globalAlpha = 0.9;
-    if (rp === 0 || rp === 1) { rect(g, vcx - 14, water - 2 - rp, 1, 1, th.crest); rect(g, vcx + 13, water - 2 - rp, 1, 1, th.crest); rect(g, vcx - 11, water - 4 + rp, 1, 1, th.foam); rect(g, vcx + 10, water - 4 + rp, 1, 1, th.foam); }
-    g.globalAlpha = 1;
-    const buoyX = vcx + 26;
-
-    const bobB = reduced ? 0 : Math.round(Math.sin(T * 1.5 + 1) * 1);
-    const by = water - 15 + bobB; const light = reduced ? true : Math.floor(T * 1.6) % 2 === 0;
-    const bs = sw('buoy');
-    if (bs) { sprite(g, 'buoy', buoyX, by - 4, 1, light ? 0 : 1); }
-    else {
-      rect(g, buoyX + 3, by + 3, 2, 2, '#e9e6ff');                      // mast
-      rect(g, buoyX + 3, by, 2, 3, '#4a3fb0');                         // lamp housing
-      rect(g, buoyX + 1, by + 5, 6, 3, '#ff5e7a'); rect(g, buoyX, by + 8, 8, 3, '#e9e6ff'); rect(g, buoyX + 1, by + 11, 6, 3, '#ff5e7a');
-      rect(g, buoyX + 2, by + 14, 4, 2, '#8d86b8');
-      if (light) { rect(g, buoyX + 3, by - 1, 2, 2, '#ff4fa3'); g.globalAlpha = 0.28; rect(g, buoyX - 2, by - 5, 12, 10, '#ff4fa3'); g.globalAlpha = 0.14; rect(g, buoyX - 6, by - 9, 20, 18, '#ff4fa3'); g.globalAlpha = 1; }
-    }
-
-    // wave edge: translucent water over Vermi's tentacles / buoy base, then a 3-frame crest line
-    g.globalAlpha = 0.82;
-    for (let x = 0; x < W; x++) {
-      const off = Math.round(Math.sin((x + wave * 5) / 4.2) * 1);
-      rect(g, x, water + off, 1, 6, lerpStops(th.water, 0.04));
-    }
-    g.globalAlpha = 1;
-    const ws = sw('wave');
-    if (ws) for (let x = -(wave * 6); x < W; x += ws.w) sprite(g, 'wave', x, water - 4, 1, wave);
-    else for (let x = 0; x < W; x++) {
-      const off = Math.round(Math.sin((x + wave * 5) / 4.2) * 1);
-      rect(g, x, water + off - 1, 1, 1, th.crest);
-      if ((x + wave * 3) % 9 < 3) rect(g, x, water + off, 1, 1, th.foam);
-    }
-
-    // depth ruler along the right edge
-    const rx = W - 4;
-    g.globalAlpha = 0.5;
-    for (let y = water + 6, i = 0; y < H; y += 6, i++) {
-      const major = i % 4 === 0;
-      rect(g, rx - (major ? 3 : 1), y, major ? 4 : 2, 1, '#8fa6ff');
-      if (major && i > 0 && y + 6 < H) text(g, `${i * 25}`, rx - 4 - String(i * 25).length * 4, y - 2, '#8fa6ff');
-    }
-    rect(g, rx + 1, water + 6, 1, H, '#8fa6ff');
-    text(g, '0m', rx - 9, water + 8, '#cfd9ff');
-    g.globalAlpha = 1;
+    // the buoy, left of the column, riding the swell
+    const bx = (st.opts.getVermiX ? st.opts.getVermiX() : W * scale * 0.5 - 100);
+    drawBuoy(bx / scale, (st.wyCss + swell(bx, T)) / scale, T, reduced);
+    drawEdge(st.wyCss, T, 6 * scale);
   }
-
 
   /* ------------------------------------------------ play mode: the camera sinks with the run ---------- */
   const TIER_RGB = { none: '#8d86b8', common: '#3d7bff', uncommon: '#b44dff', rare: '#ff4fa3', mythic: '#5ee0ff' };
@@ -297,7 +289,7 @@ export function startScene(host, opts = {}) {
     if (st.camTween) {
       const tw = st.camTween; const prog = (now - tw.t0) / 800;
       if (prog >= 1 || reduced) { st.cam = tw.to; st.camTween = null; }
-      else st.cam = Math.round(tw.from + (tw.to - tw.from) * (Math.floor(prog * 8) / 8));   // steps(8) over 800 ms
+      else st.cam = tw.from + (tw.to - tw.from) * (0.5 - 0.5 * Math.cos(Math.PI * prog));   // eased, continuous
     }
     // --- the dive: wind-up, plunge (camera follows, easeOutCubic in steps), landing ---
     const dv = st.dive; let dph = null, dp = 0;
@@ -306,8 +298,8 @@ export function startScene(host, opts = {}) {
       if (e < WIND) { dph = 'wind'; dp = e / WIND; st.cam = dv.fromPx; }
       else if (e < WIND + dv.dur) {
         dph = 'dive'; dp = (e - WIND) / dv.dur;
-        const q = Math.max(6, Math.round(dv.dur / 45)), ez = 1 - Math.pow(1 - dp, 3);
-        st.cam = Math.round(dv.fromPx + (dv.toPx - dv.fromPx) * (Math.floor(ez * q) / q));
+        const ez = dp < 0.5 ? 4 * dp * dp * dp : 1 - Math.pow(-2 * dp + 2, 3) / 2;
+        st.cam = dv.fromPx + (dv.toPx - dv.fromPx) * ez;
       } else if (e < WIND + dv.dur + LAND) {
         dph = 'land'; dp = (e - WIND - dv.dur) / LAND; st.cam = dv.toPx;
         if (!dv.landed) { dv.landed = true; st.pulse = { tier: dv.tier, t0: now }; st.answered++; dv.onLand && dv.onLand(); }
@@ -332,29 +324,18 @@ export function startScene(host, opts = {}) {
     g.save();
     if (dph === 'land' && dv.tier === 'mythic' && !reduced) g.translate(Math.floor(dp * 8) % 2 ? 1 : -1, Math.floor(dp * 8) % 3 === 0 ? 1 : 0);   // small shake for ONE IN A VERMILLION
 
-    // sky (attached to the waterline, so it scrolls off the top as we sink)
-    if (wy > 0) for (let y = Math.max(0, wy - water0); y < wy; y += 3) rect(g, 0, y, W, 3, lerpStops(th.sky, (y - (wy - water0)) / Math.max(1, water0 - 1)));
-    // water: indigo at the surface to void at depth
-    for (let y = Math.max(0, wy); y < H; y += 3) rect(g, 0, y, W, 3, lerpStops(th.water, Math.min(1, (y - wy) / 1400)));
-    if (wy > -40) {
-      // stars, moon, clouds ride up with the waterline
-      for (const s of st.stars) { const y = s.y + shift; if (y < 0 || y >= wy) continue; const f = reduced ? 1 : Math.floor(T * 1.6 + s.p) % 3; g.globalAlpha = f === 0 ? 0.35 : f === 1 ? 0.75 : 1; rect(g, s.x, y, 1, 1, th.star); }
-      g.globalAlpha = 1;
-      const my = st.moonY + shift;
-      if (my > -34) {
-        g.globalAlpha = 0.08; for (let i = 3; i >= 1; i--) { const r = 16 + i * 5; for (let y = -r; y <= r; y++) { const w = Math.floor(Math.sqrt(r * r - y * y)); rect(g, st.moonX + 16 - w, my + 16 + y, w * 2, 1, th.moon); } }
-        g.globalAlpha = 1;
-        if (sw('moon') && sprite(g, 'moon', st.moonX, my, 1)) { /* Luna's moon */ } else g.drawImage(st.moonImg, st.moonX, my);
-      }
-      for (const c of st.clouds) { const w = c.img.width; const x = ((c.x + T * c.v) % (W + w)) - w; g.globalAlpha = c.a; g.drawImage(c.img, Math.round(x), Math.round(c.y + shift)); g.globalAlpha = 1; }
-    }
+    // sky (attached to the waterline, so it scrolls off the top as we sink); the swell layer paints the water over its lower edge
+    const seamY = wy + Math.floor((EDGE - 2) / st.scale);
+    for (let y = Math.max(0, wy - water0); y < Math.min(H, seamY); y++) rect(g, 0, y, W, 1, lerpStops(th.sky, Math.min(1, (y - (wy - water0)) / Math.max(1, water0 - 1))));
+    for (let y = Math.max(0, seamY); y < H; y += 2) rect(g, 0, y, W, 2, waterAt(y * st.scale - wy * st.scale));
+    if (wy > -40) drawSky(T, shift, wy, reduced);
 
     // faint light rays, fading with depth
     const rayA = Math.max(0, 1 - cam / 260);
     if (rayA > 0) for (let k = 0; k < 4; k++) {
       const bx = W * (0.1 + k * 0.24) + (reduced ? 0 : Math.sin(T * 0.4 + k) * 3);
       for (let y = Math.max(0, wy); y < Math.min(H, wy + 150); y += 2) {
-        const t = (y - wy) / 150; g.globalAlpha = 0.09 * rayA * (1 - t); rect(g, bx + (y - wy) * 0.35, y, 8 + k * 2, 2, th.moon);
+        const t = (y - wy) / 150; g.globalAlpha = 0.04 * rayA * (1 - t); rect(g, bx + (y - wy) * 0.35, y, 8 + k * 2, 2, th.moon);
       }
     }
     g.globalAlpha = 1;
@@ -389,13 +370,13 @@ export function startScene(host, opts = {}) {
       const span = W + 30; const x = ((f.x + T * f.v) % span + span) % span - 15;
       const y = (((f.y - cam * 0.7) % (H + 40)) + (H + 40)) % (H + 40) - 20;
       if (y < wy + 6) continue;
-      g.globalAlpha = 0.3; if (sw(f.name)) sprite(g, f.name, x, y, 1); else drawFishShape(g, Math.round(x), Math.round(y), f.v > 0 ? 1 : -1, '#4a3fb0', f.big); g.globalAlpha = 1;
+      g.globalAlpha = 0.25; if (sw(f.name)) sprite(g, f.name, x, y, 1); else drawFishShape(g, Math.round(x), Math.round(y), f.v > 0 ? 1 : -1, '#4a3fb0', f.big); g.globalAlpha = 1;
     }
     for (const b of st.bubbles) {
       const y = ((((b.y - T * b.v - cam * 0.9) % (H + 10)) + (H + 10)) % (H + 10)) - 5;
       if (y < wy + 4) continue;
       const x = b.x + (reduced ? 0 : Math.round(Math.sin(T * 1.4 + b.ph) * 1.5));
-      g.globalAlpha = 0.45; rect(g, x, y, b.s, b.s, '#9fd8ff'); if (b.s === 2) rect(g, x, y, 1, 1, '#fff'); g.globalAlpha = 1;
+      g.globalAlpha = 0.25; rect(g, x, y, b.s, b.s, '#9fb4e8'); g.globalAlpha = 1;
     }
     // glowing particles in the deep
     const gl = Math.max(0, Math.min(1, (depthM - 1200) / 2400));
@@ -406,52 +387,34 @@ export function startScene(host, opts = {}) {
       g.globalAlpha = 0.14 * Math.max(0.3, gl); rect(g, p.x - 2, y, 6, 2, p.c); rect(g, p.x, y - 2, 2, 6, p.c); g.globalAlpha = 1;
     }
 
-    // waterline: wave edge + the start buoy
-    if (wy > -10 && wy < H + 10) {
-      const wave = reduced ? 0 : Math.floor(T * 3) % 3;
-      const bx = Math.round(W * 0.24), by = wy - 15 + (reduced ? 0 : Math.round(Math.sin(T * 1.5) * 1)), light = reduced ? true : Math.floor(T * 1.6) % 2 === 0;
-      if (sw('buoy')) sprite(g, 'buoy', bx, by - 4, 1, light ? 0 : 1);
-      else { rect(g, bx + 3, by + 3, 2, 2, '#e9e6ff'); rect(g, bx + 3, by, 2, 3, '#4a3fb0'); rect(g, bx + 1, by + 5, 6, 3, '#ff5e7a'); rect(g, bx, by + 8, 8, 3, '#e9e6ff'); rect(g, bx + 1, by + 11, 6, 3, '#ff5e7a'); if (light) { rect(g, bx + 3, by - 1, 2, 2, '#ff4fa3'); } }
-      g.globalAlpha = 0.82; for (let x = 0; x < W; x++) rect(g, x, wy + Math.round(Math.sin((x + wave * 5) / 4.2)), 1, 6, lerpStops(th.water, 0.04)); g.globalAlpha = 1;
-      const ws = sw('wave');
-      if (ws) for (let x = -(wave * 6); x < W; x += ws.w) sprite(g, 'wave', x, wy - 4, 1, wave);
-      else for (let x = 0; x < W; x++) { const off = Math.round(Math.sin((x + wave * 5) / 4.2)); rect(g, x, wy + off - 1, 1, 1, th.crest); if ((x + wave * 3) % 9 < 3) rect(g, x, wy + off, 1, 1, th.foam); }
-    }
-
-    // depth ruler: 0, -100, -200 m... follows the camera
-    const rx = W - 4; g.globalAlpha = 0.55;
-    for (let k = Math.max(0, Math.floor(-wy / 6)); wy + k * 6 < H; k++) {
-      const y = wy + k * 6; if (y < 0) continue; const major = k % 4 === 0;
-      rect(g, rx - (major ? 3 : 1), y, major ? 4 : 2, 1, '#8fa6ff');
-      if (major && y > 4) { const label = k === 0 ? '0m' : `-${(k / 4) * 100}`; text(g, label, rx - 5 - label.length * 4, k === 0 ? y + 4 : y - 2, k === 0 ? '#cfd9ff' : '#8fa6ff'); }
-    }
-    rect(g, rx + 1, Math.max(0, wy), 1, H, '#8fa6ff'); g.globalAlpha = 1;
+    // waterline: the start buoy rides the swell; the swell + ruler are drawn on the 2 px layer
+    if (wy > -10 && wy < H + 10) { const bxc = Math.round(W * 0.24); drawBuoy(bxc, wy + swell(bxc * st.scale, T) / st.scale, T, reduced); }
+    drawEdge(wy * st.scale, T, 6 * st.scale);
 
     // Vermi (lower left), the rival, pulse + sparkles
-    const drawJelly = (x, y, tint, a, sx = 1, sy = 1, pose = null) => {
+    const drawVermi = (x, y, tint, a, sx = 1, sy = 1, pose = null) => {
       const ms = sw('mascot'); const k = 2;
-      const c = st.jelly || (st.jelly = document.createElement('canvas')); c.width = 16 * k; c.height = 16 * k;
+      const c = st.vermiCanvas || (st.vermiCanvas = document.createElement('canvas')); c.width = 16 * k; c.height = 16 * k;
       const jg = c.getContext('2d');
       if (pose && sw(pose.name)) sprite(jg, pose.name, 0, 0, k, pose.frame);
       else if (ms) sprite(jg, 'mascot', 0, 0, k, reduced ? 0 : Math.floor(T * 1.4) % 2);
       else { jg.fillStyle = '#ff4fa3'; jg.fillRect(6, 4, 20, 14); }
       if (tint) { jg.globalCompositeOperation = 'source-atop'; jg.globalAlpha = a; jg.fillStyle = tint; jg.fillRect(0, 0, c.width, c.height); }
-      g.globalAlpha = 0.13; for (let dy = -14; dy <= 14; dy += 2) { const w = Math.floor(Math.sqrt(1 - (dy * dy) / 225) * 26); rect(g, x + 16 - w, y + 14 + dy, w * 2, 2, tint || '#ff4fa3'); } g.globalAlpha = 1;
       g.imageSmoothingEnabled = false;
       g.drawImage(c, Math.round(x + 16 - 16 * sx), Math.round(y + 32 - 32 * sy), Math.round(32 * sx), Math.round(32 * sy));
     };
     if (st.rival != null) {
       const ry = baseY + Math.round(st.rival * PX_PER_M - st.depthM * PX_PER_M);
-      if (ry > wy && ry < H) { g.globalAlpha = 0.9; drawJelly(Math.round(W * 0.32), ry + bob, '#5ee0ff', 0.55); g.globalAlpha = 1; }
+      if (ry > wy && ry < H) { g.globalAlpha = 0.9; drawVermi(Math.round(W * 0.32), ry + bob, '#5ee0ff', 0.55); g.globalAlpha = 1; }
     }
     let tint = null, ta = 0, sx = 1, sy = 1, yo = 0;
     const pl = st.pulse; const pt = pl ? (now - pl.t0) / 700 : 2;
     if (pl && pt < 1) { tint = TIER_RGB[pl.tier] || '#ff4fa3'; ta = 0.6 * (1 - Math.floor(pt * 4) / 4); }
     let pose = null;   // Luna's authored poses when present; otherwise the mascot stretched/squashed
     if (dph === 'wind') { if (sw('vermi-squash')) pose = { name: 'vermi-squash', frame: 0 }; else { sx = 1 + 0.25 * dp; sy = 1 - 0.25 * dp; } }
-    else if (dph === 'dive') { if (sw('vermi-dive')) pose = { name: 'vermi-dive', frame: Math.floor(now / 90) % 3 }; else { sx = 0.78; sy = 1.3; } }
+    else if (dph === 'dive') { if (sw('mascot-dive')) pose = { name: 'mascot-dive', frame: Math.floor(now / 120) % 2 }; else if (sw('vermi-dive')) pose = { name: 'vermi-dive', frame: Math.floor(now / 90) % 3 }; else { sx = 0.78; sy = 1.3; } }
     else if (dph === 'land') { const k = Math.min(3, Math.floor(dp * 4)); yo = [0, -4, -6, -2][k]; if (sw('vermi-land')) pose = { name: 'vermi-land', frame: Math.min(2, Math.floor(dp * 3)) }; else [sx, sy] = [[1.3, 0.7], [1.15, 0.88], [0.95, 1.08], [1, 1]][k]; }
-    if (st.sad && now - st.sad.t0 < 1400) { tint = '#8d86b8'; ta = 0.55; sx = 1.1; sy = 0.85; yo = 4; }
+    if (st.sad && now - st.sad.t0 < 1400) { tint = '#8d86b8'; ta = 0.55; sx = 1.1; sy = 0.85; yo = 4; if (sw('mascot')) pose = { name: 'mascot', frame: 3 }; }
     if (dv && dv.flash && now - dv.flash < 260) { tint = '#ffffff'; ta = 0.75; }
     // bubble trail streaming up from Vermi while diving
     if ((dph === 'dive' || (st.sad && now - st.sad.t0 < 500)) && !reduced) {
@@ -461,7 +424,7 @@ export function startScene(host, opts = {}) {
     st.trail = st.trail.filter((b) => { b.y -= b.vy; b.life -= 0.045; return b.life > 0 && b.y > -10; });
     for (const b of st.trail) { g.globalAlpha = Math.max(0, b.life) * 0.7; rect(g, Math.round(b.x), Math.round(b.y), 1 + (b.life > 0.5 ? 1 : 0), Math.max(1, Math.round(b.len)), '#cfe9ff'); }
     g.globalAlpha = 1;
-    drawJelly(vx, baseY + bob + yo, tint, ta, sx, sy, pose);
+    drawVermi(vx, baseY + bob + yo, tint, ta, sx, sy, pose);
     if (pl && pt < 1) {
       const col = TIER_RGB[pl.tier] || '#ff4fa3'; const step = Math.floor(pt * 4);
       if (sw('shockwave')) { g.globalAlpha = 0.9 - step * 0.15; tinted(g, 'shockwave', vx + 16 - 36, baseY + 14 + bob - 36, 3, step, col); g.globalAlpha = 1; }
@@ -527,8 +490,8 @@ export function startScene(host, opts = {}) {
     if (st.stopped) return;
     st.raf = requestAnimationFrame(tick);
     if (document.hidden || isReduced()) return;
-    if (now - st.last < (st.dive || st.rivalTween ? 33 : 66)) return;          // ~15 fps idle, ~30 fps while diving: stepped, pixel-y
-    st.t += Math.min(0.25, (now - st.last) / 1000 || 0.066); st.last = now;
+    if (now - st.last < 15) return;          // ~15 fps idle, ~30 fps while diving: stepped, pixel-y
+    st.t += Math.min(0.1, (now - st.last) / 1000 || 0.016); st.last = now;
     frame();
   }
 
@@ -550,6 +513,6 @@ export function stopScene() {
   S.stopped = true;
   cancelAnimationFrame(S.raf);
   S.observers.forEach((f) => { try { f(); } catch { /* ignore */ } });
-  S.canvas.remove();
+  S.canvas.remove(); S.edge && S.edge.remove();
   S = null;
 }

@@ -5,11 +5,13 @@
 //   #/play/daily             #/play/endless          #/play/duel
 //   #/play/pack/<id>[/<day>] pack daily (today) or an archive day (YYYY-MM-DD) or "practice"
 //   #/packs                  #/archive/<packId|daily>
+//   #/account  #/leaderboard  #/friends  #/online  #/room/<CODE>
 //   #/stats  #/history  #/how-to-play  #/guides  #/guides/<slug>  #/faq  #/about
 
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
 export function parseRoute(hash) {
+  if (/^#?(access_token|refresh_token|error|error_description|type)=/.test(String(hash || ''))) return { name: 'home' };   // magic-link return
   const raw = String(hash || '').replace(/^#/, '').split('?')[0];
   const parts = raw.split('/').filter(Boolean).map((p) => { try { return decodeURIComponent(p); } catch { return p; } });
   const [a, b, c, d] = parts;
@@ -30,6 +32,12 @@ export function parseRoute(hash) {
     case 'how-to-play': return { name: 'how' };
     case 'guides': return b ? { name: 'guide', slug: b } : { name: 'guides' };
     case 'faq': return { name: 'faq' };
+    case 'account': return { name: 'account' };
+    case 'leaderboard': return { name: 'leaderboard' };
+    case 'friends': return { name: 'friends' };
+    case 'online': return { name: 'online' };
+    case 'room': return /^[A-Za-z]{5}$/.test(b || '') ? { name: 'room', code: b.toUpperCase() } : { name: 'notfound' };
+    case 'party': return !b ? { name: 'party', code: null } : /^[A-Za-z]{4}$/.test(b) ? { name: 'party', code: b.toUpperCase() } : { name: 'notfound' };
     case 'about': return { name: 'about' };
     default: return { name: 'notfound' };
   }
@@ -53,6 +61,12 @@ export const href = {
   guide: (slug) => `#/guides/${encodeURIComponent(slug)}`,
   faq: () => '#/faq',
   about: () => '#/about',
+  account: () => '#/account',
+  leaderboard: () => '#/leaderboard',
+  friends: () => '#/friends',
+  online: () => '#/online',
+  party: (code) => (code ? `#/party/${String(code).toUpperCase()}` : '#/party'),
+  room: (code) => `#/room/${encodeURIComponent(String(code).toUpperCase())}`,
 };
 
 export function createRouter(onRoute) {

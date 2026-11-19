@@ -432,3 +432,7 @@ Rules (our own wording):
 3. Sol: tier flavour lines → `chapters` + new prompts → `party: true` flag on questions with ≥40 answers (party questions need deep answer pools).
 4. Orchestrator: `friends_daily`, `delete_me`, room timer 25 s, then the DEPTH CHARGE backend.
 Run `npm run audit:layout` after every UI change. Every new screen must pass it at all six sizes.
+
+
+### 9.9 Font rule (2026-11-19, user request)
+**VT323 is the only font in the app**, matching krillion.io. Press Start 2P is retired: remove it from CSS and fonts.css. You may keep the font file in assets but don't load it.

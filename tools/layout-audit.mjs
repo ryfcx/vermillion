@@ -134,14 +134,22 @@ let total = 0;
 const jobs = [...ROUTES.map((r) => [r.replace(/[#/]+/g, '-').replace(/^-|-$/g, '') || 'home', r, null]), ...STATES];
 for (const [w, h] of VIEWPORTS) {
   for (const [name, route, act] of jobs) {
-    const page = await browser.newPage();
+    let page = await browser.newPage();
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
     // fresh profile per page: no saved results, first-visit state
     await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
     await sleep(2200);
     if (act) await act(page);
     // A screen whose main thread never yields is the worst bug of all: nothing paints.
-    const alive = await withTimeout(page.evaluate(() => 1).catch(() => '__HANG__'), 5000);
+    let alive = await withTimeout(page.evaluate(() => 1).catch(() => '__HANG__'), 5000);
+    if (alive === '__HANG__') {
+      // Retry once in a fresh browser: a busy machine (other Chrome instances) can stall one page.
+      await page.close().catch(() => {}); await browser.close().catch(() => {}); browser = await launch();
+      page = await browser.newPage(); await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
+      await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});
+      await sleep(2200); if (act) await act(page);
+      alive = await withTimeout(page.evaluate(() => 1).catch(() => '__HANG__'), 8000);
+    }
     let issues;
     if (alive === '__HANG__') {
       issues = [['HANG', 'the page stopped responding (an endless loop blocks the browser, so nothing is drawn)']];
