@@ -134,7 +134,14 @@ let total = 0;
 const jobs = [...ROUTES.map((r) => [r.replace(/[#/]+/g, '-').replace(/^-|-$/g, '') || 'home', r, null]), ...STATES];
 for (const [w, h] of VIEWPORTS) {
   for (const [name, route, act] of jobs) {
-    let page = await browser.newPage();
+    let page;
+    for (let attempt = 0; ; attempt++) {
+      try { page = await browser.newPage(); break; }
+      catch (e) {  // Chrome itself stalled (busy machine): restart it and try again
+        if (attempt >= 2) throw e;
+        await browser.close().catch(() => {}); browser = await launch();
+      }
+    }
     await page.setViewport({ width: w, height: h, deviceScaleFactor: 1 });
     // fresh profile per page: no saved results, first-visit state
     await page.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 20000 }).catch(() => {});

@@ -316,9 +316,9 @@ export function startScene(host, opts = {}) {
     const depthM = cam / PX_PER_M;
     const bob = reduced ? 0 : Math.round(Math.sin(T * 1.7) * 2);
     const narrow = W < 200;
-    const vx = Math.round(W * (narrow ? 0.08 : 0.06));
+    const vx = Math.max(0, Math.round((narrow ? 22 : 214) / st.scale) - 8);   // the mascot is 64 px (16 canvas px) at x 214 (22 on phones)
     // idle: low on phones (clear of the card); during a dive: always 55% of the screen height, on every viewport
-    const idleY = Math.round(H * (narrow ? 0.74 : 0.56) + Math.min(30, st.answered * 3)), diveY = Math.round(H * 0.55);
+    const idleY = Math.round(H * (narrow ? 0.67 : 0.62) - 8 + (narrow ? 0 : Math.min(12, st.answered * 2))), diveY = Math.round(H * 0.55) - 8;
     const baseY = dph === 'wind' ? Math.round(idleY + (diveY - idleY) * dp) : dph ? diveY : idleY;
     g.clearRect(0, 0, W, H);
     g.save();
@@ -393,7 +393,7 @@ export function startScene(host, opts = {}) {
 
     // Vermi (lower left), the rival, pulse + sparkles
     const drawVermi = (x, y, tint, a, sx = 1, sy = 1, pose = null) => {
-      const ms = sw('mascot'); const k = 2;
+      const ms = sw('mascot'); const k = 1;
       const c = st.vermiCanvas || (st.vermiCanvas = document.createElement('canvas')); c.width = 16 * k; c.height = 16 * k;
       const jg = c.getContext('2d');
       if (pose && sw(pose.name)) sprite(jg, pose.name, 0, 0, k, pose.frame);
@@ -401,7 +401,9 @@ export function startScene(host, opts = {}) {
       else { jg.fillStyle = '#ff4fa3'; jg.fillRect(6, 4, 20, 14); }
       if (tint) { jg.globalCompositeOperation = 'source-atop'; jg.globalAlpha = a; jg.fillStyle = tint; jg.fillRect(0, 0, c.width, c.height); }
       g.imageSmoothingEnabled = false;
-      g.drawImage(c, Math.round(x + 16 - 16 * sx), Math.round(y + 32 - 32 * sy), Math.round(32 * sx), Math.round(32 * sy));
+      const ga = g.globalAlpha; g.globalAlpha = ga * 0.9;
+      g.drawImage(c, Math.round(x + 16 - 8 * sx), Math.round(y + 16 - 8 * sy), Math.round(16 * sx), Math.round(16 * sy));
+      g.globalAlpha = ga;
     };
     if (st.rival != null) {
       const ry = baseY + Math.round(st.rival * PX_PER_M - st.depthM * PX_PER_M);

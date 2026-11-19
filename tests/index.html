@@ -309,6 +309,11 @@
       for (const pack of packBank.packs) {
         assert(pack.id && pack.name && pack.blurb && pack.icon && pack.display && pack.unit && Number.isFinite(pack.pointsPerUnit) && pack.pointsPerUnit > 0, `invalid pack metadata for ${pack.id}`);
         assert(SPRITES[`banner-${pack.id}`]?.w === 115 && SPRITES[`banner-${pack.id}`]?.h === 48, `missing 115×48 banner art for ${pack.id}`);
+        const bannerColors = Object.values(SPRITES[`banner-${pack.id}`].palette).filter(Boolean);
+        assert(bannerColors.length === 7 && bannerColors.every(color => {
+          const channels = color.match(/[0-9a-f]{2}/gi)?.slice(0, 3).map(value => parseInt(value, 16)) || [];
+          return channels.length === 3 && Math.max(...channels) <= 190 && Math.max(...channels) - Math.min(...channels) <= 120;
+        }), `${pack.id} banner palette should stay dark and muted`);
         const count = promptBank.prompts.filter(prompt => prompt.packs?.includes(pack.id)).length;
         assert(count >= 40, `${pack.id} has only ${count} prompts`);
         const eligible = promptBank.prompts.filter(prompt => prompt.packs?.includes(pack.id) && prompt.everyday === true);

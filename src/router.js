@@ -24,8 +24,9 @@ export function parseRoute(hash) {
       if (b === 'pack' && c) {
         return { name: 'play', mode: 'pack', packId: c, dayKey: DAY_RE.test(d || '') ? d : null, practice: d === 'practice' };
       }
+      if (b === 'chapter' && c && /^\d{1,2}$/.test(d || '')) return { name: 'play', mode: 'chapter', packId: c, chapter: Number(d), dayKey: null, practice: false };
       return { name: 'notfound' };
-    case 'packs': return { name: 'packs' };
+    case 'packs': return b ? { name: 'pack', packId: b } : { name: 'packs' };
     case 'archive': return b ? { name: 'archive', target: b } : { name: 'archive', target: 'daily' };
     case 'stats': return { name: 'stats' };
     case 'history': return { name: 'history' };
@@ -51,6 +52,8 @@ export const href = {
   endless: () => '#/play/endless',
   duel: () => '#/play/duel',
   pack: (id, day) => `#/play/pack/${encodeURIComponent(id)}${day ? `/${day}` : ''}`,
+  topic: (id) => `#/packs/${encodeURIComponent(id)}`,
+  chapter: (id, n) => `#/play/chapter/${encodeURIComponent(id)}/${n}`,
   packPractice: (id) => `#/play/pack/${encodeURIComponent(id)}/practice`,
   packs: () => '#/packs',
   archive: (target = 'daily') => `#/archive/${encodeURIComponent(target)}`,

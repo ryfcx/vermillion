@@ -964,25 +964,25 @@ const packIcons = {
 for (const [id, map] of Object.entries(packIcons)) SPRITES[`pack-${id}`] = define(map);
 
 const BANNER_THEMES = {
-  movies: ['film', '#422047', '#da5364', '#110d28', '#ffd35e'],
-  sports: ['stadium', '#164559', '#47b8a0', '#092c35', '#f3d36b'],
-  geography: ['mountain', '#315a78', '#72c4bf', '#102b48', '#f0d38a'],
-  language: ['book', '#693b50', '#e09879', '#2a1a37', '#f5d49b'],
-  science: ['orbit', '#252e70', '#63c9e8', '#0c133d', '#d891ff'],
-  history: ['columns', '#75523d', '#d4a866', '#302039', '#f1d990'],
-  music: ['stage', '#4a2869', '#df69a7', '#1d1239', '#69d6ee'],
-  nature: ['forest', '#23604e', '#75c46c', '#103b38', '#e4df84'],
-  food: ['market', '#694943', '#ed9d52', '#332039', '#f0d778'],
-  games: ['arcade', '#293e7a', '#e659b8', '#101a46', '#73e4de'],
-  space: ['planet', '#232d68', '#a77cff', '#0b1236', '#71d8ee'],
-  arts: ['studio', '#704269', '#e37c9e', '#31203e', '#eac66d'],
-  myth: ['temple', '#4d3867', '#d4a95b', '#20183b', '#ffdc83'],
-  tech: ['circuit', '#1b5060', '#44d4bf', '#0a2c42', '#f58c70']
+  movies: ['film', '#282044', '#49304d', '#100d25', '#98607f'],
+  sports: ['stadium', '#202843', '#344156', '#0e1529', '#758d89'],
+  geography: ['mountain', '#202b46', '#38475e', '#11192e', '#8290a2'],
+  language: ['book', '#30223e', '#493249', '#171127', '#a07b84'],
+  science: ['orbit', '#202044', '#373454', '#101129', '#817ba9'],
+  history: ['columns', '#30253d', '#4b3a50', '#191226', '#a18b73'],
+  music: ['stage', '#29203e', '#45304f', '#120e27', '#9b688b'],
+  nature: ['forest', '#1e2f3c', '#314450', '#0d1824', '#788e79'],
+  food: ['market', '#33243b', '#4a3546', '#171129', '#a17a68'],
+  games: ['arcade', '#222442', '#373555', '#111129', '#9a6f91'],
+  space: ['planet', '#1c2141', '#353154', '#0d1029', '#8378a6'],
+  arts: ['studio', '#30223d', '#493249', '#171127', '#a1768a'],
+  myth: ['temple', '#28203c', '#42304f', '#131027', '#a18d69'],
+  tech: ['circuit', '#1d2e3e', '#32414f', '#0d1826', '#718f91']
 };
 
 function makePackBanner(packId) {
   const [theme, sky, mid, deep, accent] = BANNER_THEMES[packId];
-  const palette = { '.': null, s: sky, m: mid, d: deep, a: accent, h: '#e9e6ff', q: '#5ee0ff', k: '#07060d' };
+  const palette = { '.': null, s: sky, m: mid, d: deep, a: accent, h: '#a69eb5', q: '#777394', k: '#07060d' };
   const pixels = Array.from({ length: 48 }, (_, y) => Array(115).fill(y < 15 ? 's' : (y < 31 ? 'm' : 'd')));
   const set = (x, y, color) => { if (pixels[y]?.[x] !== undefined) pixels[y][x] = color; };
   const rect = (x, y, w, h, color) => { for (let py = y; py < y + h; py += 1) for (let px = x; px < x + w; px += 1) set(px, py, color); };
@@ -1001,12 +1001,12 @@ function makePackBanner(packId) {
     }
   };
 
-  for (let i = 0; i < 18; i += 1) {
+  for (let i = 0; i < 8; i += 1) {
     const x = (i * 37 + packId.length * 11) % 115, y = 3 + (i * 13 + packId.length) % 22;
     set(x, y, i % 3 ? 'h' : 'a');
   }
   rect(0, 39, 115, 9, 'd');
-  for (let x = 0; x < 115; x += 8) rect(x, 38 + (x % 3), 4, 1, 'a');
+  for (let x = 0; x < 115; x += 16) rect(x, 38 + (x % 3), 2, 1, 'a');
 
   if (theme === 'film') {
     for (let x = 4; x < 111; x += 12) rect(x, 0, 3, 37, 'd');
@@ -1052,18 +1052,10 @@ function makePackBanner(packId) {
   }
 
   const icon = SPRITES[`pack-${packId}`];
-  const iconChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
-  const colorTokens = new Map();
-  for (const color of Object.values(icon.palette)) {
-    if (!color || colorTokens.has(color)) continue;
-    const token = [...iconChars].find(char => !Object.hasOwn(palette, char));
-    colorTokens.set(color, token); palette[token] = color;
-  }
   const scale = 2, left = 57 - icon.w, top = 8;
   for (let y = 0; y < icon.h; y += 1) for (let x = 0; x < icon.w; x += 1) {
-    const token = colorTokens.get(icon.palette[icon.frames[0][y][x]]);
-    if (!token) continue;
-    rect(left + x * scale, top + y * scale, scale, scale, token);
+    if (!icon.palette[icon.frames[0][y][x]]) continue;
+    rect(left + x * scale, top + y * scale, scale, scale, 'a');
   }
   return sprite([pixels.map(row => row.join(''))], palette);
 }

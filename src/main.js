@@ -159,6 +159,7 @@ function onRoute(r) {
       case 'home': return showHome();
       case 'play': return startRun(r);
       case 'packs': return showPacks();
+      case 'pack': return showTopic(r.packId);
       case 'archive': return showArchive(r.target);
       case 'stats': return ui.showStats({ stats: statsNow() });
       case 'history': return showHistory();
@@ -216,6 +217,11 @@ function showHome() {
   // a real "N played today" count (leaderboard rows); shown only if the server answers, never invented
   if (onlineAvailable()) onl('dailyBoard', { day: today(), scope: 'all', limit: 1000 }).then((r) => { if (r.ok && Array.isArray(r.data) && router?.current?.name === 'home' && homeToken === screenToken) ui.setPlayedToday(r.data.length); });
   ui.showHome({ stats: statsNow(), dailyDone: officialFor({ mode: 'daily', dayKey: today() }), dayKey: today(), packDone: packDoneMap(), guides, faq, featured, descent: days + 1 });
+}
+function showTopic(packId) {
+  const pack = packById(packId);
+  if (!pack) return ui.showNotFound();
+  ui.showTopic({ pack, progress: safe(() => storage.getChapterProgress(packId), { unlocked: 1, chapters: {} }), doneToday: !!officialFor({ mode: 'pack', packId, dayKey: today() }) });
 }
 function showPacks() {
   const counts = {};
@@ -511,6 +517,13 @@ function startRun(r) {
     } else {
       prompts = modes.getEndlessPrompts(bank, safe(() => storage.getRecentPromptIds(), []), Math.random);
     }
+  } else if (mode === 'chapter') {
+    const pack = packById(packId), n = r.chapter;
+    if (!pack || !Array.isArray(pack.chapters) || !pack.chapters[n - 1]) return ui.showNotFound();
+    const prog = safe(() => storage.getChapterProgress(packId), { unlocked: 1 });
+    if (n > prog.unlocked) return router.go(href.topic(packId));
+    prompts = pack.chapters[n - 1].map((id) => getPrompt(bank, id));
+    if (prompts.some((p) => !p)) return ui.showError('This chapter uses questions this version of the game doesn’t have.', () => router.go(href.topic(packId)));
   } else if (mode === 'pack') {
     const pack = packById(packId);
     if (!pack) return ui.showNotFound();
@@ -533,6 +546,7 @@ function startRun(r) {
     dayKey: mode === 'daily' || mode === 'pack' ? dayKey : null, practice, official,
   });
   const meta = metaFor({ mode, packId, dayKey, practice, official, archive, rival: !!theirs });
+  if (mode === 'chapter') { meta.chapter = r.chapter; meta.title = `${packById(packId).name} · Chapter ${r.chapter}`; }
   run = { game, route: r, meta, timer: 0, saved: false, theirs };
   ui.beginPlay(meta, game.getState());
   startTimer();
@@ -607,7 +621,7 @@ function finish(finishedRun) {
   stopTimer();
   const prev = statsNow();
   let saved = false;
-  if (run && !run.saved) { run.saved = true; saved = safe(() => storage.saveRun(finishedRun), false); }
+  if (run && !run.saved) { run.saved = true; saved = safe(() => storage.saveRun(finishedRun), false); if (finishedRun.mode === 'chapter' && run.route?.chapter) safe(() => storage.saveChapter(finishedRun.packId, run.route.chapter, finishedRun), false); }
   const stats = statsNow();
   const view = buildView(finishedRun, {
     stats,
@@ -632,7 +646,7 @@ function finish(finishedRun) {
   }
   view.rankSlot = rankSlotFor(finishedRun);
   ui.showRun(view);
-  if (view.rankSlot) afterFinishOnline(finishedRun);
+  if (view.rankSlot || finishedRun.mode === 'chapter') afterFinishOnline(finishedRun);   // chapter runs are sent unofficially, with no rank line
 }
 const slimAnswer = (a) => ({ promptId: a.promptId, input: a.input || '', answerName: a.answerName, points: a.points });
 

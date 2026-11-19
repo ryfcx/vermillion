@@ -934,3 +934,38 @@ Also fix these audit findings (`npm run audit:layout`; the HANG reports were fal
 - 844×390 (phone landscape) game: "Not in our bank…" overlaps the top of the input by 4 px. Give the message its own space above the dock.
 Order: overlaps → Topics page → the other pages with the same skeleton → then the still-missing items from your last post (answer-result panel, one persistent scene with a camera glide).
 Post screenshots of `#/packs` at 1280×800 and 390×844 next to `kr/site/packs-d.png` and `packs-m.png`.
+
+### [2026-11-19] Sonnet → @Orchestrator: 08:25 overlaps fixed, Topics page and the inner-page skeleton done
+- **Overlaps:** 360×640 home: on short phones the tagline box is now `max-content` (max 260 px) and centred, so it can't reach the corner icons. 844×390 game: `.dock-msg` sits above the dock (`bottom: calc(100% + 2px)`), and the card/dock shrink on short windows.
+- **Topics (`#/packs`)** matches `kr/site/packs-d.png`: no header bar, plain void background, 40-px split wordmark (links home) at y≈56, 13-px sub line "TOPICS · BEYOND THE DAILY GAME", a 460-px column of whole-card links: banner 460×150, name 21 px, "N chapters · short blurb" 12 px, dashed rule, one "START THE TOPIC →" CTA, 1-px border (accent on hover), "DONE" outlined chip only. No counts, "Progress:" text or button row. Bottom: THE LOGBOOK label, PAST GAMES row, "← TODAY'S GAME".
+- **Every other inner page** gets the same skeleton automatically from `mount()` (wordmark + sub line from the page title, ☰ only at (5,8), no brand/chip/icon stack/footer/grid background, column 460 for packs/account/friends/leaderboard/online/room and 600 for the rest), the old duplicate h1/eyebrow is hidden, pills are outlined, and `.stat/.box/.text-in` etc. are 1-px muted. This is a CSS-level pass: I haven't hand-tuned each page (account, friends, leaderboard, lobby, results will still need a look).
+- **Not done:** the `#/packs/<id>` topic page with the chapter map (the card CTA still goes to `href.pack(id)`, i.e. today's game for that topic), the answer-result panel sizes, and the persistent scene / camera glide.
+- Screenshots: `…/scratchpad/shots2/packs-1280x800.png`, `packs-390x844.png`, plus `stats-`, `account-`, `faq-` (same folder). No commit.
+
+---
+**[Orchestrator] 2026-11-19 08:55: review of Sonnet's 08:25 work, which is a big improvement. Remaining polish:**
+I checked `shots2/packs-1280x800`, `ours-1288x686`, `play-1288x686` and `menu-1280x800`.
+- @Sonnet:
+  1. **Game screen, Vermi is too big and too loud** (≈100 px). Krillion's mascot is **68 px** and fairly dim. Use 64 px (scale 4), ≈.9 opacity, at the left (≈214, 498 at 1280). It must never touch the card or the dock.
+  2. **Game screen, the "PRACTICE" and "2026-11-19" chips under the HUD** aren't in Krillion's layout. Fold them into the card label instead ("QUESTION 1 OF 7 · PRACTICE"), and show the date only on past games.
+  3. **Menu:** highlight the current mode's tile in pink. On the title screen that's DAILY GAME, like Krillion's Daily Dive.
+  4. Next: the `#/packs/<id>` chapter-map page (the CTA should go there), the answer-result panel (§9.2), then the persistent scene and camera glide.
+- @Luna: **the topic banners are too bright and saturated** for the calm look. Sports, for example, has bright green and yellow stripes.
+  Tone all 14 down: darker values, lower saturation, mostly our indigo/violet/navy plus one muted accent per topic, and less high-contrast noise.
+  Krillion's banners read as moody night scenes. Keep the same 115×48 size and names.
+
+### [2026-11-19] Sonnet → @Orchestrator: 08:55 review items done
+1. **Vermi on the game screen** is now 64 px (16 canvas px at scale 4, 48 on phones), drawn at .9 opacity with no glow halo, at x 214 (22 on phones), y ≈ 62% of the height. On desktop it can't reach the card or dock (different x); on phones it no longer drifts down with each answer.
+2. **Chips removed.** The card label reads "QUESTION 1 OF 7 · PRACTICE" (or "· CHAPTER n", or "· <date>" on past games).
+3. **Menu:** the current mode's tile has the 2-px pink border; on the title screen that's DAILY GAME.
+4. **Topic page `#/packs/<id>`** is built: banner card, "CHAPTERS ------" dashed label, one row per chapter (01 CHAPTER 1 … PLAY → / BEST n / LOCKED; the current one gets the pink border), then quiet links PLAY TODAY'S GAME / PAST GAMES ⟲ / PRACTICE and ← ALL TOPICS. The Topics cards now link there.
+   **Chapter play works:** `#/play/chapter/<pack>/<n>` runs that chapter's 7 questions (mode `chapter`, 25 s, unofficial, label "· CHAPTER n"), is gated by `getChapterProgress().unlocked`, and `finish()` calls `saveChapter()` so the next chapter unlocks after a score ≥ 1. Not yet wired: sending chapter runs to the server (`submitRun`, waiting on Luna's client path) and a chapter-specific results screen (it reuses the normal one).
+Still to do: answer-result panel (§9.2), persistent scene + camera glide. Screenshots: `shots2/topic-1280x800.png`, `chap-1280x800.png`, `play-1288x686.png`. No commit.
+
+**[Orchestrator] 2026-11-19 09:10:** @Sonnet: chapter submission is **ready on both sides**. `online.submitRun` already accepts `mode:'chapter'` with `packId`
+(src/online.js:44), and the deployed `submit-run` accepts it unofficially. Call `submitRun` for signed-in chapter finishes, the same way you do for other modes. Then do the answer-result panel, then the persistent scene.
+
+### [2026-11-19] Sonnet → @Orchestrator: 09:10 chapter submitRun wired, answer-result panel done
+- **Chapter submit:** `finish()` now calls `afterFinishOnline()` for `mode:'chapter'` runs (signed-in only; unofficial, no rank line; offline queue handled by `online.submitRun`). `saveChapter()` still runs locally first. Not verified against the live server from the browser (headless realtime hangs), only that the call path loads.
+- **Answer-result panel** (§9.2): 88-px tier icon (`tier-*` sprite), tier name 44 px/.12em in the tier colour, the answer in quotes at 24 px, "+5 PTS · sink 50m" at 28 px, one 17-px flavour line (autocorrect note, first sentence of the answer note, or "Rarer than N% of answers"), then a 178×55 NEXT ▼ button with a cyan border. The extra reveal (rarer answers, most common, fun fact) is folded into a quiet "MORE · N ANSWERS IN OUR BANK" disclosure. No tier badge, pills or glow; flat 1-px-style panel. Timed-out and 0-point results use the same layout ("TIME'S UP"). Screenshot: `shots2/result-1280x800.png`, `result-390x844.png`.
+- Remaining: persistent scene + camera glide. No commit.

@@ -319,8 +319,12 @@ export function createUI(root, on) {
   function mount(...nodes) {
     stopPlay(); stopLive();
     root.classList.remove('is-home', 'is-play');
+    root.classList.add('is-page');
     page.className = 'page';
-    page.replaceChildren(...nodes.flat(Infinity).filter((n) => n && n.nodeType));
+    page.dataset.route = route?.name || '';
+    // every inner page: a 40-px wordmark that links home, a 13-px sub line, then one centred column (CSS hides this on the title and game screens)
+    const head = h('div', { class: 'pg-head' }, h('a', { class: 'pg-mark', href: href.home(), text: 'VERMILLION', 'aria-label': 'Vermillion home' }), h('p', { class: 'pg-sub', text: SUBS[curTitle] || String(curTitle || '').toLowerCase() }));
+    page.replaceChildren(head, ...nodes.flat(Infinity).filter((n) => n && n.nodeType));
     window.scrollTo(0, 0);
   }
   function stopPlay() {
@@ -330,7 +334,9 @@ export function createUI(root, on) {
     P = null;
     if (!keepScene) { stopScene(); if (sceneHost) { sceneHost.remove(); sceneHost = null; sceneCtl = null; } }
   }
-  function pageTitle(t) { document.title = t ? `${t} — Vermillion` : 'Vermillion — the rare-answer pixel trivia game'; }
+  let curTitle = '';
+  const SUBS = { Topics: 'Topics · beyond the daily game' };
+  function pageTitle(t) { curTitle = t || ''; document.title = t ? `${t} — Vermillion` : 'Vermillion — the rare-answer pixel trivia game'; }
   function toast(text) {
     if (!toastHost) return;
     const el = h('div', { class: 'toast-pop', text });
@@ -340,7 +346,7 @@ export function createUI(root, on) {
   function setRoute(r) {
     route = r;
     drawerEl?.querySelectorAll('a').forEach((x) => x.removeAttribute('aria-current'));
-    const to = r.name === 'home' ? href.home() : {  party: href.party(), packs: href.packs(), guides: href.guides(), guide: href.guides(), how: href.how(), faq: href.faq(), about: href.about(), stats: href.stats(), history: href.history(), account: href.account(), leaderboard: href.leaderboard(), friends: href.friends(), online: href.online() }[r.name];
+    const to = r.name === 'home' ? href.daily() : {  party: href.party(), packs: href.packs(), guides: href.guides(), guide: href.guides(), how: href.how(), faq: href.faq(), about: href.about(), stats: href.stats(), history: href.history(), account: href.account(), leaderboard: href.leaderboard(), friends: href.friends(), online: href.online() }[r.name];
     const cur = r.name === 'play' ? ({ daily: href.daily(), endless: href.endless(), duel: href.duel() })[r.mode] : to;
     if (cur) drawerEl?.querySelector(`a[href="${cur}"]`)?.setAttribute('aria-current', 'page');
   }
@@ -464,15 +470,41 @@ export function createUI(root, on) {
     el.hidden = false; el.replaceChildren(h('i', { 'aria-hidden': 'true' }), `${fmt(n)} played today`);
   }
 
-  function showPacks({ packDone = {}, counts = {} }) {
+  function showPacks({ packDone = {} }) {
     pageTitle('Topics');
-    mount(h('div', { class: 'section-head' }, h('div', {}, h('span', { class: 'eyebrow', text: '14 topics' }), h('h1', { text: 'Topics' })), h('a', { class: 'btn ghost', href: href.archive('daily') }, 'Past daily games')),
-      h('p', { class: 'lead' }, 'Each topic has its own daily game, every past game since launch, and endless practice, all free. Each one also has its own progress picture.'),
-      h('div', { class: 'pack-grid', style: 'margin-top:14px' }, packs.map((p) => h('article', { class: 'box pack-card' },
-        h('div', { class: 'pc-head' }, px(p.icon, 3), h('div', {}, h('h3', { text: p.name }), h('div', { class: 'pc-meta' }, statusPill(packDone[p.id]), counts[p.id] != null && h('span', { class: 'pill', text: `${counts[p.id]} questions` })))),
-        h('p', { text: p.blurb }),
-        h('p', { class: 'muted' }, `Progress: ${DISPLAYS[displayKindFor('pack', p.id)]?.title}, scored in ${DISPLAYS[displayKindFor('pack', p.id)]?.unit}.`),
-        h('div', { class: 'pc-actions' }, h('a', { class: 'btn small primary', href: href.pack(p.id) }, 'Play today'), h('a', { class: 'btn small ghost', href: href.archive(p.id) }, 'Past games'), h('a', { class: 'btn small ghost', href: href.packPractice(p.id) }, 'Practice'))))));
+    const short = (t) => { const x = String(t || '').split(/[.;:]/)[0].trim(); return x.length > 46 ? `${x.slice(0, 44).trim()}…` : x; };
+    const cards = packs.map((p, i) => {
+      const accent = i % 2 ? 'var(--cyan)' : 'var(--pink)', n = Array.isArray(p.chapters) ? p.chapters.length : 0;
+      const art = hasSprite(`banner-${p.id}`) ? px(`banner-${p.id}`, 4) : h('div', { class: 'tp-ph' });
+      return h('a', { class: 'tp-card', href: href.topic(p.id), style: `--ac:${accent}` },
+        h('div', { class: 'tp-art' }, art, packDone[p.id] && h('span', { class: 'tp-chip', text: 'DONE' })),
+        h('div', { class: 'tp-body' }, h('h2', { class: 'tp-name', text: p.name }),
+          h('p', { class: 'tp-tag', text: `${n ? `${n} chapters · ` : ''}${short(p.blurb)}` }),
+          h('div', { class: 'tp-rule', 'aria-hidden': 'true' }), h('span', { class: 'tp-cta', text: 'START THE TOPIC →' })));
+    });
+    mount(h('div', { class: 'tp-list' }, cards),
+      h('div', { class: 'm-label' }, h('span', { text: 'THE LOGBOOK' }), h('i', { 'aria-hidden': 'true' })),
+      h('a', { class: 'm-row cyan', href: href.archive('daily') }, h('span', { class: 'm-rt' }, h('b', { text: 'PAST GAMES ⟲' }), h('small', { text: 'Every past daily game, replayable.' }))),
+      h('a', { class: 'tp-back', href: href.daily(), text: "← TODAY'S GAME" }));
+  }
+
+  /** A topic's chapter map: ten (or more) numbered chapters, each unlocked by finishing the one before. */
+  function showTopic({ pack, progress, doneToday }) {
+    pageTitle(pack.name);
+    const n = Array.isArray(pack.chapters) ? pack.chapters.length : 0;
+    const art = hasSprite(`banner-${pack.id}`) ? px(`banner-${pack.id}`, 4) : h('div', { class: 'tp-ph' });
+    const rows = Array.from({ length: n }, (_, i) => {
+      const num = i + 1, c = progress.chapters?.[num], open = num <= progress.unlocked, cur = open && !c?.completed && num === progress.unlocked;
+      const label = c?.completed ? `BEST ${fmt(c.bestScore)}` : open ? 'PLAY →' : 'LOCKED';
+      return h(open ? 'a' : 'div', { class: `ch-row${cur ? ' cur' : ''}${open ? '' : ' locked'}`, ...(open ? { href: href.chapter(pack.id, num) } : { 'aria-disabled': 'true' }) },
+        h('span', { class: 'ch-n', text: String(num).padStart(2, '0') }), h('span', { class: 'ch-t', text: `CHAPTER ${num}` }), h('span', { class: 'ch-s', text: label }));
+    });
+    mount(h('div', { class: 'tp-card tp-static', style: '--ac: var(--pink)' }, h('div', { class: 'tp-art' }, art),
+        h('div', { class: 'tp-body' }, h('h2', { class: 'tp-name', text: pack.name }), h('p', { class: 'tp-tag', text: `${n} chapters · ${pack.blurb || ''}` }))),
+      h('div', { class: 'm-label' }, h('span', { text: 'CHAPTERS' }), h('i', { 'aria-hidden': 'true' })),
+      h('div', { class: 'ch-list' }, rows),
+      h('div', { class: 'tp-quiet' }, h('a', { href: href.pack(pack.id), text: doneToday ? 'TODAY: DONE ✓' : "PLAY TODAY'S GAME" }), h('a', { href: href.archive(pack.id), text: 'PAST GAMES ⟲' }), h('a', { href: href.packPractice(pack.id), text: 'PRACTICE' })),
+      h('a', { class: 'tp-back', href: href.packs(), text: '← ALL TOPICS' }));
   }
 
   function showArchive({ target, days, status, today }) {
@@ -669,12 +701,10 @@ export function createUI(root, on) {
       notch('hud-panel', h('span', { class: 'hud-label', text: 'SCORE' }), scoreVal));
     const miniHost = mini ? h('div', { class: 'hud-mini' }) : null;
 
-    const modeBadge = h('div', { class: 'run-badges' },
-      meta.official && h('span', { class: 'pill good', text: 'Official' }), meta.practice && h('span', { class: 'pill', text: 'Practice' }),
-      meta.archive && h('span', { class: 'pill cyan', text: 'Past game' }), meta.dayKey && h('span', { class: 'pill', text: meta.dayKey }));
+    const modeBadge = null;   // Krillion has no chips under the HUD: practice / past-game info lives in the card label
 
     const cardSlot = h('div', { class: 'card-slot' });
-    const stage = h('main', { class: 'stage', id: 'stage', tabindex: '-1' }, modeBadge, cardSlot);
+    const stage = h('main', { class: 'stage', id: 'stage', tabindex: '-1' }, cardSlot);
 
     // bottom answer dock: ring timer, input, SINK button, thin timer bar
     const ringNum = h('span', { class: 'ring-num', 'aria-hidden': 'true' });
@@ -742,7 +772,7 @@ export function createUI(root, on) {
     const hintBtn = h('button', { class: 'hint-btn', type: 'button', onclick: () => on.hint() }, hasSprite('hint') ? px('hint', 2) : h('span', { class: 'q', 'aria-hidden': 'true', text: '?' }), ' HINT');
     const hintBox = h('div', { class: 'hint-box', role: 'note', hidden: true });
     const card = playCard('prompt-card',
-      h('div', { class: 'pc-label', text: `QUESTION ${state.index + 1} OF ${state.count}${p.category ? ` · ${String(p.category).toUpperCase()}` : ''}` }),
+      h('div', { class: 'pc-label', text: `QUESTION ${state.index + 1} OF ${state.count}${P.meta.practice ? ' · PRACTICE' : ''}${P.meta.chapter ? ` · CHAPTER ${P.meta.chapter}` : ''}${P.meta.archive && P.meta.dayKey ? ` · ${P.meta.dayKey}` : ''}` }),
       h('h1', { class: `prompt-text${p.text.length > 140 ? ' xlong' : p.text.length > 90 ? ' long' : ''}`, text: p.text }),
       hintBox,
       h('div', { class: 'pc-foot' }, h('span', { class: 'rare-line' }, gdown(), ' rarer answers score more ', gdown()), hintBtn));
@@ -849,40 +879,36 @@ export function createUI(root, on) {
     P.form.hidden = true;
     const u = units(kind, r.points);
     const lastOne = state.index + 1 >= state.count;
-    const nextBtn = h('button', { class: 'sink-btn next-btn', id: 'next', type: 'button', onclick: () => { sfx('next'); on.next(); } }, lastOne ? 'SEE SCORE ' : 'NEXT ', gdown());
+    const nextBtn = h('button', { class: 'next-btn', id: 'next', type: 'button', onclick: () => { sfx('next'); on.next(); } }, lastOne ? 'SEE SCORE ' : 'NEXT ', gdown());
     const ptsEl = h('span', { class: 'pts' }, h('span', { class: 'n' }, '0'), ' pts');
     const meters = Math.round(r.points * 10);
     const unitText = kind === 'trench' || kind === 'split' ? `+${fmt(meters)} m` : kind === 'arcade' ? `score +${fmt(u.value)}` : `${u.value > 0 ? '+' : ''}${fmt(u.value)} ${u.unit}`;
     const rv = r.reveal;
     const chip = (a) => h('span', { class: `chip${a.points > 80 ? ' mythic' : ''}` }, h('span', { text: a.name }), h('b', { text: `${a.points}` }));
 
+    const tierName = r.timedOut ? 'TIME’S UP' : TIER_INFO[r.tier].label.toUpperCase();
+    const iconName = `tier-${r.tier}`;
+    const icon88 = hasSprite(iconName) ? px(iconName, 5) : null;
+    if (icon88) { icon88.style.width = '88px'; icon88.style.height = '88px'; }
+    const flavour = r.timedOut ? 'No answer in time, so this one scores 0.'
+      : r.corrected ? `Autocorrected from “${r.typed || r.input}”`
+      : r.note ? String(r.note).split(/(?<=[.!?])\s/)[0]
+      : rv.rarerThan > 0 ? `Rarer than ${rv.rarerThan}% of answers` : 'A very common answer.';
     const sections = [
-      h('div', { class: 'fb-top' },
-        h('span', { class: 'tier-badge' }, r.timedOut ? 'Time’s up' : TIER_INFO[r.tier].label),
-        r.category && h('span', { class: 'pill', text: r.category }),
-        r.usedHint && h('span', { class: 'pill', text: 'Hint used' }),
-        r.attempts > 0 && h('span', { class: 'pill', text: `${r.attempts} retr${r.attempts === 1 ? 'y' : 'ies'}` })),
+      icon88 && h('div', { class: 'rs-icon', 'aria-hidden': 'true' }, icon88),
+      h('div', { class: 'rs-tier', text: tierName }),
+      !r.timedOut && h('div', { class: 'rs-ans', text: `“${r.answerName}”` }),
+      h('div', { class: 'rs-pts' }, ptsEl, h('span', { class: 'unit', text: ` · ${kind === 'trench' || kind === 'split' ? `sink ${fmt(meters)}m` : unitText}` })),
+      flavour && h('div', { class: 'rs-flav', text: flavour }),
     ];
-    if (r.timedOut) {
-      sections.push(h('div', { class: 'fb-answer', text: 'Time’s up.' }), h('p', { class: 'muted', text: 'No answer in time, so this question scores 0. Here are some rare answers you could have given:' }));
-    } else {
-      sections.push(
-        h('div', { class: 'fb-answer', text: r.answerName }),
-        r.corrected && h('div', { class: 'fb-corrected', text: `Autocorrected from “${r.typed || r.input}”` }),
-        h('div', { class: 'fb-points' }, ptsEl, h('span', { class: 'unit', text: `· ${unitText}` })),
-        rv.rank != null && h('div', {}, h('div', { class: 'meter' }, h('i', { style: `--w:${Math.max(4, rv.rank)}%` })), h('div', { class: 'meter-label' }, h('span', { text: 'common' }), h('span', { text: rv.rarerThan != null ? `Rarer than ${rv.rarerThan} of the ${rv.totalAnswers} answers in our bank` : '' }), h('span', { text: 'rarest' }))));
-    }
-    if (!r.timedOut && r.note) sections.push(h('div', { class: 'fb-note' }, h('b', { text: 'About this answer' }), r.note));
-    if (r.fact) sections.push(h('div', { class: 'fb-note fact' }, h('b', { text: 'Did you know?' }), r.fact));
-    if (rv.deeper.length) {
-      sections.push(h('div', {}, h('div', { class: 'fb-sub', text: r.timedOut ? 'Rarest answers' : 'Rarer answers' }), h('div', { class: 'chips' }, rv.deeper.map(chip))));
-    } else if (!r.timedOut) {
-      sections.push(h('div', { class: 'fb-note', style: '--tier:var(--cyan)' }, h('b', { text: 'The rarest!' }), 'You found the rarest answer we know for this question.'));
-    }
-    if (rv.commonest && !r.timedOut) {
-      sections.push(h('div', {}, h('div', { class: 'fb-sub', text: 'Most common' }), r.answerName === rv.commonest.name ? h('p', { class: 'muted', text: 'You picked the most common answer. Safe, but shallow.' }) : h('div', { class: 'chips' }, chip(rv.commonest))));
-    }
-    sections.push(h('div', { class: 'fb-actions' }, h('span', { class: 'muted', text: `${rv.totalAnswers} answers in our bank` }), nextBtn));
+    const more = [];
+    if (!r.timedOut && r.note) more.push(h('p', { class: 'rs-note', text: r.note }));
+    if (r.fact) more.push(h('p', { class: 'rs-note', text: `Did you know? ${r.fact}` }));
+    if (rv.deeper.length) more.push(h('div', {}, h('div', { class: 'fb-sub', text: r.timedOut ? 'Rarest answers' : 'Rarer answers' }), h('div', { class: 'chips' }, rv.deeper.map(chip))));
+    else if (!r.timedOut) more.push(h('p', { class: 'rs-note', text: 'You found the rarest answer we know for this question.' }));
+    if (rv.commonest && !r.timedOut && r.answerName !== rv.commonest.name) more.push(h('div', {}, h('div', { class: 'fb-sub', text: 'Most common' }), h('div', { class: 'chips' }, chip(rv.commonest))));
+    if (more.length) sections.push(h('details', { class: 'rs-more' }, h('summary', { text: `MORE · ${rv.totalAnswers} ANSWERS IN OUR BANK` }), ...more));
+    sections.push(h('div', { class: 'rs-actions' }, nextBtn));
 
     const fb = playCard(`feedback tier-${r.tier}`, h('div', { class: 'fb-body', 'aria-live': 'polite' }, sections));
     P.cardSlot.replaceChildren(fb);
@@ -1507,7 +1533,7 @@ export function createUI(root, on) {
   function init() { buildShell(); }
 
   return {
-    setAccount, showPartyHost, showOffline, showAccount, showLeaderboard, showFriends, showOnline, showRoomSignIn, renderLive, stopLive, setRank,
+    setAccount, showTopic, showPartyHost, showOffline, showAccount, showLeaderboard, showFriends, showOnline, showRoomSignIn, renderLive, stopLive, setRank,
     init, setPacks, setContent, setRoute, applySettings, toast, inlineToast, showLoading, showError, showNotFound,
     showHome, showPacks, showArchive, showStats, showHistory, showHow, showGuides, showGuide, showFaq, showAbout,
     setPlayedToday, showInvite, beginPlay, showPrompt, updateTimer, showHint, showReject, showSuggest, showResult, showRun, stopPlay,
