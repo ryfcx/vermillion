@@ -32,7 +32,12 @@ export function createParty({
       const sb = getClient();
       if (!sb) return { ok: false, error: 'DEPTH CHARGE is unavailable.' };
       const result = await work(sb);
-      if (result?.error) return { ok: false, error: errorText(result.error), status: result.error?.context?.status ?? result.error?.status ?? null };
+      if (result?.error) return {
+        ok: false,
+        error: errorText(result.error),
+        status: result.error?.context?.status ?? result.error?.status ?? null,
+        ...(result?.data !== undefined ? { data: result.data } : {})
+      };
       return { ok: true, data: result?.data ?? null };
     } catch (error) { return { ok: false, error: errorText(error), status: error?.context?.status ?? error?.status ?? null }; }
   }
@@ -73,7 +78,22 @@ export function createParty({
     if (!validRoomId(roomId)) return Promise.resolve({ ok: false, error: 'Choose a room to answer in.' });
     const text = input == null ? '' : String(input);
     if (!text.trim() || text.length > maxInputLength) return Promise.resolve({ ok: false, error: `Enter an answer of ${maxInputLength} characters or fewer.` });
-    return call(sb => sb.functions.invoke('party-answer', { body: { roomId, input: text } }));
+    return call(async sb => {
+      const result = await sb.functions.invoke('party-answer', { body: { roomId, input: text } });
+      if (!result?.error) return result;
+      const error = result.error;
+      const status = error?.context?.status ?? error?.status ?? null;
+      let data = result.data;
+      if (status === 409 && data == null) {
+        const response = error?.context;
+        try {
+          if (typeof response?.clone === 'function') data = await response.clone().json();
+          else if (typeof response?.json === 'function') data = await response.json();
+          else if (response?.body && typeof response.body === 'object') data = response.body;
+        } catch { data = null; }
+      }
+      return { ...result, data };
+    });
   }
 
   function promptFor(room) {

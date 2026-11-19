@@ -332,7 +332,7 @@ export function createUI(root, on) {
     if (P && P.enter) document.removeEventListener('keydown', P.enter);
     if (P && P.skipFn) { document.removeEventListener('keydown', P.skipFn); document.removeEventListener('pointerdown', P.skipFn); }
     P = null;
-    if (!keepScene) { stopScene(); if (sceneHost) { sceneHost.remove(); sceneHost = null; sceneCtl = null; } }
+    if (!keepScene) hideScene();
   }
   let curTitle = '';
   const SUBS = { Topics: 'Topics · beyond the daily game' };
@@ -451,7 +451,7 @@ export function createUI(root, on) {
     root.classList.add('is-home');
     page.classList.add('home');
     placeVermi();
-    startScene(screen, {
+    ensureScene('title', {
       // the lower column is anchored to the bottom; the swell sits 18 px (at its lowest) above the HOW TO PLAY row
       getWaterY: () => {
         const how = stage.querySelector('.ts-howrow'), hr = screen.getBoundingClientRect();
@@ -652,11 +652,25 @@ export function createUI(root, on) {
   // pixel-notched card: border layer (.nb) + dark inner layer (.ni); the drop shadow lives on the wrapper
   const notch = (cls, ...kids) => h('div', { class: `nw ${cls || ''}` }, h('div', { class: 'nb' }, h('div', { class: 'ni' }, ...kids)));
 
+  /* One persistent scene canvas for the whole app: created once, never re-created between routes. Title <-> game glides the waterline;
+     other pages fade it out (and pause it) instead of destroying it. */
+  function hideScene() { if (sceneHost) { sceneHost.classList.add('scene-hidden'); sceneCtl && sceneCtl.pause(); } }
+  function ensureScene(kind, titleOpts) {
+    const fresh = !sceneHost || !sceneHost.isConnected;
+    if (fresh) {
+      sceneHost = h('div', { class: 'scene-fixed scene-hidden', 'aria-hidden': 'true' });
+      root.insertBefore(sceneHost, page);
+      sceneCtl = startScene(sceneHost, kind === 'play' ? { mode: 'play' } : { mode: 'title', ...titleOpts });
+    } else {
+      if (titleOpts) sceneCtl.setOpts(titleOpts);
+      sceneCtl.resume();
+      if (sceneCtl.mode !== kind || kind === 'title') sceneCtl.setMode(kind, { ms: 900 });
+    }
+    requestAnimationFrame(() => sceneHost && sceneHost.classList.remove('scene-hidden'));
+    return sceneCtl;
+  }
   function ensurePlayScene(depthM, instant) {
-    if (sceneHost) { stopScene(); sceneHost.remove(); }
-    sceneHost = h('div', { class: 'scene-fixed', 'aria-hidden': 'true' });
-    root.insertBefore(sceneHost, page);
-    sceneCtl = startScene(sceneHost, { mode: 'play' });
+    ensureScene('play');
     sceneCtl.setDepth(depthM, { instant: instant !== false });
   }
 
@@ -1013,7 +1027,7 @@ export function createUI(root, on) {
     keepScene = false;
     root.classList.add('is-home', 'is-play');
     page.className = 'page play-page';
-    if (sceneCtl) sceneCtl.setDepth(finalDepth); else ensurePlayScene(finalDepth, true);
+    { const first = !sceneCtl || sceneCtl.mode !== 'play' || sceneHost.classList.contains('scene-hidden'); ensureScene('play'); sceneCtl.setDepth(finalDepth, { instant: first }); }
     if (P2.toast) P2.toast = toastLine;
     const numSpan = h('span');
     valueEl.replaceChildren(numSpan);
@@ -1325,7 +1339,7 @@ export function createUI(root, on) {
     root.classList.add('is-home', 'is-play');
     page.className = 'page play-page live-page';
     const me = v.me ? (v.me.score || 0) : 0;
-    if (sceneCtl && sceneHost && sceneHost.isConnected) sceneCtl.setDepth(me * 10, { instant: false }); else ensurePlayScene(me * 10, true);
+    { const first = !sceneCtl || sceneCtl.mode !== 'play' || sceneHost.classList.contains('scene-hidden'); ensureScene('play'); sceneCtl.setDepth(me * 10, { instant: first }); }
     const hudDepth = h('span', { class: 'hud-val cyan', text: `${fmt(me * 10)} m` });
     const hudScore = h('span', { class: 'hud-val pink', text: fmt(me) });
     hudDepth._v = me * 10; hudScore._v = me;
@@ -1491,7 +1505,7 @@ export function createUI(root, on) {
     page.className = 'page play-page live-page';
     const sorted = sortPlayers(v.players.filter((p) => !p.left_at || (p.score || 0) > 0));
     const me = v.me ? (v.me.score || 0) : 0;
-    if (sceneCtl && sceneHost && sceneHost.isConnected) sceneCtl.setDepth(me * 10, { instant: false }); else ensurePlayScene(me * 10, true);
+    { const first = !sceneCtl || sceneCtl.mode !== 'play' || sceneHost.classList.contains('scene-hidden'); ensureScene('play'); sceneCtl.setDepth(me * 10, { instant: first }); }
     const place = (p) => placeOf(sorted, p.score || 0);
     const top = sorted.filter((p) => place(p) <= 3).slice(0, 3);
     const slot = (p, cls) => p && h('li', { class: `pod ${cls}` }, h('div', { class: 'pod-who' }, avatarEl(p.avatar, 'big'), h('b', { text: nameOf(p) }), h('span', { text: `${fmt(p.score || 0)} pts` })),

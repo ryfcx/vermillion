@@ -3,6 +3,7 @@ import { createParty } from '../src/party.js';
 
 const calls = { rpc: [], invoke: [], channels: [] };
 const room = { id: 'room-1', code: 'abcd', status: 'playing', prompt_id: 'q1', question_no: 1, holder_id: 'u1' };
+let answerErrorStatus = null;
 const tables = {
   party_rooms: [room],
   party_players: [{ room_id: 'room-1', user_id: 'u1', seat: 1, hearts: 2, meter: 12, profile: { username: 'Diver', avatar: 'buddy-vermi', party_rating: 1000 } }],
@@ -23,7 +24,11 @@ const client = {
     };
     return query;
   },
-  functions: { async invoke(name, options) { calls.invoke.push({ name, options }); return { data: { status: 'passed', points: 12 }, error: null }; } },
+  functions: { async invoke(name, options) {
+    calls.invoke.push({ name, options });
+    if (answerErrorStatus) return { data: null, error: Object.assign(new Error('Edge Function returned a non-2xx status code'), { context: new Response(JSON.stringify({ status: answerErrorStatus }), { status: 409 }) }) };
+    return { data: { status: 'passed', points: 12 }, error: null };
+  } },
   channel(name) {
     const channel = { name, handlers: [], on(type, filter, callback) { channel.handlers.push({ type, filter, callback }); return channel; }, subscribe(callback) { queueMicrotask(() => callback('SUBSCRIBED')); return channel; }, async send(message) { channel.sent = message; return 'ok'; }, unsubscribe() { channel.closed = true; } };
     calls.channels.push(channel); return channel;
@@ -49,6 +54,16 @@ assert.deepEqual(calls.rpc.slice(-3).map(call => call.name), ['party_start', 'pa
 assert.equal((await party.answer('room-1', 'valid')).data.status, 'passed');
 assert.deepEqual(calls.invoke[0], { name: 'party-answer', options: { body: { roomId: 'room-1', input: 'valid' } } });
 assert.equal((await party.answer('room-1', '  ')).ok, false);
+for (const status of ['used', 'not_your_turn', 'too_early', 'too_late', 'not_playing']) {
+  answerErrorStatus = status;
+  assert.deepEqual(await party.answer('room-1', 'valid'), {
+    ok: false,
+    error: 'Edge Function returned a non-2xx status code',
+    status: 409,
+    data: { status }
+  });
+}
+answerErrorStatus = null;
 
 const state = await party.getRoomState('room-1');
 assert.equal(state.data.prompt.text, 'Name an animal');

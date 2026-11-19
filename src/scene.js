@@ -133,7 +133,7 @@ export function startScene(host, opts = {}) {
   const base = document.createElement('canvas');   // cached sky + water gradients
   const bg = base.getContext('2d');
   const st = S = {
-    host, canvas, edge, g, base, bg, W: 0, H: 0, scale: 4, water: 0, th: THEMES[themeName()] || THEMES.neon,
+    vermiA: 1, buoyMix: 0, glide: null, paused: false, host, canvas, edge, g, base, bg, W: 0, H: 0, scale: 4, water: 0, th: THEMES[themeName()] || THEMES.neon,
     play: opts.mode === 'play', trail: [], dive: null, sad: null, banner: null, prevCam: null, rivalTween: null, cam: 0, camTween: null, depthM: 0, rival: null, answered: 0, pulse: null, glow: [], raf: 0, last: 0, t: 0, stars: [], clouds: [], bubbles: [], fish: [], moonImg: null, opts,
     getWaterY: opts.getWaterY || (() => host.clientHeight * 0.62), stopped: false, observers: [],
   };
@@ -174,7 +174,7 @@ export function startScene(host, opts = {}) {
 
   function seed() {
     const { W, H, water, scale } = st; const r = rng(1337 + W);
-    const skyH = Math.round(water * 0.4);
+    const skyH = Math.round(H * 0.22);
     st.stars = Array.from({ length: 18 }, () => ({ x: Math.floor(r() * W), y: Math.floor(r() * skyH), p: r() * 6 }));
     // 3-4 soft clouds, only in the top corners and edges (never across the title block); they sway a few px, they don't travel
     const cl = (name, tint, sd) => makeCloud(48, 12, sd, tint);   // our own soft clouds: low contrast, flat-bottomed
@@ -188,7 +188,7 @@ export function startScene(host, opts = {}) {
     st.bubbles = Array.from({ length: 7 }, () => ({ x: Math.floor(r() * (W - 14)), y: water + r() * depth, v: 2 + r() * 3, ph: r() * 6, s: 1 }));
     st.fish = Array.from({ length: 3 }, (_, i) => ({ y: water + 12 + (depth - 24) * (0.2 + i * 0.28) + r() * 6, x: r() * W, v: (i % 2 ? -1 : 1) * (2 + r() * 2), big: i % 2 === 0, name: i % 2 ? 'fish-b' : 'fish-a' }));
     st.glow = Array.from({ length: 48 }, () => ({ x: r() * W, y: r() * H, v: 2 + r() * 5, ph: r() * 6, c: r() < 0.6 ? '#5ee0ff' : '#ff9ad5' }));
-    st.moonX = Math.round(W * 0.82 - 16); st.moonY = -Math.round(14 * 4 / scale);
+    st.titleBx = st.titleBx || W * st.scale * 0.2; st.moonX = Math.round(W * 0.82 - 16); st.moonY = -Math.round(14 * 4 / scale);
   }
 
   /* Shared by the title screen and the game: stars, moon and clouds (they ride up with the waterline in play). */
@@ -252,7 +252,14 @@ export function startScene(host, opts = {}) {
     if (on) rect(g, x + 2, y - 17, 3, 2, '#ff4fa3');
   }
 
+  function stepGlide() {
+    const gl = st.glide; if (!gl) return;
+    const p = Math.min(1, (performance.now() - gl.t0) / gl.ms), e = 0.5 - 0.5 * Math.cos(Math.PI * p);
+    st.water = gl.from + (gl.to - gl.from) * e; st.vermiA = gl.va0 + (gl.va1 - gl.va0) * e; st.buoyMix = gl.bm0 + (gl.bm1 - gl.bm0) * e;
+    if (p >= 1) { st.glide = null; const done = gl.done; if (done) done(); }
+  }
   function frame(still) {
+    stepGlide();
     if (st.play) return framePlay();
     const { W, H, water, th, t, scale } = st;
     const reduced = isReduced();
@@ -276,7 +283,7 @@ export function startScene(host, opts = {}) {
     }
 
     // the buoy, left of the column, riding the swell
-    const bx = (st.opts.getVermiX ? st.opts.getVermiX() : W * scale * 0.5 - 100);
+    const bx = (st.opts.getVermiX ? st.opts.getVermiX() : W * scale * 0.5 - 100); st.titleBx = bx;
     drawBuoy(bx / scale, (st.wyCss + swell(bx, T)) / scale, T, reduced);
     drawEdge(st.wyCss, T, 6 * scale);
   }
@@ -388,7 +395,7 @@ export function startScene(host, opts = {}) {
     }
 
     // waterline: the start buoy rides the swell; the swell + ruler are drawn on the 2 px layer
-    if (wy > -10 && wy < H + 10) { const bxc = Math.round(W * 0.24); drawBuoy(bxc, wy + swell(bxc * st.scale, T) / st.scale, T, reduced); }
+    if (wy > -10 && wy < H + 10) { const bxc = (st.titleBx / st.scale) * (1 - st.buoyMix) + W * 0.24 * st.buoyMix; drawBuoy(bxc, wy + swell(bxc * st.scale, T) / st.scale, T, reduced); }
     drawEdge(wy * st.scale, T, 6 * st.scale);
 
     // Vermi (lower left), the rival, pulse + sparkles
@@ -401,7 +408,7 @@ export function startScene(host, opts = {}) {
       else { jg.fillStyle = '#ff4fa3'; jg.fillRect(6, 4, 20, 14); }
       if (tint) { jg.globalCompositeOperation = 'source-atop'; jg.globalAlpha = a; jg.fillStyle = tint; jg.fillRect(0, 0, c.width, c.height); }
       g.imageSmoothingEnabled = false;
-      const ga = g.globalAlpha; g.globalAlpha = ga * 0.9;
+      const ga = g.globalAlpha; g.globalAlpha = ga * 0.9 * st.vermiA;
       g.drawImage(c, Math.round(x + 16 - 8 * sx), Math.round(y + 16 - 8 * sy), Math.round(16 * sx), Math.round(16 * sy));
       g.globalAlpha = ga;
     };
@@ -486,12 +493,34 @@ export function startScene(host, opts = {}) {
     /** Timeout or 0 points: no dive. Vermi droops and a little bloop of bubbles rises. */
     sad() { st.sad = { t0: performance.now() }; sfxPlay('bloop'); frame(); },
     get diving() { return !!st.dive; },
+    get mode() { return st.play ? 'play' : 'title'; },
+    setOpts(o) { Object.assign(st.opts, o); st.getWaterY = st.opts.getWaterY || st.getWaterY; },
+    pause() { st.paused = true; }, resume() { st.paused = false; st.last = performance.now(); },
+    /** Glide between the title framing (waterline ~55%) and the game framing (~28%) in one continuous move. */
+    setMode(mode, { ms = 900 } = {}) {
+      const toPlay = mode === 'play';
+      if (toPlay === st.play && !st.glide) { if (!toPlay) layout(); return; }
+      const reduced = isReduced();
+      const playWater = Math.round(st.H * 0.28), titleWater = Math.round(st.getWaterY() / st.scale);
+      const run = (from, to, va0, va1, bm0, bm1, done) => {
+        if (reduced) { st.water = to; st.vermiA = va1; st.buoyMix = bm1; st.glide = null; done && done(); frame(); return; }
+        st.glide = { t0: performance.now(), ms, from, to, va0, va1, bm0, bm1, done };
+      };
+      if (toPlay) {
+        st.titleBx = st.opts.getVermiX ? st.opts.getVermiX() : st.titleBx;
+        st.play = true; st.cam = 0; st.depthM = 0; st.camTween = null; st.dive = null;
+        run(st.glide ? st.water : titleWater, playWater, 0, 1, 0, 1, () => { layout(); st.vermiA = 1; st.buoyMix = 1; });
+      } else {
+        const go = () => run(st.water, titleWater, st.vermiA, 0, st.buoyMix, 0, () => { st.play = false; st.vermiA = 0; st.buoyMix = 0; layout(); });
+        if (st.cam > 1 && !reduced) { st.depthM = 0; st.camTween = { from: st.cam, to: 0, t0: performance.now() }; setTimeout(() => { if (!st.stopped) go(); }, 820); } else { st.cam = 0; st.depthM = 0; go(); }
+      }
+    },
   };
 
   function tick(now) {
     if (st.stopped) return;
     st.raf = requestAnimationFrame(tick);
-    if (document.hidden || isReduced()) return;
+    if (document.hidden || isReduced() || st.paused) return;
     if (now - st.last < 15) return;          // ~15 fps idle, ~30 fps while diving: stepped, pixel-y
     st.t += Math.min(0.1, (now - st.last) / 1000 || 0.016); st.last = now;
     frame();
