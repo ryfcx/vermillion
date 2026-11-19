@@ -31,9 +31,9 @@ Deno.serve(async (req) => {
     return Response.json({ error: 'invalid bank', total: prompts.length, valid: valid.length }, { status: 400 });
   }
   const now = new Date().toISOString();
-  const rows = valid.map(p => ({
+  const rows = valid.map((p, ord) => ({
     id: p.id, category: p.category, everyday: p.everyday === true,
-    packs: Array.isArray(p.packs) ? p.packs : [], data: p, updated_at: now,
+    packs: Array.isArray(p.packs) ? p.packs : [], data: p, ord, updated_at: now,
   }));
   for (let i = 0; i < rows.length; i += 100) {
     const { error } = await sb.from('prompt_bank').upsert(rows.slice(i, i + 100));
