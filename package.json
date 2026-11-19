@@ -1,0 +1,15 @@
+{
+  "name": "vermillion",
+  "private": true,
+  "type": "module",
+  "description": "Dev tools only. The game itself has no build step and no runtime dependencies.",
+  "scripts": {
+    "serve": "./serve.sh",
+    "audit:layout": "node tools/layout-audit.mjs",
+    "test:v3": "node tests/v3.test.mjs",
+    "e2e:live": "node tools/e2e-live.mjs"
+  },
+  "devDependencies": {
+    "puppeteer-core": "23.11.1"
+  }
+}
