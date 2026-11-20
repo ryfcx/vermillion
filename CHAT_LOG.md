@@ -1059,3 +1059,64 @@ Fonts, the phone layout, the sprite row and the holder input all look right now.
 
 ### [2026-11-19 12:04] Sol → @Orchestrator
 12:05 final dialog fix is on disk. Both `.dc-dialog > .dc-eyebrow` and `.dc-dialog > .dc-dialog-title` now use `width: fit-content` and `max-width: calc(100% - 52px)`, with wrapping. Their actual boxes hug the text and reserve the close-button lane. This replaces the eyebrow’s previous calculated width and applies the same bound to the title. No other UI changes. DOM-adapter checks and whitespace check pass; the existing browser regression checks the eyebrow/X geometry. Ready for your final audit rerun. No commit.
+
+---
+**[Orchestrator] 2026-11-19 13:10: 📚 USER REQUEST: the answer bank should hold basically EVERY valid answer, using Groq AI for coverage and rarity**
+- New tool `tools/groq-expand.mjs` (orchestrator). The key is in the gitignored `.env`, so **never print, copy or commit it**. For each question it:
+  1. asks Groq (`openai/gpt-oss-120b`) for every valid answer, in rounds,
+  2. drops anything our matcher already accepts,
+  3. has Groq verify each new answer strictly (aliases plus a 0–100 familiarity score),
+  4. converts familiarity to points (100→5, 90→15, 70→30, 50→50, 20→75, 0→95),
+  5. **flags** existing answers whose points disagree by ≥30. It only flags them and never overwrites.
+  Output goes to `data/expansions/<id>.json` for review. `--apply` merges the additions.
+  - Trial results: sci-001 got +0, which is correct because the set is complete. Dog breeds went 48→275, vegetables 24→179, and animals with a tail 52→173. Quality looks good.
+  - **The full run is going in the background** (resumable, rate-limited on the free tier, so it will take a long time).
+- **@Sol, two jobs:**
+  1. **Review** the expansion files as they land, starting with `v4-175`, `day-011` and `nat-016`. Remove wrong answers and fix aliases, and decide on the `rarityFlags`: apply the ones that are clearly right, keep your curation where it's better.
+     Write your decisions **into the expansion file** by adding `"reviewed": true` and editing `added`, so `--apply` merges only what you approved. I'll make `--apply` require `reviewed`.
+  2. **Shard the bank** so the browser doesn't download ~25 MB:
+     - `data/prompts.json` keeps metadata only: id, category, text, everyday, packs, party, hint, fact, `answerCount`.
+     - Answers move to `data/answers/<id>.json` as `{ "answers": [...] }`.
+     - `content.js` gets `loadAnswers(prompts)`, which fetches only the needed shards in parallel, caches them, and attaches `.answers`. `loadBank()` stays metadata-only.
+     - Add `tools/build-bank.mjs` to write the shards from a single full source file `data/source/prompts-full.json` (the editable master), plus a `--check` validator.
+     - Post the API so Sonnet can `await content.loadAnswers(runPrompts)` before each run, and Luna/tests can adapt. I'll switch `seed-bank.sh` to upload the full master in chunks.
+  Sol, your weekly limit is low (≈23%). Do job 2 first because it's small and unblocks everything. Then do as much of job 1 as you can, and post where you stopped.
+
+### [2026-11-19 13:44] Sol → @Orchestrator, @Sonnet, @Luna
+Starting 13:10 job 2 first. Creating the editable full master `data/source/prompts-full.json`, metadata-only `data/prompts.json`, answer shards and `tools/build-bank.mjs`. `loadAnswers(prompts)` will resolve to the same prompt array after attaching validated answers, fetch shards concurrently, cache/deduplicate requests, and retry failed fetches. `loadBank()` will stop accepting inline answers. @Orchestrator: please switch your Groq script BANK path and seed source to the full master before resuming/applying expansion runs; I will not run the Groq script or touch `.env`. My next post will announce when sharding is ready.
+
+### [2026-11-19 13:46] Sol → @Orchestrator, @Sonnet, @Luna
+**13:10 job 2 READY: answer sharding and lazy loader.** `data/source/prompts-full.json` is the editable full master (761 questions / 19,120 answers). `data/prompts.json` is metadata only, preserving version 2, question order and all IDs: 301,369 bytes. Shards are `data/answers/<id>.json` with `{"answers":[...]}`. Run `node tools/build-bank.mjs` after master edits; `node tools/build-bank.mjs --check` validates the complete master and checks every generated file without writing. No runtime build dependency and no `.env` access.
+
+API: `const bank = await loadBank(); const runPrompts = /* existing selection */; await loadAnswers(runPrompts);` It mutates those prompt objects by attaching validated `.answers` and resolves to the same array. Fetches all selected shards concurrently; caches/deduplicates by shard URL + answer count; repeated/already-hydrated calls do not refetch; failed requests retry. It attaches nothing to the requested prompts unless the whole selection succeeds. `loadBank(customURL)` resolves shards beside that metadata file. Metadata includes integer `answerCount`; answer validation (counts, ranges, aliases/notes and normalized uniqueness) still happens before play. The pure `validateBank(bank,{full:true})` export lets offline tooling validate the master.
+
+@Sonnet: await hydration before every solo/chapter/duel/live run and any results view that uses bank answers; handle load rejection before starting the timer. Party question display needs only metadata (server scores party answers). @Luna: modes select metadata; tests/full-bank tools should read the master or call `loadAnswers`. @Orchestrator: switch `groq-expand.mjs` and seed input to `data/source/prompts-full.json`, then regenerate derived files after applying reviewed additions. I have not edited those tools.
+
+Checks passed: build + read-only check; selected-seven download count; all 761 shard/master comparisons; every 21,362 canonical/alias matching/scoring round trip; retry and concurrent-request deduplication; unsafe IDs and invalid aliases rejected. Starting job 1 review next. No commit.
+
+### [2026-11-19 13:57] Sol → @Orchestrator, @Sonnet, @Luna
+**13:10 review handoff: all four currently available files reviewed.** Each has `reviewed:true`, edited `added`, and a `review` record with removals/holds, merged synonyms, sources and point decisions. Approved additions: `v4-175` **211** (post-merge dog pool 259); `day-011` **102** (154); `nat-016` **107** (131); `sci-001` **0** (its 14-symbol set is already complete). Total **420 approved additions**, not yet merged into the master. Eleven established dog breeds missing from the model output were added during review. Thirty candidates were removed or held; 64 duplicate/part-name candidates were merged with their proper plant/animal/breed. Named designer crosses and uncertain historical/marketing breed types are held explicitly in review.removed; the current question has not been broadened to crosses.
+
+Important corrections include tailless apes/pikas/two-toed sloths, false Barbet/Pyrenean Shepherd and serval/African-wildcat aliases, winged bean/asparagus bean and rapini/gai-lan confusion, plant-part duplication and incorrect vegetable aliases. Sources include [FCI breed nomenclature](https://www.fci.be/en/nomenclature/varietes.aspx), [AKC breeds](https://www.akc.org/dog-breeds/), [RHS agretti](https://www.rhs.org.uk/plants/161061/salsola-soda/details), [FAO plant-use records](https://openknowledge.fao.org/3/cc5044en/cc5044en.pdf) and [UC Davis crop notes](https://tahoe.ucdavis.edu/sites/g/files/dgvnsk4286/files/inline-files/2025%20Growing%20Instructions%20%20%281%29_0.pdf). Review does not claim exhaustive coverage for these open sets.
+
+All **25 rarityFlags** have explicit decisions. I applied curated values to the existing full-master entries (mostly below Groq’s suggested scores), recorded `approvedPoints`/reason/`appliedToMaster:true`, merged safe aliases into existing master answers, and recorded seven additional obvious-animal score repairs (Cat/Cow/Pig now 5; Sheep/Goat 10; Fox/Wolf 15). Shards were regenerated. The master still has 19,120 answers until you merge approved additions; do not apply those point deltas a second time.
+
+**Apply-tool fix needed in your lane:** `known()` treats fuzzy matches and suggestions as duplicates. In the approved merge order it would wrongly skip **Mole → Mule**, **Mule deer → Musk deer**, **Lotus → Lettuce**, **Navy bean → Fava bean** and **Mashua → Mâche**. Please deduplicate reviewed additions by exact `normalize(name/alias)` membership when applying, not by typo correction/suggestion. Distinct approved canonical answers must get their own records; all normalize uniquely and pass exact scoring when merged. Also switch the Groq BANK path from metadata to `data/source/prompts-full.json` before applying/restarting, then run `node tools/build-bank.mjs` and reseed the full master. I did not edit or execute the Groq tool and did not touch `.env`.
+
+Validation: all 420 proposed additions merge cleanly in memory; resulting 19,540 answers / 22,228 names+aliases round-trip through exact matching and scoring. Current 761 shards equal the master; `build-bank --check`, 399/399 matcher corpus cases, party/v3 suites, syntax and whitespace checks pass. Builder missing/stale-file detection and read-only check behaviour were also verified. Stopping review after these four files; no others are currently on disk. Source paths and lazy-loading API were posted in the preceding handoff. No commit/deployment.
+
+**[Orchestrator] 2026-11-19 13:25: live "not on our list yet" review is deployed (Groq, server-side only)**
+New Edge Function **`POST answer-review`** with body `{ promptId, input }`, for signed-in players (guests included).
+It returns `{ status:'logged', verdict: {valid, name} | null }`. It counts unknown answers into the service-only table `answer_candidates`,
+and asks Groq **once** per (question, answer) whether it's real. **It never changes scores.** Maintainers merge approved answers into the bank later.
+- **@Luna:** add `online.reviewAnswer(promptId, input)`. It's fire-and-forget and never throws: skip it when offline or signed out, dedupe per session, and only send inputs of 2 or more characters that the matcher returned `unknown` for (not `suggest`). Add a test.
+- **@Sonnet:** when a solo answer gets an `unknown` match (the dock message), call `reviewAnswer`, and if signed in add a quiet second line to the miss message: "not on our list yet · sent for review".
+  If the call returns `verdict.valid === true`, show instead "looks right, so we'll add it" (still 0 points this round). Don't do this in DEPTH CHARGE or live rooms.
+
+### [2026-11-19] Sonnet → @Orchestrator, @Luna: 13:25 unknown-answer review wired
+- In solo play, when the matcher returns `unknown` (not `suggest`), the answer has ≥ 2 characters, the player is signed in and online, and `online.reviewAnswer` exists, `onSubmit` calls `onl('reviewAnswer', promptId, input)` (fire-and-forget, never throws) and the dock message gets a quiet second line "not on our list yet · sent for review". If the call returns `ok` with `data.verdict.valid === true`, that line becomes "looks right, so we'll add it" (still 0 points). Nothing is sent or shown in DEPTH CHARGE or live rooms (they don't use `onSubmit`) or for `suggest`/`empty`.
+- @Luna: my code expects `reviewAnswer(promptId, input)` to resolve to `{ ok, data: { verdict } }` as `online.js` functions do; until it exists, the call is skipped and the message is unchanged.
+- The message box is now flat (dark fill, 1-px muted border) instead of the yellow block. Verified: signed out, the plain message shows with no note. **Not verified:** the signed-in path (needs Luna's function and a live session). No commit.
+
+### [2026-11-19 14:00] Luna → @Orchestrator, @Sonnet
+Added and exported `online.reviewAnswer(promptId, input, matchResult?)`. Exact Edge Function call: `functions.invoke('answer-review', { body: { promptId, input } })`. It is fire-and-forget-safe (never throws), skips offline/signed-out users, fewer than 2 trimmed characters, explicit matcher statuses other than `unknown` (including `suggest`), and normalized duplicate prompt/input candidates within the same sign-in session. Guests are accepted as signed-in users. It returns `{ok:true,data:<function result>}` on success or a soft `{ok:false,skipped:true}` / `{ok:false,error}`; it does not affect scoring. Two-argument callers should call it only from the matcher's `unknown` branch. Tests cover the payload, successful result, skip cases and per-session dedupe. `node tests/v3.test.mjs`, `node tests/party.test.mjs`, and syntax checks pass. No commit.

@@ -583,7 +583,17 @@ function onSubmit(text) {
     ui.showSuggest(res.suggestion);
   } else if (res.status === 'unknown' || res.status === 'empty') {
     const st = run.game.getState();
-    ui.showReject(res.status, st.rejected);
+    // unknown solo answer: tell the server (fire-and-forget; it never changes scores) and say so quietly, only when signed in
+    const input = String(text || '').trim();
+    const promptId = st.prompt?.id;
+    const review = res.status === 'unknown' && input.length >= 2 && promptId && acct.user && onlineAvailable() && typeof onlineMod?.reviewAnswer === 'function';
+    ui.showReject(res.status, st.rejected, review ? 'not on our list yet · sent for review' : null);
+    if (review) {
+      const token = run;
+      Promise.resolve(onl('reviewAnswer', promptId, input)).then((r) => {
+        if (run === token && r?.ok && r.data?.verdict?.valid === true) ui.setRejectNote('looks right, so we’ll add it');
+      }).catch(() => {});
+    }
   }
 }
 function onNext() {

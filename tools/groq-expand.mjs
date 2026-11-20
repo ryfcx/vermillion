@@ -14,7 +14,7 @@
 //   node tools/groq-expand.mjs --ids geo-001,food-003     specific questions
 //   node tools/groq-expand.mjs --pack geography           one topic
 //   node tools/groq-expand.mjs --all [--limit 50]         everything (resumable: skips done files)
-//   node tools/groq-expand.mjs --apply                    merge verified additions into data/prompts.json
+//   node tools/groq-expand.mjs --apply                    merge files marked "reviewed": true into data/prompts.json
 //   node tools/groq-expand.mjs --models                   list the models your key can use
 // Options: --model <id>  --max-answers 500  --rounds 6  --concurrency 2  --force (redo done files)
 // Key: GROQ_API_KEY in .env (gitignored) or the environment. Never commit it.
@@ -197,6 +197,7 @@ function apply(bank) {
     const f = path.join(OUT, `${p.id}.json`);
     if (!fs.existsSync(f)) continue;
     const r = JSON.parse(fs.readFileSync(f, 'utf8'));
+    if (r.reviewed !== true && !flag('unreviewed')) continue;  // only human/Sol-approved files merge
     let n = 0;
     for (const a of r.added || []) {
       if (known(p, a.name)) continue;  // bank may have changed since the run

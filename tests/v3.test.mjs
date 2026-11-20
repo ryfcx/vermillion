@@ -122,6 +122,7 @@ async function onlineTests() {
   assert.deepEqual(queued, { ok: true, data: { queued: true } });
   assert.equal(JSON.parse(queueStore.get('vermillion:online:run-queue')).length, 1);
   assert.deepEqual(await online.submitRun({ ...run, practice: true }), { ok: true, data: { skipped: true } });
+  assert.deepEqual(await online.reviewAnswer('q-offline', 'new label', { status: 'unknown' }), { ok: false, skipped: true });
   connected = true;
   const flushed = await online.flushQueue();
   assert.equal(flushed.data.sent, 1);
@@ -132,6 +133,16 @@ async function onlineTests() {
   assert.equal((await online.submitRun(chapterRun)).ok, true);
   assert.equal(fake.calls.functions.at(-1).options.body.mode, 'chapter');
   assert.equal(fake.calls.functions.at(-1).options.body.packId, 'movies');
+  const reviewsBefore = fake.calls.functions.length;
+  const reviewed = await online.reviewAnswer('q1', 'A new answer', { status: 'unknown' });
+  assert.equal(reviewed.ok, true);
+  assert.equal(fake.calls.functions.at(-1).name, 'answer-review');
+  assert.deepEqual(fake.calls.functions.at(-1).options.body, { promptId: 'q1', input: 'A new answer' });
+  assert.deepEqual(await online.reviewAnswer('q1', '  a NEW answer  ', { status: 'unknown' }), { ok: true, data: { skipped: true, duplicate: true } });
+  assert.equal(fake.calls.functions.length, reviewsBefore + 1, 'review candidates dedupe per sign-in session');
+  assert.deepEqual(await online.reviewAnswer('q1', 'suggested', { status: 'suggest' }), { ok: false, skipped: true });
+  assert.deepEqual(await online.reviewAnswer('q1', 'x', { status: 'unknown' }), { ok: false, skipped: true });
+  assert.equal(fake.calls.functions.length, reviewsBefore + 1, 'suggestions and short inputs are not reviewed');
 
   assert.equal((await online.signInEmail('bad')) .ok, false);
   assert.equal((await online.signInEmail('player@example.com')).ok, true);
@@ -147,6 +158,7 @@ async function onlineTests() {
   assert.equal((await online.removeFriend('u2')).ok, true);
   assert.equal((await online.signOut()).ok, true);
   assert.equal(await online.getUser(), null);
+  assert.deepEqual(await online.reviewAnswer('q2', 'another answer', { status: 'unknown' }), { ok: false, skipped: true });
 }
 
 async function roomTests() {

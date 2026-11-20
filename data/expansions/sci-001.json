@@ -1,10 +1,26 @@
 {
- "promptId": "sci-001",
- "text": "Name a chemical element whose symbol has just one letter.",
- "model": "openai/gpt-oss-120b",
- "at": "2026-11-19T18:11:51.913Z",
- "existing": 14,
- "added": [],
- "rejected": [],
- "rarityFlags": []
+  "promptId": "sci-001",
+  "text": "Name a chemical element whose symbol has just one letter.",
+  "model": "openai/gpt-oss-120b",
+  "at": "2026-11-19T18:11:51.913Z",
+  "existing": 14,
+  "added": [],
+  "rejected": [],
+  "rarityFlags": [],
+  "reviewed": true,
+  "review": {
+    "reviewer": "Sol",
+    "at": "2026-11-19T19:53:29.224Z",
+    "originalCandidates": 0,
+    "approvedAdditions": 0,
+    "removed": [],
+    "merged": [],
+    "rarityChanges": [],
+    "sources": [
+      "https://iupac.org/what-we-do/periodic-table-of-elements/"
+    ],
+    "notes": [
+      "No additions: the existing 14 one-letter element symbols form the complete current set. Existing canonical names and symbol aliases are retained unchanged."
+    ]
+  }
 }

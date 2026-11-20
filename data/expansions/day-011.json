@@ -1,1161 +1,1108 @@
 {
- "promptId": "day-011",
- "text": "Name an animal with a tail.",
- "model": "openai/gpt-oss-120b",
- "at": "2026-11-19T18:17:33.015Z",
- "existing": 52,
- "added": [
-  {
-   "name": "Alpaca",
-   "aliases": [
-    "Lama pacos"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "mammal with tail"
-  },
-  {
-   "name": "Llama",
-   "aliases": [
-    "Lama glama"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "mammal with tail"
-  },
-  {
-   "name": "Camel",
-   "aliases": [
-    "Dromedary",
-    "Bactrian camel"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "mammal with tail"
-  },
-  {
-   "name": "Dromedary camel",
-   "aliases": [
-    "One‑humped camel"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "mammal with tail"
-  },
-  {
-   "name": "Bactrian camel",
-   "aliases": [
-    "Two‑humped camel"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "mammal with tail"
-  },
-  {
-   "name": "Mule",
-   "aliases": [
-    "Hybrid horse‑donkey"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "equid with tail"
-  },
-  {
-   "name": "Marmot",
-   "aliases": [
-    "Ground squirrel"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "rodent with tail"
-  },
-  {
-   "name": "Groundhog",
-   "aliases": [
-    "Woodchuck"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "rodent with tail"
-  },
-  {
-   "name": "Prairie dog",
-   "aliases": [
-    "Cynomys"
-   ],
-   "familiarity": 50,
-   "points": 50,
-   "note": "rodent with tail"
-  },
-  {
-   "name": "Capybara",
-   "aliases": [
-    "Hydrochoerus hydrochaeris"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "large rodent with tail"
-  },
-  {
-   "name": "Muskox",
-   "aliases": [
-    "Ovibos moschatus"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "bovid with tail"
-  },
-  {
-   "name": "Bison",
-   "aliases": [
-    "American buffalo"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "large bovine with tail"
-  },
-  {
-   "name": "Buffalo",
-   "aliases": [
-    "African buffalo",
-    "Water buffalo"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "bovid with tail"
-  },
-  {
-   "name": "Yak",
-   "aliases": [
-    "Bos grunniens"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "bovid with tail"
-  },
-  {
-   "name": "Water buffalo",
-   "aliases": [
-    "Bubalus bubalis"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "bovid with tail"
-  },
-  {
-   "name": "Warthog",
-   "aliases": [
-    "Phacochoerus africanus"
-   ],
-   "familiarity": 50,
-   "points": 50,
-   "note": "wild pig with tail"
-  },
-  {
-   "name": "Wild boar",
-   "aliases": [
-    "Sus scrofa"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "wild pig with tail"
-  },
-  {
-   "name": "Hippopotamus",
-   "aliases": [
-    "Hippo"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "large mammal with short tail"
-  },
-  {
-   "name": "Rhinoceros",
-   "aliases": [
-    "Rhino"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "large mammal with short tail"
-  },
-  {
-   "name": "African elephant",
-   "aliases": [
-    "Loxodonta"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "elephant with tail"
-  },
-  {
-   "name": "Asian elephant",
-   "aliases": [
-    "Elephas maximus"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "elephant with tail"
-  },
-  {
-   "name": "Manatee",
-   "aliases": [
-    "Sea cow"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "marine mammal with fluke tail"
-  },
-  {
-   "name": "Sea otter",
-   "aliases": [
-    "Enhydra lutris"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "marine mammal with tail"
-  },
-  {
-   "name": "Sea lion",
-   "aliases": [
-    "Eared seal"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "marine mammal with tail"
-  },
-  {
-   "name": "Walrus",
-   "aliases": [
-    "Odobenus rosmarus"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "marine mammal with small tail"
-  },
-  {
-   "name": "Seal",
-   "aliases": [
-    "True seal",
-    "Phocid"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "marine mammal with tail"
-  },
-  {
-   "name": "Penguin",
-   "aliases": [
-    "Spheniscidae"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "bird with tail feathers"
-  },
-  {
-   "name": "Albatross",
-   "aliases": [
-    "Diomedeidae"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "large seabird with tail"
-  },
-  {
-   "name": "Ostrich",
-   "aliases": [
-    "Struthio camelus"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "flightless bird with tail feathers"
-  },
-  {
-   "name": "Emu",
-   "aliases": [
-    "Dromaius novaehollandiae"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "flightless bird with tail"
-  },
-  {
-   "name": "Cassowary",
-   "aliases": [
-    "Casuarius"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "flightless bird with tail"
-  },
-  {
-   "name": "Kiwi",
-   "aliases": [
-    "Apteryx"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "flightless bird with tail"
-  },
-  {
-   "name": "Peacock",
-   "aliases": [
-    "Indian peafowl"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "bird with tail feathers"
-  },
-  {
-   "name": "Peafowl",
-   "aliases": [
-    "Peacock",
-    "Peahen"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "bird with tail feathers"
-  },
-  {
-   "name": "Turkey",
-   "aliases": [
-    "Meleagris"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "bird with tail feathers"
-  },
-  {
-   "name": "Chicken",
-   "aliases": [
-    "Domestic fowl"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "bird with tail feathers"
-  },
-  {
-   "name": "Rooster",
-   "aliases": [
-    "Male chicken"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "bird with tail feathers"
-  },
-  {
-   "name": "Duck",
-   "aliases": [
-    "Anas"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "waterbird with tail"
-  },
-  {
-   "name": "Swan",
-   "aliases": [
-    "Cygnus"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "waterbird with tail"
-  },
-  {
-   "name": "Flamingo",
-   "aliases": [],
-   "familiarity": 70,
-   "points": 30,
-   "note": "has a tail"
-  },
-  {
-   "name": "Pelican",
-   "aliases": [],
-   "familiarity": 65,
-   "points": 35,
-   "note": "has a tail"
-  },
-  {
-   "name": "Stork",
-   "aliases": [],
-   "familiarity": 60,
-   "points": 40,
-   "note": "has a tail"
-  },
-  {
-   "name": "Heron",
-   "aliases": [],
-   "familiarity": 60,
-   "points": 40,
-   "note": "has a tail"
-  },
-  {
-   "name": "Crane",
-   "aliases": [],
-   "familiarity": 65,
-   "points": 35,
-   "note": "has a tail"
-  },
-  {
-   "name": "Ibis",
-   "aliases": [],
-   "familiarity": 55,
-   "points": 45,
-   "note": "has a tail"
-  },
-  {
-   "name": "Cormorant",
-   "aliases": [],
-   "familiarity": 45,
-   "points": 55,
-   "note": "has a tail"
-  },
-  {
-   "name": "Tarsier",
-   "aliases": [],
-   "familiarity": 30,
-   "points": 70,
-   "note": "has a tail"
-  },
-  {
-   "name": "Marmoset",
-   "aliases": [],
-   "familiarity": 35,
-   "points": 65,
-   "note": "has a tail"
-  },
-  {
-   "name": "Capuchin monkey",
-   "aliases": [
-    "Capuchin"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "has a tail"
-  },
-  {
-   "name": "Baboon",
-   "aliases": [],
-   "familiarity": 55,
-   "points": 45,
-   "note": "has a tail"
-  },
-  {
-   "name": "Mandrill",
-   "aliases": [],
-   "familiarity": 30,
-   "points": 70,
-   "note": "has a tail"
-  },
-  {
-   "name": "Gorilla",
-   "aliases": [],
-   "familiarity": 80,
-   "points": 25,
-   "note": "has a tail (though very short)"
-  },
-  {
-   "name": "Orangutan",
-   "aliases": [],
-   "familiarity": 70,
-   "points": 30,
-   "note": "has a tail (very short)"
-  },
-  {
-   "name": "Chimpanzee",
-   "aliases": [
-    "Chimp"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "has a tail (very short)"
-  },
-  {
-   "name": "Bonobo",
-   "aliases": [],
-   "familiarity": 45,
-   "points": 55,
-   "note": "has a tail (very short)"
-  },
-  {
-   "name": "Aye-aye",
-   "aliases": [],
-   "familiarity": 20,
-   "points": 75,
-   "note": "has a tail"
-  },
-  {
-   "name": "Galago",
-   "aliases": [
-    "Bushbaby"
-   ],
-   "familiarity": 25,
-   "points": 75,
-   "note": "has a tail"
-  },
-  {
-   "name": "Bushbaby",
-   "aliases": [
-    "Galago"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "has a tail"
-  },
-  {
-   "name": "Hyena",
-   "aliases": [],
-   "familiarity": 70,
-   "points": 30,
-   "note": "has a tail"
-  },
-  {
-   "name": "Jackal",
-   "aliases": [],
-   "familiarity": 55,
-   "points": 45,
-   "note": "has a tail"
-  },
-  {
-   "name": "Dingo",
-   "aliases": [],
-   "familiarity": 50,
-   "points": 50,
-   "note": "has a tail"
-  },
-  {
-   "name": "African wild dog",
-   "aliases": [
-    "African painted wolf"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "has a tail"
-  },
-  {
-   "name": "Mongoose",
-   "aliases": [],
-   "familiarity": 55,
-   "points": 45,
-   "note": "has a tail"
-  },
-  {
-   "name": "Fossa",
-   "aliases": [],
-   "familiarity": 20,
-   "points": 75,
-   "note": "has a tail"
-  },
-  {
-   "name": "Civet",
-   "aliases": [],
-   "familiarity": 25,
-   "points": 75,
-   "note": "has a tail"
-  },
-  {
-   "name": "Marten",
-   "aliases": [],
-   "familiarity": 30,
-   "points": 70,
-   "note": "has a tail"
-  },
-  {
-   "name": "Weasel",
-   "aliases": [],
-   "familiarity": 60,
-   "points": 40,
-   "note": "has a tail"
-  },
-  {
-   "name": "Stoat",
-   "aliases": [
-    "Ermine (in summer)"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "has a tail"
-  },
-  {
-   "name": "Ermine",
-   "aliases": [
-    "Stoat (in winter)"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "has a tail"
-  },
-  {
-   "name": "Badger",
-   "aliases": [],
-   "familiarity": 65,
-   "points": 35,
-   "note": "has a tail"
-  },
-  {
-   "name": "Honey badger",
-   "aliases": [
-    "Ratel"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "has a tail"
-  },
-  {
-   "name": "Wolverine",
-   "aliases": [],
-   "familiarity": 55,
-   "points": 45,
-   "note": "has a tail"
-  },
-  {
-   "name": "Pika",
-   "aliases": [],
-   "familiarity": 30,
-   "points": 70,
-   "note": "has a tail (very short)"
-  },
-  {
-   "name": "Hedgehog",
-   "aliases": [],
-   "familiarity": 70,
-   "points": 30,
-   "note": "has a tail (reduced)"
-  },
-  {
-   "name": "Porcupine",
-   "aliases": [],
-   "familiarity": 65,
-   "points": 35,
-   "note": "has a tail"
-  },
-  {
-   "name": "Armadillo",
-   "aliases": [],
-   "familiarity": 55,
-   "points": 45,
-   "note": "has a tail (short)"
-  },
-  {
-   "name": "Three-toed sloth",
-   "aliases": [],
-   "familiarity": 35,
-   "points": 65,
-   "note": "has a tail"
-  },
-  {
-   "name": "Two-toed sloth",
-   "aliases": [],
-   "familiarity": 35,
-   "points": 65,
-   "note": "has a tail"
-  },
-  {
-   "name": "Ocelot",
-   "aliases": [],
-   "familiarity": 60,
-   "points": 40,
-   "note": "has a tail"
-  },
-  {
-   "name": "Margay",
-   "aliases": [
-    "Leopard cat",
-    "Leopardus wiedii",
-    "Ocelot cat"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "small spotted cat with tail"
-  },
-  {
-   "name": "Serval",
-   "aliases": [
-    "Leptailurus serval",
-    "African wildcat"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "medium African cat with long tail"
-  },
-  {
-   "name": "Caracal",
-   "aliases": [
-    "Caracal caracal",
-    "African lynx"
-   ],
-   "familiarity": 38,
-   "points": 60,
-   "note": "wild cat known for ear tufts and tail"
-  },
-  {
-   "name": "Puma",
-   "aliases": [
-    "Cougar",
-    "Mountain lion",
-    "Catamount"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "large North American cat with tail"
-  },
-  {
-   "name": "Cougar",
-   "aliases": [
-    "Puma",
-    "Mountain lion",
-    "Catamount"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "same as puma, has tail"
-  },
-  {
-   "name": "Jaguar",
-   "aliases": [
-    "Panthera onca",
-    "American tiger"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "large spotted cat with tail"
-  },
-  {
-   "name": "Cheetah",
-   "aliases": [
-    "Acinonyx jubatus",
-    "Speed cat"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "fast African cat with tail"
-  },
-  {
-   "name": "Snow leopard",
-   "aliases": [
-    "Panthera uncia",
-    "Ounce"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "high‑altitude cat with tail"
-  },
-  {
-   "name": "Lynx",
-   "aliases": [
-    "Eurasian lynx",
-    "Bobcat"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "medium cat with short tail"
-  },
-  {
-   "name": "Bobcat",
-   "aliases": [
-    "Lynx rufus",
-    "Red lynx"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "North American cat with tail"
-  },
-  {
-   "name": "Domestic cat",
-   "aliases": [
-    "House cat",
-    "Felis catus",
-    "Kitty"
-   ],
-   "familiarity": 100,
-   "points": 5,
-   "note": "common pet with tail"
-  },
-  {
-   "name": "Domestic dog",
-   "aliases": [
-    "Dog",
-    "Canis familiaris",
-    "Pet dog"
-   ],
-   "familiarity": 100,
-   "points": 5,
-   "note": "common pet with tail"
-  },
-  {
-   "name": "Red fox",
-   "aliases": [
-    "Vulpes vulpes",
-    "Common fox"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "typical fox with bushy tail"
-  },
-  {
-   "name": "Arctic fox",
-   "aliases": [
-    "Vulpes lagopus",
-    "White fox"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "cold‑climate fox with tail"
-  },
-  {
-   "name": "Fennec fox",
-   "aliases": [
-    "Vulpes zerda",
-    "Desert fox"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "small desert fox with large ears and tail"
-  },
-  {
-   "name": "Bat",
-   "aliases": [
-    "Chiroptera",
-    "Flying mammal"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "most species have tails"
-  },
-  {
-   "name": "Fruit bat",
-   "aliases": [
-    "Flying fox",
-    "Megabat"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "large bat with tail"
-  },
-  {
-   "name": "Vampire bat",
-   "aliases": [
-    "Desmodus rotundus",
-    "Blood‑feeding bat"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "small bat with tail"
-  },
-  {
-   "name": "Mole",
-   "aliases": [
-    "Talpidae",
-    "European mole"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "small burrowing mammal with a tiny tail"
-  },
-  {
-   "name": "Shrew",
-   "aliases": [
-    "Soricidae",
-    "Common shrew"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "tiny insectivore with a short tail"
-  },
-  {
-   "name": "Hare",
-   "aliases": [
-    "European hare",
-    "Lepus"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "lagomorph with a long tail"
-  },
-  {
-   "name": "Jackrabbit",
-   "aliases": [
-    "Lepus californicus",
-    "American hare"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "large hare with prominent tail"
-  },
-  {
-   "name": "Prairie vole",
-   "aliases": [
-    "Microtus ochrogaster",
-    "Vole"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "small rodent with tail"
-  },
-  {
-   "name": "Musk deer",
-   "aliases": [
-    "Moschus moschiferus",
-    "Musk antelope"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "small deer with short tail"
-  },
-  {
-   "name": "Sika deer",
-   "aliases": [
-    "Cervus nippon",
-    "Japanese deer"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "medium deer with tail"
-  },
-  {
-   "name": "Red deer",
-   "aliases": [
-    "Cervus elaphus",
-    "European elk"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "large deer with tail"
-  },
-  {
-   "name": "White‑tailed deer",
-   "aliases": [
-    "Odocoileus virginianus",
-    "Virginia deer"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "common North American deer with distinctive tail"
-  },
-  {
-   "name": "Mule deer",
-   "aliases": [
-    "Odocoileus hemionus",
-    "Horned deer"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "deer with large tail"
-  },
-  {
-   "name": "Elk",
-   "aliases": [
-    "Wapiti",
-    "Cervus canadensis"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "large deer with tail"
-  },
-  {
-   "name": "Caribou",
-   "aliases": [
-    "Reindeer",
-    "Rangifer tarandus"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "Arctic deer with tail"
-  },
-  {
-   "name": "Bighorn sheep",
-   "aliases": [
-    "Ovis canadensis",
-    "Rocky Mountain sheep"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "sheep with short tail"
-  },
-  {
-   "name": "Mountain goat",
-   "aliases": [
-    "Oreamnos americanus",
-    "Rocky goat"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "goat with short tail"
-  },
-  {
-   "name": "Ibex",
-   "aliases": [
-    "Capra ibex",
-    "Wild goat"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "mountain goat with tail"
-  },
-  {
-   "name": "Markhor",
-   "aliases": [
-    "Capra falconeri",
-    "Spiral‑horned goat"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "wild goat with tail"
-  },
-  {
-   "name": "Tahr",
-   "aliases": [
-    "Hemitragus",
-    "Himalayan tahr"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "goat‑like animal with tail"
-  },
-  {
-   "name": "Goral",
-   "aliases": [
-    "Naemorhedus",
-    "Chinese goral"
-   ],
-   "familiarity": 25,
-   "points": 75,
-   "note": "small goat‑like ungulate with tail"
-  },
-  {
-   "name": "Chamois",
-   "aliases": [
-    "Rupicapra rupicapra",
-    "Alpine goat"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "mountain ungulate with tail"
-  },
-  {
-   "name": "Aardwolf",
-   "aliases": [
-    "Proteles cristatus",
-    "African hyena"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "hyena relative with tail"
-  },
-  {
-   "name": "Addax",
-   "aliases": [
-    "Addax nasomaculatus",
-    "White antelope"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "antelope with short tail"
-  },
-  {
-   "name": "African civet",
-   "aliases": [
-    "Civettictis civetta",
-    "Large civet"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "carnivore with tail"
-  },
-  {
-   "name": "African golden cat",
-   "aliases": [
-    "Caracal aurata"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "has a tail"
-  },
-  {
-   "name": "African wildcat",
-   "aliases": [
-    "Felis lybica"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "has a tail"
+  "promptId": "day-011",
+  "text": "Name an animal with a tail.",
+  "model": "openai/gpt-oss-120b",
+  "at": "2026-11-19T18:17:33.015Z",
+  "existing": 52,
+  "added": [
+    {
+      "name": "Alpaca",
+      "aliases": [
+        "Lama pacos"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Llama",
+      "aliases": [
+        "Lama glama"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Camel",
+      "aliases": [],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Dromedary camel",
+      "aliases": [
+        "One‑humped camel"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Bactrian camel",
+      "aliases": [
+        "Two‑humped camel"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Mule",
+      "aliases": [
+        "Hybrid horse‑donkey"
+      ],
+      "familiarity": 75,
+      "points": 30
+    },
+    {
+      "name": "Marmot",
+      "aliases": [],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Groundhog",
+      "aliases": [
+        "Woodchuck"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Prairie dog",
+      "aliases": [
+        "Cynomys"
+      ],
+      "familiarity": 50,
+      "points": 50
+    },
+    {
+      "name": "Capybara",
+      "aliases": [
+        "Hydrochoerus hydrochaeris"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Muskox",
+      "aliases": [
+        "Ovibos moschatus"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Bison",
+      "aliases": [
+        "American buffalo"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Buffalo",
+      "aliases": [],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Yak",
+      "aliases": [
+        "Bos grunniens"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Water buffalo",
+      "aliases": [
+        "Bubalus bubalis"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Warthog",
+      "aliases": [
+        "Phacochoerus africanus"
+      ],
+      "familiarity": 50,
+      "points": 50
+    },
+    {
+      "name": "Wild boar",
+      "aliases": [
+        "Sus scrofa"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Hippopotamus",
+      "aliases": [
+        "Hippo"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Rhinoceros",
+      "aliases": [
+        "Rhino"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "African elephant",
+      "aliases": [
+        "Loxodonta"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Asian elephant",
+      "aliases": [
+        "Elephas maximus"
+      ],
+      "familiarity": 75,
+      "points": 30
+    },
+    {
+      "name": "Manatee",
+      "aliases": [
+        "Sea cow"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Sea otter",
+      "aliases": [
+        "Enhydra lutris"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Sea lion",
+      "aliases": [],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Walrus",
+      "aliases": [
+        "Odobenus rosmarus"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Seal",
+      "aliases": [
+        "True seal",
+        "Phocid"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Penguin",
+      "aliases": [
+        "Spheniscidae"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Albatross",
+      "aliases": [
+        "Diomedeidae"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Ostrich",
+      "aliases": [
+        "Struthio camelus"
+      ],
+      "familiarity": 75,
+      "points": 30
+    },
+    {
+      "name": "Peafowl",
+      "aliases": [
+        "Peacock",
+        "Peahen"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Turkey",
+      "aliases": [
+        "Meleagris"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Chicken",
+      "aliases": [
+        "Domestic fowl",
+        "Hen",
+        "Rooster"
+      ],
+      "familiarity": 85,
+      "points": 20
+    },
+    {
+      "name": "Duck",
+      "aliases": [
+        "Anas"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Swan",
+      "aliases": [
+        "Cygnus"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Flamingo",
+      "aliases": [],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Pelican",
+      "aliases": [],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Stork",
+      "aliases": [],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Heron",
+      "aliases": [],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Crane",
+      "aliases": [],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Ibis",
+      "aliases": [],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Cormorant",
+      "aliases": [],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Tarsier",
+      "aliases": [],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Marmoset",
+      "aliases": [],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Capuchin monkey",
+      "aliases": [
+        "Capuchin"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Baboon",
+      "aliases": [],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Mandrill",
+      "aliases": [],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Aye-aye",
+      "aliases": [],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Galago",
+      "aliases": [
+        "Bushbaby"
+      ],
+      "familiarity": 25,
+      "points": 75
+    },
+    {
+      "name": "Hyena",
+      "aliases": [],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Jackal",
+      "aliases": [],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Dingo",
+      "aliases": [],
+      "familiarity": 50,
+      "points": 50
+    },
+    {
+      "name": "African wild dog",
+      "aliases": [
+        "African painted wolf"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Mongoose",
+      "aliases": [],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Fossa",
+      "aliases": [],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Civet",
+      "aliases": [],
+      "familiarity": 25,
+      "points": 75
+    },
+    {
+      "name": "Marten",
+      "aliases": [],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Weasel",
+      "aliases": [],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Stoat",
+      "aliases": [
+        "Ermine"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Badger",
+      "aliases": [],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Honey badger",
+      "aliases": [
+        "Ratel"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Wolverine",
+      "aliases": [],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Hedgehog",
+      "aliases": [],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Porcupine",
+      "aliases": [],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Armadillo",
+      "aliases": [],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Three-toed sloth",
+      "aliases": [],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Ocelot",
+      "aliases": [],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Margay",
+      "aliases": [
+        "Leopardus wiedii"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Serval",
+      "aliases": [
+        "Leptailurus serval"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Caracal",
+      "aliases": [
+        "Caracal caracal"
+      ],
+      "familiarity": 38,
+      "points": 60
+    },
+    {
+      "name": "Puma",
+      "aliases": [
+        "Cougar",
+        "Mountain lion",
+        "Catamount"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Jaguar",
+      "aliases": [
+        "Panthera onca"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Cheetah",
+      "aliases": [
+        "Acinonyx jubatus"
+      ],
+      "familiarity": 85,
+      "points": 20
+    },
+    {
+      "name": "Snow leopard",
+      "aliases": [
+        "Panthera uncia",
+        "Ounce"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Lynx",
+      "aliases": [],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Bobcat",
+      "aliases": [
+        "Lynx rufus",
+        "Red lynx"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Red fox",
+      "aliases": [
+        "Vulpes vulpes",
+        "Common fox"
+      ],
+      "familiarity": 85,
+      "points": 20
+    },
+    {
+      "name": "Arctic fox",
+      "aliases": [
+        "Vulpes lagopus",
+        "White fox"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Fennec fox",
+      "aliases": [
+        "Vulpes zerda",
+        "Desert fox"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Bat",
+      "aliases": [
+        "Chiroptera"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Mole",
+      "aliases": [
+        "Talpidae",
+        "European mole"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Shrew",
+      "aliases": [
+        "Soricidae",
+        "Common shrew"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Hare",
+      "aliases": [
+        "European hare",
+        "Lepus"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Jackrabbit",
+      "aliases": [
+        "Lepus californicus",
+        "American hare"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Prairie vole",
+      "aliases": [
+        "Microtus ochrogaster"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Musk deer",
+      "aliases": [
+        "Moschus moschiferus",
+        "Musk antelope"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Sika deer",
+      "aliases": [
+        "Cervus nippon",
+        "Japanese deer"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Red deer",
+      "aliases": [
+        "Cervus elaphus"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "White‑tailed deer",
+      "aliases": [
+        "Odocoileus virginianus",
+        "Virginia deer"
+      ],
+      "familiarity": 85,
+      "points": 20
+    },
+    {
+      "name": "Mule deer",
+      "aliases": [
+        "Odocoileus hemionus"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Elk",
+      "aliases": [
+        "Wapiti",
+        "Cervus canadensis"
+      ],
+      "familiarity": 75,
+      "points": 30
+    },
+    {
+      "name": "Bighorn sheep",
+      "aliases": [
+        "Ovis canadensis",
+        "Rocky Mountain sheep"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Mountain goat",
+      "aliases": [
+        "Oreamnos americanus",
+        "Rocky goat"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Ibex",
+      "aliases": [
+        "Capra ibex",
+        "Wild goat"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Markhor",
+      "aliases": [
+        "Capra falconeri",
+        "Spiral‑horned goat"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Tahr",
+      "aliases": [
+        "Hemitragus",
+        "Himalayan tahr"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Goral",
+      "aliases": [
+        "Naemorhedus",
+        "Chinese goral"
+      ],
+      "familiarity": 25,
+      "points": 75
+    },
+    {
+      "name": "Chamois",
+      "aliases": [
+        "Rupicapra rupicapra",
+        "Alpine goat"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Aardwolf",
+      "aliases": [
+        "Proteles cristatus"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Addax",
+      "aliases": [
+        "Addax nasomaculatus",
+        "White antelope"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "African civet",
+      "aliases": [
+        "Civettictis civetta"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "African golden cat",
+      "aliases": [
+        "Caracal aurata"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "African wildcat",
+      "aliases": [
+        "Felis lybica"
+      ],
+      "familiarity": 55,
+      "points": 45
+    }
+  ],
+  "rejected": [
+    {
+      "candidate": "Horsefly",
+      "reason": "insect, no tail"
+    },
+    {
+      "candidate": "Alp...",
+      "reason": "candidate incomplete"
+    }
+  ],
+  "rarityFlags": [
+    {
+      "name": "Iguana",
+      "current": 5,
+      "suggested": 35,
+      "familiarity": 65,
+      "decision": "adjust",
+      "approvedPoints": 25,
+      "reason": "Less spontaneous than a generic lizard, but still familiar.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Gecko",
+      "current": 5,
+      "suggested": 40,
+      "familiarity": 60,
+      "decision": "adjust",
+      "approvedPoints": 30,
+      "reason": "Familiar small reptile, moderately less likely than pets.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Red panda",
+      "current": 15,
+      "suggested": 45,
+      "familiarity": 55,
+      "decision": "adjust",
+      "approvedPoints": 40,
+      "reason": "Distinct animal, less spontaneous for a tail question.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Chameleon",
+      "current": 5,
+      "suggested": 40,
+      "familiarity": 60,
+      "decision": "adjust",
+      "approvedPoints": 25,
+      "reason": "Recognisable reptile; avoid over-scoring a familiar animal.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Chinchilla",
+      "current": 15,
+      "suggested": 45,
+      "familiarity": 55,
+      "decision": "adjust",
+      "approvedPoints": 35,
+      "reason": "Less common pet but not a very rare answer.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Gerbil",
+      "current": 15,
+      "suggested": 50,
+      "familiarity": 50,
+      "decision": "adjust",
+      "approvedPoints": 25,
+      "reason": "Common pet name merits only a modest increase.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Opossum",
+      "current": 15,
+      "suggested": 55,
+      "familiarity": 45,
+      "decision": "adjust",
+      "approvedPoints": 40,
+      "reason": "A fair less-obvious tailed mammal.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Binturong",
+      "current": 35,
+      "suggested": 70,
+      "familiarity": 30,
+      "decision": "adjust",
+      "approvedPoints": 75,
+      "reason": "Specialist animal name; its long tail fits the question.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Kinkajou",
+      "current": 35,
+      "suggested": 70,
+      "familiarity": 30,
+      "decision": "apply",
+      "approvedPoints": 70,
+      "reason": "Uncommon animal with a conspicuous prehensile tail.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Coati",
+      "current": 35,
+      "suggested": 65,
+      "familiarity": 35,
+      "decision": "apply",
+      "approvedPoints": 65,
+      "reason": "A less widely recalled tailed mammal.",
+      "appliedToMaster": true
+    },
+    {
+      "name": "Aardvark",
+      "current": 35,
+      "suggested": 65,
+      "familiarity": 35,
+      "decision": "adjust",
+      "approvedPoints": 50,
+      "reason": "Familiar name, less spontaneous than the common tailed mammals.",
+      "appliedToMaster": true
+    }
+  ],
+  "reviewed": true,
+  "review": {
+    "reviewer": "Sol",
+    "at": "2026-11-19T19:53:29.224Z",
+    "originalCandidates": 121,
+    "approvedAdditions": 102,
+    "removed": [
+      {
+        "name": "Emu",
+        "reason": "No visible external tail; exclude rather than counting vestigial anatomy."
+      },
+      {
+        "name": "Cassowary",
+        "reason": "No visible external tail; exclude rather than counting vestigial anatomy."
+      },
+      {
+        "name": "Kiwi",
+        "reason": "No external tail suitable for this everyday question."
+      },
+      {
+        "name": "Gorilla",
+        "reason": "Apes lack an external tail."
+      },
+      {
+        "name": "Orangutan",
+        "reason": "Apes lack an external tail."
+      },
+      {
+        "name": "Chimpanzee",
+        "reason": "Apes lack an external tail."
+      },
+      {
+        "name": "Bonobo",
+        "reason": "Apes lack an external tail."
+      },
+      {
+        "name": "Pika",
+        "reason": "No visible external tail."
+      },
+      {
+        "name": "Two-toed sloth",
+        "reason": "Two-toed sloths lack an external tail; three-toed sloths are different."
+      },
+      {
+        "name": "Fruit bat",
+        "reason": "The supplied flying-fox alias refers to tailless fruit bats; an unqualified group is not reliable here."
+      },
+      {
+        "name": "Vampire bat",
+        "reason": "The listed common vampire bat lacks an external tail."
+      }
+    ],
+    "merged": [
+      {
+        "name": "Peafowl",
+        "into": "Peafowl"
+      },
+      {
+        "name": "Rooster",
+        "into": "Chicken"
+      },
+      {
+        "name": "Bushbaby",
+        "into": "Galago"
+      },
+      {
+        "name": "Ermine",
+        "into": "Stoat"
+      },
+      {
+        "name": "Cougar",
+        "into": "Puma"
+      },
+      {
+        "name": "Domestic cat",
+        "into": "Cat"
+      },
+      {
+        "name": "Domestic dog",
+        "into": "Dog"
+      },
+      {
+        "name": "Caribou",
+        "into": "Reindeer"
+      }
+    ],
+    "rarityChanges": [
+      {
+        "name": "Iguana",
+        "from": 5,
+        "to": 25
+      },
+      {
+        "name": "Gecko",
+        "from": 5,
+        "to": 30
+      },
+      {
+        "name": "Red panda",
+        "from": 15,
+        "to": 40
+      },
+      {
+        "name": "Chameleon",
+        "from": 5,
+        "to": 25
+      },
+      {
+        "name": "Chinchilla",
+        "from": 15,
+        "to": 35
+      },
+      {
+        "name": "Gerbil",
+        "from": 15,
+        "to": 25
+      },
+      {
+        "name": "Opossum",
+        "from": 15,
+        "to": 40
+      },
+      {
+        "name": "Binturong",
+        "from": 35,
+        "to": 75
+      },
+      {
+        "name": "Kinkajou",
+        "from": 35,
+        "to": 70
+      },
+      {
+        "name": "Coati",
+        "from": 35,
+        "to": 65
+      },
+      {
+        "name": "Aardvark",
+        "from": 35,
+        "to": 50
+      }
+    ],
+    "sources": [
+      "https://animals.sandiegozoo.org/animals/bat",
+      "https://nationalzoo.si.edu/animals/two-toed-sloth"
+    ],
+    "notes": [
+      "External tails are intended; tailless apes, pikas, two-toed sloths and the named tailless bat/ratite examples were not approved.",
+      "Fixed false aliases: margay is not leopard cat, serval is not African wildcat, and red deer is not European elk.",
+      "Merged domestic cat/dog, stoat/ermine, puma/cougar, galago/bushbaby and common sex-name duplicates.",
+      "Rarity flag decisions are curated increases, mostly below the model estimates."
+    ],
+    "additionalRarityChanges": [
+      {
+        "name": "Cat",
+        "from": 25,
+        "to": 5,
+        "reason": "Common, obvious tailed animal; align with the common-answer band rather than treating it as a deep cut."
+      },
+      {
+        "name": "Cow",
+        "from": 25,
+        "to": 5,
+        "reason": "Common, obvious tailed animal; align with the common-answer band rather than treating it as a deep cut."
+      },
+      {
+        "name": "Pig",
+        "from": 25,
+        "to": 5,
+        "reason": "Common, obvious tailed animal; align with the common-answer band rather than treating it as a deep cut."
+      },
+      {
+        "name": "Sheep",
+        "from": 25,
+        "to": 10,
+        "reason": "Common, obvious tailed animal; align with the common-answer band rather than treating it as a deep cut."
+      },
+      {
+        "name": "Goat",
+        "from": 25,
+        "to": 10,
+        "reason": "Common, obvious tailed animal; align with the common-answer band rather than treating it as a deep cut."
+      },
+      {
+        "name": "Fox",
+        "from": 25,
+        "to": 15,
+        "reason": "Common, obvious tailed animal; align with the common-answer band rather than treating it as a deep cut."
+      },
+      {
+        "name": "Wolf",
+        "from": 25,
+        "to": 15,
+        "reason": "Common, obvious tailed animal; align with the common-answer band rather than treating it as a deep cut."
+      }
+    ]
   }
- ],
- "rejected": [
-  {
-   "candidate": "Horsefly",
-   "reason": "insect, no tail"
-  },
-  {
-   "candidate": "Alp...",
-   "reason": "candidate incomplete"
-  }
- ],
- "rarityFlags": [
-  {
-   "name": "Iguana",
-   "current": 5,
-   "suggested": 35,
-   "familiarity": 65
-  },
-  {
-   "name": "Gecko",
-   "current": 5,
-   "suggested": 40,
-   "familiarity": 60
-  },
-  {
-   "name": "Red panda",
-   "current": 15,
-   "suggested": 45,
-   "familiarity": 55
-  },
-  {
-   "name": "Chameleon",
-   "current": 5,
-   "suggested": 40,
-   "familiarity": 60
-  },
-  {
-   "name": "Chinchilla",
-   "current": 15,
-   "suggested": 45,
-   "familiarity": 55
-  },
-  {
-   "name": "Gerbil",
-   "current": 15,
-   "suggested": 50,
-   "familiarity": 50
-  },
-  {
-   "name": "Opossum",
-   "current": 15,
-   "suggested": 55,
-   "familiarity": 45
-  },
-  {
-   "name": "Binturong",
-   "current": 35,
-   "suggested": 70,
-   "familiarity": 30
-  },
-  {
-   "name": "Kinkajou",
-   "current": 35,
-   "suggested": 70,
-   "familiarity": 30
-  },
-  {
-   "name": "Coati",
-   "current": 35,
-   "suggested": 65,
-   "familiarity": 35
-  },
-  {
-   "name": "Aardvark",
-   "current": 35,
-   "suggested": 65,
-   "familiarity": 35
-  }
- ]
 }

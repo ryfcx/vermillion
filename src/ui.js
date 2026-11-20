@@ -839,16 +839,23 @@ export function createUI(root, on) {
   function dismissSuggest() { if (!P) return; if (P.suggestOn) on.dismissSuggest(); P.suggestOn = false; P.suggest.hidden = true; }
   function acceptSuggest() { if (!P || !P.suggestOn) return; P.suggestOn = false; P.suggest.hidden = true; on.acceptSuggest(); }
 
-  function showReject(kind) {
+  function showReject(kind, _rejected, note = null) {
     if (!P || !P.msg) return;
     dismissSuggest();
-    P.msg.textContent = kind === 'empty' ? 'Type an answer first.' : 'Not in our bank, so try another!';
+    const main = kind === 'empty' ? 'Type an answer first.' : 'Not in our bank, so try another!';
+    P.msg.replaceChildren(main, ...(note ? [h('small', { class: 'dm-note', text: note })] : []));
     P.msg.classList.add('on');
-    clearTimeout(P.msgTimer); P.msgTimer = setTimeout(() => P && P.msg.classList.remove('on'), 2800);
+    clearTimeout(P.msgTimer); P.msgTimer = setTimeout(() => P && P.msg.classList.remove('on'), note ? 3800 : 2800);
     P.input.classList.remove('shake'); void P.input.offsetWidth; P.input.classList.add('shake');
     if (kind === 'unknown') sfx('unknown');
     P.input.focus({ preventScroll: true });
     P.input.select();
+  }
+  /** Replace the quiet second line of the "not in our bank" message (e.g. once the review says the answer looks right). */
+  function setRejectNote(text) {
+    if (!P || !P.msg || !P.msg.classList.contains('on')) return;
+    const n = P.msg.querySelector('.dm-note'); if (n) n.textContent = text;
+    else P.msg.append(h('small', { class: 'dm-note', text }));
   }
 
   function showResult(state, opts = {}) {
@@ -1557,7 +1564,7 @@ export function createUI(root, on) {
   function init() { buildShell(); }
 
   return {
-    setAccount, showTopic, showPartyHost, showOffline, showAccount, showLeaderboard, showFriends, showOnline, showRoomSignIn, renderLive, stopLive, setRank,
+    setAccount, setRejectNote, showTopic, showPartyHost, showOffline, showAccount, showLeaderboard, showFriends, showOnline, showRoomSignIn, renderLive, stopLive, setRank,
     init, setPacks, setContent, setRoute, applySettings, toast, inlineToast, showLoading, showError, showNotFound,
     showHome, showPacks, showArchive, showStats, showHistory, showHow, showGuides, showGuide, showFaq, showAbout,
     setPlayedToday, showInvite, beginPlay, showPrompt, updateTimer, showHint, showReject, showSuggest, showResult, showRun, stopPlay,

@@ -1,1803 +1,1471 @@
 {
- "promptId": "nat-016",
- "text": "Name a vegetable plant.",
- "model": "openai/gpt-oss-120b",
- "at": "2026-11-19T18:15:43.177Z",
- "existing": 24,
- "added": [
-  {
-   "name": "Tomato",
-   "aliases": [
-    "Tomato plant",
-    "Solanum lycopersicum",
-    "Tomato vine"
-   ],
-   "familiarity": 95,
-   "points": 10,
-   "note": "common vegetable plant"
-  },
-  {
-   "name": "Bell pepper",
-   "aliases": [
-    "Capsicum",
-    "Sweet pepper",
-    "Paprika"
-   ],
-   "familiarity": 90,
-   "points": 15,
-   "note": "common vegetable plant"
-  },
-  {
-   "name": "Chili pepper",
-   "aliases": [
-    "Hot pepper",
-    "Chili",
-    "Capsicum"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "common vegetable plant"
-  },
-  {
-   "name": "Squash",
-   "aliases": [
-    "Summer squash",
-    "Zucchini",
-    "Cucurbita"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "generic vegetable plant"
-  },
-  {
-   "name": "Butternut squash",
-   "aliases": [
-    "Butternut",
-    "Cucurbita moschata"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "specific squash variety"
-  },
-  {
-   "name": "Acorn squash",
-   "aliases": [
-    "Acorn",
-    "Cucurbita pepo"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "specific squash variety"
-  },
-  {
-   "name": "Spaghetti squash",
-   "aliases": [
-    "Cucurbita pepo"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "specific squash variety"
-  },
-  {
-   "name": "Pattypan squash",
-   "aliases": [
-    "Patty pan",
-    "Sunburst squash"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "specific squash variety"
-  },
-  {
-   "name": "Delicata squash",
-   "aliases": [
-    "Delicata",
-    "Cucurbita pepo"
-   ],
-   "familiarity": 50,
-   "points": 50,
-   "note": "specific squash variety"
-  },
-  {
-   "name": "Kohlrabi",
-   "aliases": [
-    "German turnip"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "root vegetable plant"
-  },
-  {
-   "name": "Rutabaga",
-   "aliases": [
-    "Swede",
-    "Yellow turnip"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "root vegetable plant"
-  },
-  {
-   "name": "Swede",
-   "aliases": [
-    "Rutabaga",
-    "Yellow turnip"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "alternative name for rutabaga"
-  },
-  {
-   "name": "Daikon",
-   "aliases": [
-    "Japanese radish",
-    "Mooli"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "root vegetable plant"
-  },
-  {
-   "name": "Mooli",
-   "aliases": [
-    "Daikon",
-    "Japanese radish"
-   ],
-   "familiarity": 50,
-   "points": 50,
-   "note": "alternative name for daikon"
-  },
-  {
-   "name": "Jicama",
-   "aliases": [
-    "Mexican turnip",
-    "Pachyrhizus"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "root vegetable plant"
-  },
-  {
-   "name": "Watercress",
-   "aliases": [
-    "Nasturtium officinale"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Arugula",
-   "aliases": [
-    "Rocket",
-    "Eruca sativa"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Endive",
-   "aliases": [
-    "Belgian endive",
-    "Cichorium"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Escarole",
-   "aliases": [
-    "Broad-leaved endive"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Radicchio",
-   "aliases": [
-    "Italian chicory"
-   ],
-   "familiarity": 50,
-   "points": 50,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Bok choy",
-   "aliases": [
-    "Pak choi",
-    "Chinese cabbage"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Napa cabbage",
-   "aliases": [
-    "Chinese cabbage",
-    "Bei cai"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Chinese cabbage",
-   "aliases": [
-    "Napa cabbage",
-    "Pak choi"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Mizuna",
-   "aliases": [
-    "Japanese mustard greens"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Tatsoi",
-   "aliases": [
-    "Japanese spinach"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Mustard greens",
-   "aliases": [
-    "Leaf mustard",
-    "Brassica juncea"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Collard greens",
-   "aliases": [
-    "Collards",
-    "Brassica oleracea"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Turnip greens",
-   "aliases": [
-    "Turnip leaves"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Swiss chard",
-   "aliases": [
-    "Chard",
-    "Leaf beet"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Sorrel",
-   "aliases": [
-    "Rumex"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Dandelion greens",
-   "aliases": [
-    "Dandelion leaves"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Purslane",
-   "aliases": [
-    "Portulaca oleracea"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Sea kale",
-   "aliases": [
-    "Crambe maritima"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Sea beet",
-   "aliases": [
-    "Beta vulgaris subsp. maritima"
-   ],
-   "familiarity": 25,
-   "points": 75,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Fiddlehead fern",
-   "aliases": [
-    "Fiddlehead"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "young fern fronds used as veg"
-  },
-  {
-   "name": "Oca",
-   "aliases": [
-    "Oxalis tuberosa"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "tuberous vegetable plant"
-  },
-  {
-   "name": "Yam",
-   "aliases": [
-    "True yam",
-    "Dioscorea"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "tuber vegetable plant"
-  },
-  {
-   "name": "Sweet potato",
-   "aliases": [
-    "Ipomoea batatas",
-    "Batata"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "tuber vegetable plant"
-  },
-  {
-   "name": "Taro",
-   "aliases": [
-    "Colocasia esculenta",
-    "Eddo"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "tuber vegetable plant"
-  },
-  {
-   "name": "Cassava",
-   "aliases": [
-    "Manihot esculenta",
-    "Yuca"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "root vegetable plant"
-  },
-  {
-   "name": "Jerusalem artichoke",
-   "aliases": [
-    "sunchoke",
-    "sunroot",
-    "topinambur"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "commonly known tuber vegetable"
-  },
-  {
-   "name": "Rhubarb",
-   "aliases": [
-    "rhubarb stalks",
-    "pie plant"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "used as vegetable stalks"
-  },
-  {
-   "name": "Bamboo shoots",
-   "aliases": [
-    "bamboo shoot",
-    "young bamboo"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "edible young shoots of bamboo"
-  },
-  {
-   "name": "Lotus root",
-   "aliases": [
-    "renkon",
-    "lotus rhizome"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "edible root of lotus"
-  },
-  {
-   "name": "Burdock root",
-   "aliases": [
-    "gobo",
-    "burdock"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "root vegetable used in Asian cuisine"
-  },
-  {
-   "name": "Parsnip greens",
-   "aliases": [
-    "parsnip leaves"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "leafy part of parsnip plant"
-  },
-  {
-   "name": "Celeriac",
-   "aliases": [
-    "celery root",
-    "celeriac root"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "root vegetable"
-  },
-  {
-   "name": "Salsify",
-   "aliases": [
-    "oyster plant",
-    "vegetable oyster"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "root vegetable"
-  },
-  {
-   "name": "Skirret",
-   "aliases": [
-    "sugar root",
-    "sweet root"
-   ],
-   "familiarity": 5,
-   "points": 90,
-   "note": "less‑common root vegetable"
-  },
-  {
-   "name": "Chicory",
-   "aliases": [
-    "witloof",
-    "endive"
-   ],
-   "familiarity": 50,
-   "points": 50,
-   "note": "leafy vegetable"
-  },
-  {
-   "name": "Cardoon",
-   "aliases": [
-    "artichoke thistle"
-   ],
-   "familiarity": 10,
-   "points": 85,
-   "note": "vegetable thistle"
-  },
-  {
-   "name": "Romanesco broccoli",
-   "aliases": [
-    "Romanesco",
-    "Roman cauliflower"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "vegetable similar to broccoli/cauliflower"
-  },
-  {
-   "name": "Broccoli rabe",
-   "aliases": [
-    "rapini",
-    "gai lan"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "leafy crucifer"
-  },
-  {
-   "name": "Gai lan",
-   "aliases": [
-    "Chinese broccoli",
-    "kai lan"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "leafy crucifer"
-  },
-  {
-   "name": "Kale sprouts",
-   "aliases": [
-    "kale shoots"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "young kale shoots used as veg"
-  },
-  {
-   "name": "Brussels sprouts",
-   "aliases": [
-    "sprouts"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "well‑known vegetable"
-  },
-  {
-   "name": "Cauliflower greens",
-   "aliases": [
-    "cauliflower leaves"
-   ],
-   "familiarity": 10,
-   "points": 85,
-   "note": "leafy part of cauliflower plant"
-  },
-  {
-   "name": "Chayote",
-   "aliases": [
-    "vegetable pear",
-    "choko"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "fruit used as vegetable"
-  },
-  {
-   "name": "Luffa",
-   "aliases": [
-    "luffa sponge",
-    "sponge gourd"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "young fruit eaten as veg"
-  },
-  {
-   "name": "Nopal cactus",
-   "aliases": [
-    "prickly pear cactus",
-    "cactus pads"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "edible cactus pads used as veg"
-  },
-  {
-   "name": "Prickly pear cactus",
-   "aliases": [
-    "opuntia",
-    "cactus fruit"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "young pads considered vegetable"
-  },
-  {
-   "name": "Amaranth leaves",
-   "aliases": [
-    "amaranth greens",
-    "callaloo"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "leafy vegetable"
-  },
-  {
-   "name": "Moringa pods",
-   "aliases": [
-    "drumstick",
-    "moringa oleifera"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "edible seed pods used as veg"
-  },
-  {
-   "name": "Tinda",
-   "aliases": [
-    "Indian squash",
-    "apple gourd"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "vegetable gourd"
-  },
-  {
-   "name": "Bitter melon",
-   "aliases": [
-    "bitter gourd",
-    "karela"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "vegetable fruit"
-  },
-  {
-   "name": "Snake gourd",
-   "aliases": [
-    "trichosanthes"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "vegetable gourd"
-  },
-  {
-   "name": "Lablab bean",
-   "aliases": [
-    "hyacinth bean",
-    "Egyptian bean"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "legume used as veg"
-  },
-  {
-   "name": "Winged bean",
-   "aliases": [
-    "goa bean",
-    "asparagus bean"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "legume vegetable"
-  },
-  {
-   "name": "Edamame",
-   "aliases": [
-    "young soybeans"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "immature soybeans eaten as veg"
-  },
-  {
-   "name": "Soybean plant",
-   "aliases": [
-    "soybean",
-    "glycine max"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "grown for beans, plant considered veg when harvested"
-  },
-  {
-   "name": "Green bean",
-   "aliases": [
-    "snap bean",
-    "string bean"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "common vegetable"
-  },
-  {
-   "name": "Snap pea",
-   "aliases": [
-    "sugar snap pea"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "edible pea pod"
-  },
-  {
-   "name": "Snow pea",
-   "aliases": [
-    "sugar snap pea"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "edible pea pod"
-  },
-  {
-   "name": "Sugar snap pea",
-   "aliases": [
-    "Snap pea",
-    "Sugar snap"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Pea shoots",
-   "aliases": [
-    "Pea sprouts"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Bean sprouts",
-   "aliases": [
-    "Mung bean sprouts",
-    "Soybean sprouts"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Mung bean sprouts",
-   "aliases": [
-    "Mung sprouts"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Alfalfa sprouts",
-   "aliases": [],
-   "familiarity": 60,
-   "points": 40,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Radish sprouts",
-   "aliases": [],
-   "familiarity": 45,
-   "points": 55,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Broccoli sprouts",
-   "aliases": [],
-   "familiarity": 50,
-   "points": 50,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Yardlong bean",
-   "aliases": [
-    "Asparagus bean",
-    "Long bean"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Hyacinth bean",
-   "aliases": [
-    "Lablab"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Moth bean",
-   "aliases": [
-    "Vigna aconitifolia"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Lima bean",
-   "aliases": [
-    "Butter bean"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Fava bean",
-   "aliases": [
-    "Broad bean",
-    "Vicia faba"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Broad bean",
-   "aliases": [
-    "Fava bean",
-    "Vicia faba"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Black-eyed pea",
-   "aliases": [
-    "Cowpea"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Cowpea",
-   "aliases": [
-    "Black-eyed pea"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Pigeon pea",
-   "aliases": [
-    "Cajanus cajan"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Bambara groundnut",
-   "aliases": [
-    "Vigna subterranea"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Chickpea",
-   "aliases": [
-    "Garbanzo bean",
-    "Garbanzo"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Garbanzo bean",
-   "aliases": [
-    "Chickpea"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Lentil",
-   "aliases": [],
-   "familiarity": 70,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Pea",
-   "aliases": [
-    "Garden pea",
-    "Green pea"
-   ],
-   "familiarity": 85,
-   "points": 20,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Garden pea",
-   "aliases": [
-    "Pea",
-    "Green pea"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Butter bean",
-   "aliases": [
-    "Lima bean"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Navy bean",
-   "aliases": [
-    "Haricot"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Kidney bean",
-   "aliases": [
-    "Red kidney bean"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Pinto bean",
-   "aliases": [],
-   "familiarity": 65,
-   "points": 35,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Adzuki bean",
-   "aliases": [
-    "Red bean"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Mung bean",
-   "aliases": [],
-   "familiarity": 70,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Soybean",
-   "aliases": [
-    "Soy bean",
-    "Glycine max"
-   ],
-   "familiarity": 80,
-   "points": 25,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Green pea",
-   "aliases": [
-    "Pea"
-   ],
-   "familiarity": 75,
-   "points": 30,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Bitter gourd",
-   "aliases": [
-    "Balsam pear",
-    "Momordica charantia",
-    "bitter melon"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "edible vegetable plant"
-  },
-  {
-   "name": "Balsam apple",
-   "aliases": [
-    "Momordica balsamina",
-    "balsam cucumber",
-    "African cucumber"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "edible vegetable plant"
-  },
-  {
-   "name": "Cucamelon",
-   "aliases": [
-    "Mexican sour cucumber",
-    "mouse melon",
-    "sandita"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "vegetable plant used like cucumber"
-  },
-  {
-   "name": "Gherkin",
-   "aliases": [
-    "small cucumber",
-    "West Indian gherkin",
-    "Cucumis anguria"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "cucumber variety, plant considered vegetable"
-  },
-  {
-   "name": "Sweet corn",
-   "aliases": [
-    "sugar corn",
-    "baby corn"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "vegetable use of corn kernels"
-  },
-  {
-   "name": "Amaranth",
-   "aliases": [
-    "Amaranthus",
-    "red amaranth",
-    "leaf amaranth"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Taro leaf",
-   "aliases": [
-    "Colocasia esculenta leaf",
-    "taro greens"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "edible leaf of a vegetable plant"
-  },
-  {
-   "name": "Cassava leaf",
-   "aliases": [
-    "Manihot esculenta leaf",
-    "yucca leaf"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "edible leaf of a root vegetable"
-  },
-  {
-   "name": "Yam leaf",
-   "aliases": [
-    "Dioscorea leaf",
-    "yam greens"
-   ],
-   "familiarity": 25,
-   "points": 75,
-   "note": "edible leaf of yam plant"
-  },
-  {
-   "name": "Bamboo shoot",
-   "aliases": [
-    "bamboo sprout",
-    "bamboo culm"
-   ],
-   "familiarity": 60,
-   "points": 40,
-   "note": "young edible shoot of bamboo plant"
-  },
-  {
-   "name": "Burdock",
-   "aliases": [
-    "Arctium lappa",
-    "gobo"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "edible root vegetable plant"
-  },
-  {
-   "name": "Orach",
-   "aliases": [
-    "Atriplex hortensis",
-    "mountain spinach"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "leafy vegetable plant"
-  },
-  {
-   "name": "Mâche",
-   "aliases": [
-    "lamb's lettuce",
-    "corn salad",
-    "Valerianella locusta"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "leafy veg"
-  },
-  {
-   "name": "Lamb's lettuce",
-   "aliases": [
-    "Mâche",
-    "corn salad",
-    "Valerianella locusta"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "leafy veg"
-  },
-  {
-   "name": "Salad burnet",
-   "aliases": [
-    "Sanguisorba minor",
-    "garden burnet"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "herb with edible leaves"
-  },
-  {
-   "name": "Nasturtium",
-   "aliases": [
-    "Tropaeolum majus",
-    "Indian cress"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "edible leaves and flowers"
-  },
-  {
-   "name": "Cress",
-   "aliases": [
-    "garden cress",
-    "Lepidium sativum"
-   ],
-   "familiarity": 55,
-   "points": 45,
-   "note": "common leafy veg"
-  },
-  {
-   "name": "Komatsuna",
-   "aliases": [
-    "Japanese mustard spinach",
-    "Brassica rapa var. perviridis"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "leafy veg"
-  },
-  {
-   "name": "Pak choi",
-   "aliases": [
-    "bok choy",
-    "Chinese cabbage"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "leafy veg"
-  },
-  {
-   "name": "Frisée",
-   "aliases": [
-    "curly endive",
-    "chicory frisée"
-   ],
-   "familiarity": 25,
-   "points": 75,
-   "note": "leafy veg"
-  },
-  {
-   "name": "Belgian endive",
-   "aliases": [
-    "witloof",
-    "chicory endive"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "leafy veg"
-  },
-  {
-   "name": "Salsola soda",
-   "aliases": [
-    "barilla plant",
-    "glasswort"
-   ],
-   "familiarity": 10,
-   "points": 85,
-   "note": "edible shoots used as veg"
-  },
-  {
-   "name": "Mangel-wurzel",
-   "aliases": [
-    "mangel",
-    "sugar beet",
-    "Beta vulgaris subsp. vulgaris"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "leafy/root veg"
-  },
-  {
-   "name": "Chicory root",
-   "aliases": [
-    "Cichorium intybus root",
-    "radicchio root"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "edible root veg"
-  },
-  {
-   "name": "Yacon",
-   "aliases": [
-    "Smallanthus sonchifolius",
-    "Peruvian ground apple"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "edible tuber veg"
-  },
-  {
-   "name": "Ulluco",
-   "aliases": [
-    "Ulluku",
-    "Andean tuber"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "edible tuber veg"
-  },
-  {
-   "name": "Mashua",
-   "aliases": [
-    "Tropaeolum tuberosum",
-    "Andean tuber"
-   ],
-   "familiarity": 10,
-   "points": 85,
-   "note": "edible tuber veg"
-  },
-  {
-   "name": "Yam bean",
-   "aliases": [
-    "Jicama",
-    "Pachyrhizus erosus"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "edible root veg"
-  },
-  {
-   "name": "Samphire",
-   "aliases": [
-    "Sea asparagus",
-    "Salicornia"
-   ],
-   "familiarity": 45,
-   "points": 55,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Salicornia",
-   "aliases": [
-    "Samphire",
-    "Sea beans"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Moringa leaves",
-   "aliases": [
-    "Drumstick leaves",
-    "Moringa oleifera leaves"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Moringa shoots",
-   "aliases": [
-    "Moringa sprouts"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Ahipa",
-   "aliases": [
-    "Pachyrhizus ahipa",
-    "Andean yam bean"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Alugbati",
-   "aliases": [
-    "Malabar spinach",
-    "Basella alba"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Asparagus bean",
-   "aliases": [
-    "Yardlong bean",
-    "Chinese long bean"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Calabrese broccoli",
-   "aliases": [
-    "Broccoli"
-   ],
-   "familiarity": 65,
-   "points": 35,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Chaya",
-   "aliases": [
-    "Tree spinach",
-    "Cnidoscolus aconitifolius"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "leaf vegetable"
-  },
-  {
-   "name": "Coccinia grandis",
-   "aliases": [
-    "Ivy gourd",
-    "Tindora"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Elephant foot yam",
-   "aliases": [
-    "Amorphophallus paeoniifolius"
-   ],
-   "familiarity": 30,
-   "points": 70,
-   "note": "tuber vegetable"
-  },
-  {
-   "name": "Fiddlehead",
-   "aliases": [
-    "Matteuccia struthiopteris frond"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "vegetable plant"
-  },
-  {
-   "name": "Jalapeño pepper",
-   "aliases": [
-    "Jalapeño",
-    "Jalapeno"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "pepper plant used as vegetable"
-  },
-  {
-   "name": "Mallow",
-   "aliases": [
-    "Common mallow",
-    "Malva"
-   ],
-   "familiarity": 25,
-   "points": 75,
-   "note": "edible leaves considered vegetable"
-  },
-  {
-   "name": "Nopal",
-   "aliases": [
-    "Nopal cactus",
-    "Prickly pear pads"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "edible cactus pads used as vegetable"
-  },
-  {
-   "name": "Mangelwurzel",
-   "aliases": [
-    "Field beet"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "root vegetable"
-  },
-  {
-   "name": "Upland cress",
-   "aliases": [
-    "Barbarea verna",
-    "Cress"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "leafy vegetable"
-  },
-  {
-   "name": "Moringa",
-   "aliases": [
-    "Drumstick tree",
-    "Moringa oleifera",
-    "Malunggay"
-   ],
-   "familiarity": 25,
-   "points": 75,
-   "note": "Leaves are consumed as a vegetable"
-  },
-  {
-   "name": "Amsoi",
-   "aliases": [
-    "Chinese cabbage",
-    "Napa cabbage",
-    "Bok choy"
-   ],
-   "familiarity": 40,
-   "points": 60,
-   "note": "Common leafy vegetable"
-  },
-  {
-   "name": "Bitter leaf",
-   "aliases": [
-    "Vernonia amygdalina",
-    "African bitter leaf"
-   ],
-   "familiarity": 15,
-   "points": 80,
-   "note": "Leaves eaten as a vegetable in Africa"
-  },
-  {
-   "name": "Calabash",
-   "aliases": [
-    "Lagenaria",
-    "Bottle gourd"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "Fruit used as a vegetable when immature"
-  },
-  {
-   "name": "Kumara",
-   "aliases": [
-    "Sweet potato",
-    "Ipomoea batatas"
-   ],
-   "familiarity": 70,
-   "points": 30,
-   "note": "Root vegetable"
-  },
-  {
-   "name": "Sunchoke",
-   "aliases": [
-    "Jerusalem artichoke",
-    "Helianthus tuberosus"
-   ],
-   "familiarity": 20,
-   "points": 75,
-   "note": "Edible tuber vegetable"
-  },
-  {
-   "name": "Water chestnut",
-   "aliases": [
-    "Eleocharis dulcis",
-    "Chinese water chestnut"
-   ],
-   "familiarity": 35,
-   "points": 65,
-   "note": "Aquatic vegetable"
+  "promptId": "nat-016",
+  "text": "Name a vegetable plant.",
+  "model": "openai/gpt-oss-120b",
+  "at": "2026-11-19T18:15:43.177Z",
+  "existing": 24,
+  "added": [
+    {
+      "name": "Tomato",
+      "aliases": [
+        "Tomato plant",
+        "Solanum lycopersicum",
+        "Tomato vine"
+      ],
+      "familiarity": 95,
+      "points": 10
+    },
+    {
+      "name": "Bell pepper",
+      "aliases": [
+        "Sweet pepper"
+      ],
+      "familiarity": 90,
+      "points": 15
+    },
+    {
+      "name": "Chili pepper",
+      "aliases": [
+        "Hot pepper",
+        "Chilli pepper"
+      ],
+      "familiarity": 85,
+      "points": 20
+    },
+    {
+      "name": "Squash",
+      "aliases": [
+        "Summer squash"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Butternut squash",
+      "aliases": [
+        "Butternut"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Acorn squash",
+      "aliases": [],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Spaghetti squash",
+      "aliases": [],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Pattypan squash",
+      "aliases": [
+        "Patty pan",
+        "Sunburst squash"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Delicata squash",
+      "aliases": [
+        "Delicata"
+      ],
+      "familiarity": 50,
+      "points": 50
+    },
+    {
+      "name": "Kohlrabi",
+      "aliases": [
+        "German turnip"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Rutabaga",
+      "aliases": [
+        "Swede",
+        "Yellow turnip"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Daikon",
+      "aliases": [
+        "Japanese radish",
+        "Mooli"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Jicama",
+      "aliases": [
+        "Mexican turnip",
+        "Pachyrhizus erosus",
+        "Yam bean"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Watercress",
+      "aliases": [
+        "Nasturtium officinale"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Arugula",
+      "aliases": [
+        "Rocket",
+        "Eruca sativa"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Endive",
+      "aliases": [
+        "Cichorium endivia"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Escarole",
+      "aliases": [
+        "Broad-leaved endive"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Radicchio",
+      "aliases": [
+        "Italian chicory"
+      ],
+      "familiarity": 50,
+      "points": 50
+    },
+    {
+      "name": "Bok choy",
+      "aliases": [
+        "Pak choi",
+        "Pak choy"
+      ],
+      "familiarity": 75,
+      "points": 30
+    },
+    {
+      "name": "Napa cabbage",
+      "aliases": [
+        "Chinese cabbage",
+        "Chinese leaf"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Mizuna",
+      "aliases": [
+        "Japanese mustard greens"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Tatsoi",
+      "aliases": [
+        "Japanese spinach"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Mustard greens",
+      "aliases": [
+        "Leaf mustard",
+        "Brassica juncea",
+        "Amsoi"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Collard greens",
+      "aliases": [
+        "Collards"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Sorrel",
+      "aliases": [
+        "Garden sorrel"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Dandelion greens",
+      "aliases": [
+        "Dandelion leaves"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Purslane",
+      "aliases": [
+        "Portulaca oleracea"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Sea kale",
+      "aliases": [
+        "Crambe maritima"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Sea beet",
+      "aliases": [
+        "Beta vulgaris subsp. maritima"
+      ],
+      "familiarity": 25,
+      "points": 75
+    },
+    {
+      "name": "Fiddlehead fern",
+      "aliases": [
+        "Fiddlehead",
+        "Ostrich fern"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Oca",
+      "aliases": [
+        "Oxalis tuberosa"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Yam",
+      "aliases": [
+        "True yam",
+        "Dioscorea"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Sweet potato",
+      "aliases": [
+        "Ipomoea batatas",
+        "Batata",
+        "Kumara"
+      ],
+      "familiarity": 85,
+      "points": 20
+    },
+    {
+      "name": "Taro",
+      "aliases": [
+        "Colocasia esculenta",
+        "Eddo",
+        "Taro leaf",
+        "Taro greens"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Cassava",
+      "aliases": [
+        "Manihot esculenta",
+        "Yuca",
+        "Cassava leaf",
+        "Manihot esculenta leaf"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Jerusalem artichoke",
+      "aliases": [
+        "sunchoke",
+        "sunroot",
+        "topinambur",
+        "Helianthus tuberosus"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Rhubarb",
+      "aliases": [
+        "rhubarb stalks",
+        "pie plant"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Bamboo",
+      "aliases": [
+        "Bamboo shoot",
+        "Bamboo shoots",
+        "Bamboo sprout"
+      ],
+      "familiarity": 55,
+      "points": 35
+    },
+    {
+      "name": "Lotus",
+      "aliases": [
+        "Renkon",
+        "Nelumbo nucifera",
+        "Lotus root"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Burdock",
+      "aliases": [
+        "gobo",
+        "Burdock root",
+        "Arctium lappa"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Celeriac",
+      "aliases": [
+        "celery root",
+        "celeriac root"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Salsify",
+      "aliases": [
+        "oyster plant",
+        "vegetable oyster"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Skirret",
+      "aliases": [
+        "sugar root",
+        "sweet root"
+      ],
+      "familiarity": 5,
+      "points": 90
+    },
+    {
+      "name": "Chicory",
+      "aliases": [
+        "Cichorium intybus",
+        "Chicory root"
+      ],
+      "familiarity": 50,
+      "points": 50
+    },
+    {
+      "name": "Cardoon",
+      "aliases": [
+        "artichoke thistle"
+      ],
+      "familiarity": 10,
+      "points": 85
+    },
+    {
+      "name": "Romanesco broccoli",
+      "aliases": [
+        "Romanesco",
+        "Roman cauliflower"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Broccoli rabe",
+      "aliases": [
+        "Rapini"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Gai lan",
+      "aliases": [
+        "Chinese broccoli",
+        "kai lan"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Brussels sprouts",
+      "aliases": [
+        "sprouts"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Chayote",
+      "aliases": [
+        "vegetable pear",
+        "choko"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Luffa",
+      "aliases": [
+        "luffa sponge",
+        "sponge gourd"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Prickly pear cactus",
+      "aliases": [
+        "Opuntia",
+        "Nopal",
+        "Nopal cactus",
+        "Prickly pear pads"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Amaranth",
+      "aliases": [
+        "Amaranth greens",
+        "Amaranth leaves",
+        "Amaranthus",
+        "red amaranth",
+        "leaf amaranth"
+      ],
+      "familiarity": 35,
+      "points": 60
+    },
+    {
+      "name": "Moringa",
+      "aliases": [
+        "Moringa oleifera",
+        "Drumstick tree",
+        "Moringa pods",
+        "Moringa leaves",
+        "Drumstick leaves",
+        "Moringa shoots",
+        "Malunggay"
+      ],
+      "familiarity": 30,
+      "points": 65
+    },
+    {
+      "name": "Tinda",
+      "aliases": [
+        "Indian round gourd",
+        "Apple gourd"
+      ],
+      "familiarity": 15,
+      "points": 80
+    },
+    {
+      "name": "Bitter melon",
+      "aliases": [
+        "bitter gourd",
+        "karela",
+        "Balsam pear",
+        "Momordica charantia"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Snake gourd",
+      "aliases": [
+        "Trichosanthes cucumerina"
+      ],
+      "familiarity": 15,
+      "points": 80
+    },
+    {
+      "name": "Lablab bean",
+      "aliases": [
+        "hyacinth bean",
+        "Egyptian bean",
+        "Lablab"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Winged bean",
+      "aliases": [
+        "Goa bean",
+        "Psophocarpus tetragonolobus"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Soybean",
+      "aliases": [
+        "Edamame",
+        "Soybean plant",
+        "Glycine max",
+        "Soy bean"
+      ],
+      "familiarity": 70,
+      "points": 25
+    },
+    {
+      "name": "Green bean",
+      "aliases": [
+        "snap bean",
+        "string bean"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Snap pea",
+      "aliases": [
+        "sugar snap pea",
+        "Sugar snap"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Snow pea",
+      "aliases": [
+        "Mangetout"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Pea",
+      "aliases": [
+        "Pea sprouts",
+        "Pea shoots",
+        "Garden pea",
+        "Green pea"
+      ],
+      "familiarity": 55,
+      "points": 20
+    },
+    {
+      "name": "Mung bean",
+      "aliases": [
+        "Mung bean sprouts",
+        "Mung sprouts"
+      ],
+      "familiarity": 80,
+      "points": 30
+    },
+    {
+      "name": "Alfalfa",
+      "aliases": [
+        "Lucerne",
+        "Medicago sativa",
+        "Alfalfa sprouts"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Yardlong bean",
+      "aliases": [
+        "Asparagus bean",
+        "Long bean",
+        "Chinese long bean"
+      ],
+      "familiarity": 40,
+      "points": 60
+    },
+    {
+      "name": "Moth bean",
+      "aliases": [
+        "Vigna aconitifolia"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Lima bean",
+      "aliases": [
+        "Butter bean"
+      ],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Fava bean",
+      "aliases": [
+        "Broad bean",
+        "Vicia faba"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Cowpea",
+      "aliases": [
+        "Black-eyed pea"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Pigeon pea",
+      "aliases": [
+        "Cajanus cajan"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Bambara groundnut",
+      "aliases": [
+        "Vigna subterranea"
+      ],
+      "familiarity": 15,
+      "points": 80
+    },
+    {
+      "name": "Chickpea",
+      "aliases": [
+        "Garbanzo bean",
+        "Garbanzo"
+      ],
+      "familiarity": 80,
+      "points": 25
+    },
+    {
+      "name": "Lentil",
+      "aliases": [],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Navy bean",
+      "aliases": [
+        "Pea bean"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Kidney bean",
+      "aliases": [
+        "Red kidney bean"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Pinto bean",
+      "aliases": [],
+      "familiarity": 65,
+      "points": 35
+    },
+    {
+      "name": "Adzuki bean",
+      "aliases": [
+        "Azuki bean",
+        "Vigna angularis"
+      ],
+      "familiarity": 60,
+      "points": 40
+    },
+    {
+      "name": "Balsam apple",
+      "aliases": [
+        "Momordica balsamina",
+        "Balsam cucumber"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Cucamelon",
+      "aliases": [
+        "Mexican sour cucumber",
+        "mouse melon",
+        "sandita"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "West Indian gherkin",
+      "aliases": [
+        "Cucumis anguria",
+        "Burr gherkin",
+        "Gherkin"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Sweet corn",
+      "aliases": [
+        "Sugar corn"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Orach",
+      "aliases": [
+        "Atriplex hortensis",
+        "mountain spinach"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Mâche",
+      "aliases": [
+        "lamb's lettuce",
+        "corn salad",
+        "Valerianella locusta"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Salad burnet",
+      "aliases": [
+        "Sanguisorba minor",
+        "garden burnet"
+      ],
+      "familiarity": 15,
+      "points": 80
+    },
+    {
+      "name": "Nasturtium",
+      "aliases": [
+        "Tropaeolum majus",
+        "Indian cress"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Cress",
+      "aliases": [
+        "garden cress",
+        "Lepidium sativum"
+      ],
+      "familiarity": 55,
+      "points": 45
+    },
+    {
+      "name": "Komatsuna",
+      "aliases": [
+        "Japanese mustard spinach",
+        "Brassica rapa var. perviridis"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Frisée",
+      "aliases": [
+        "curly endive",
+        "chicory frisée"
+      ],
+      "familiarity": 25,
+      "points": 75
+    },
+    {
+      "name": "Belgian endive",
+      "aliases": [
+        "witloof",
+        "chicory endive"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Salsola soda",
+      "aliases": [
+        "Agretti",
+        "Soda inermis",
+        "Barilla plant"
+      ],
+      "familiarity": 10,
+      "points": 85
+    },
+    {
+      "name": "Yacon",
+      "aliases": [
+        "Smallanthus sonchifolius",
+        "Peruvian ground apple"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Ulluco",
+      "aliases": [
+        "Ulluku",
+        "Ullucus tuberosus"
+      ],
+      "familiarity": 15,
+      "points": 80
+    },
+    {
+      "name": "Mashua",
+      "aliases": [
+        "Tropaeolum tuberosum"
+      ],
+      "familiarity": 10,
+      "points": 85
+    },
+    {
+      "name": "Samphire",
+      "aliases": [
+        "Sea asparagus",
+        "Salicornia",
+        "Sea beans"
+      ],
+      "familiarity": 45,
+      "points": 55
+    },
+    {
+      "name": "Ahipa",
+      "aliases": [
+        "Pachyrhizus ahipa",
+        "Andean yam bean"
+      ],
+      "familiarity": 15,
+      "points": 80
+    },
+    {
+      "name": "Malabar spinach",
+      "aliases": [
+        "Basella alba",
+        "Alugbati"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Chaya",
+      "aliases": [
+        "Tree spinach",
+        "Cnidoscolus aconitifolius"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Coccinia grandis",
+      "aliases": [
+        "Ivy gourd",
+        "Tindora"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Elephant foot yam",
+      "aliases": [
+        "Amorphophallus paeoniifolius"
+      ],
+      "familiarity": 30,
+      "points": 70
+    },
+    {
+      "name": "Jalapeño pepper",
+      "aliases": [
+        "Jalapeño"
+      ],
+      "familiarity": 70,
+      "points": 30
+    },
+    {
+      "name": "Mallow",
+      "aliases": [
+        "Common mallow",
+        "Malva"
+      ],
+      "familiarity": 25,
+      "points": 75
+    },
+    {
+      "name": "Upland cress",
+      "aliases": [
+        "Barbarea verna",
+        "Land cress"
+      ],
+      "familiarity": 35,
+      "points": 65
+    },
+    {
+      "name": "Bitter leaf",
+      "aliases": [
+        "Vernonia amygdalina",
+        "African bitter leaf"
+      ],
+      "familiarity": 15,
+      "points": 80
+    },
+    {
+      "name": "Bottle gourd",
+      "aliases": [
+        "Lagenaria siceraria",
+        "Calabash"
+      ],
+      "familiarity": 20,
+      "points": 75
+    },
+    {
+      "name": "Water chestnut",
+      "aliases": [
+        "Eleocharis dulcis",
+        "Chinese water chestnut"
+      ],
+      "familiarity": 35,
+      "points": 65
+    }
+  ],
+  "rejected": [
+    {
+      "candidate": "Melon vine (cucumber family)",
+      "reason": "common vegetable plant"
+    },
+    {
+      "candidate": "Pepino",
+      "reason": "pepino is a fruit, not a vegetable"
+    },
+    {
+      "candidate": "Quinoa leaves",
+      "reason": "quinoa is grown for seeds, leaves not a common veg"
+    },
+    {
+      "candidate": "Parsnip root",
+      "reason": "vegetable plant"
+    },
+    {
+      "candidate": "Chayote squash",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Turban squash",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Kabocha",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Calabaza",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Hubbard squash",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Cushaw",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Galia melon",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Honeydew",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Cantaloupe",
+      "reason": "culinary fruit"
+    },
+    {
+      "candidate": "Watermelon",
+      "reason": "fruit, not a vegetable plant"
+    },
+    {
+      "candidate": "Corn",
+      "reason": "grain, not a vegetable plant"
+    },
+    {
+      "candidate": "Popcorn",
+      "reason": "grain snack, not veg"
+    },
+    {
+      "candidate": "Flint corn",
+      "reason": "grain variety"
+    },
+    {
+      "candidate": "Millet",
+      "reason": "grain"
+    },
+    {
+      "candidate": "Quinoa",
+      "reason": "grain seed"
+    },
+    {
+      "candidate": "Buckwheat",
+      "reason": "pseudocereal"
+    },
+    {
+      "candidate": "Sorghum",
+      "reason": "grain"
+    },
+    {
+      "candidate": "Lotus seed pod",
+      "reason": "seed pod, not typical veg"
+    },
+    {
+      "candidate": "Melon vine",
+      "reason": "fruit vine, not veg"
+    },
+    {
+      "candidate": "Tigernut",
+      "reason": "edible tuber seed, not veg plant"
+    },
+    {
+      "candidate": "Moringa seed pods",
+      "reason": "seed pods are fruit"
+    },
+    {
+      "candidate": "Moringa flowers",
+      "reason": "flowers not typical veg"
+    },
+    {
+      "candidate": "Moringa stems",
+      "reason": "stems not commonly eaten veg"
+    },
+    {
+      "candidate": "Amsoi",
+      "reason": "leafy mustard, but commonly considered a herb/green rather than a distinct veg plant"
+    },
+    {
+      "candidate": "Anise",
+      "reason": "spice seed, not a vegetable"
+    },
+    {
+      "candidate": "Araujia hortensis",
+      "reason": "ornamental vine, not a vegetable"
+    },
+    {
+      "candidate": "Atemoya",
+      "reason": "fruit hybrid, not a vegetable"
+    },
+    {
+      "candidate": "Azuki bean",
+      "reason": "legume used as bean, not a vegetable plant"
+    },
+    {
+      "candidate": "Basil",
+      "reason": "herb, not a vegetable"
+    },
+    {
+      "candidate": "Bergamot (Citrus bergamia)",
+      "reason": "citrus fruit tree"
+    },
+    {
+      "candidate": "Bitter leaf",
+      "reason": "herb/leafy green, not a distinct veg plant"
+    },
+    {
+      "candidate": "Borage",
+      "reason": "herb, not a vegetable"
+    },
+    {
+      "candidate": "Calabash",
+      "reason": "fruit used as container"
+    },
+    {
+      "candidate": "Chives",
+      "reason": "herb, not a vegetable"
+    },
+    {
+      "candidate": "Chrysanthemum leaves",
+      "reason": "not a common vegetable"
+    },
+    {
+      "candidate": "Cilantro",
+      "reason": "herb"
+    },
+    {
+      "candidate": "Cudweed",
+      "reason": "wild herb, not a veg"
+    },
+    {
+      "candidate": "Desert lime",
+      "reason": "fruit"
+    },
+    {
+      "candidate": "Fiddlehead (Osmunda regalis)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Fiddlehead (Pteridium aquilinum)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Fiddlehead (Pteridium esculentum)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Fiddlehead (Pteridium vulgare)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Fiddlehead (Pteridium x herbaceum)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Fiddlehead (Pteridium x hybridum)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Fiddlehead (Pteridium x intermedium)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Fiddlehead (Pteridium x interspecificum)",
+      "reason": "fern not a vegetable plant"
+    },
+    {
+      "candidate": "Sea lettuce",
+      "reason": "algae, not a plant"
+    },
+    {
+      "candidate": "Bergamot",
+      "reason": "citrus fruit, not a vegetable"
+    },
+    {
+      "candidate": "Hibiscus sabdariffa",
+      "reason": "flower used for tea, not a vegetable"
+    },
+    {
+      "candidate": "Lemon grass",
+      "reason": "herb used for flavoring, not a vegetable"
+    },
+    {
+      "candidate": "Papaya leaf",
+      "reason": "leaf not commonly eaten as vegetable"
+    },
+    {
+      "candidate": "Salsola kali",
+      "reason": "weed, not a cultivated vegetable"
+    },
+    {
+      "candidate": "Sea beet (Beta vulgaris subsp. maritima)",
+      "reason": "wild relative, not cultivated vegetable"
+    },
+    {
+      "candidate": "Melon vine (Cucumis melo)",
+      "reason": "fruit plant, not a vegetable"
+    },
+    {
+      "candidate": "Tigernut (Cyperus esculentus)",
+      "reason": "nut/tuber, not a vegetable plant"
+    },
+    {
+      "candidate": "Azuki bean (Vigna angularis)",
+      "reason": "Primarily used as a pulse, not a vegetable"
+    },
+    {
+      "candidate": "Basil (Ocimum basilicum)",
+      "reason": "Culinary herb, not a vegetable"
+    },
+    {
+      "candidate": "Borage (Borago officinalis)",
+      "reason": "Herb, flowers used, not a vegetable"
+    },
+    {
+      "candidate": "Chives (Allium schoenoprasum)",
+      "reason": "Herb, not a vegetable"
+    },
+    {
+      "candidate": "Cilantro (Coriandrum sativum)",
+      "reason": "Herb, not a vegetable"
+    },
+    {
+      "candidate": "Cudweed (Glebionis segetum)",
+      "reason": "Weed, not a recognized vegetable"
+    },
+    {
+      "candidate": "Desert lime (Citrus glauca)",
+      "reason": "Fruit, not a vegetable"
+    },
+    {
+      "candidate": "Jalapeño (Capsicum annuum)",
+      "reason": "Fruit (pepper) not a vegetable in strict sense"
+    },
+    {
+      "candidate": "Lemon grass (Cymbopogon citratus)",
+      "reason": "Herb, not a vegetable"
+    },
+    {
+      "candidate": "Papaya leaf (Carica papaya)",
+      "reason": "Leaf not commonly used as a vegetable"
+    },
+    {
+      "candidate": "Pepino (Solanum muricatum)",
+      "reason": "Fruit, not a vegetable"
+    },
+    {
+      "candidate": "Turmeric (Curcuma longa)",
+      "reason": "Root used as spice, not a vegetable"
+    },
+    {
+      "candidate": "Zucchini (Cucurbita pepo)",
+      "reason": "Common summer squash vegetable"
+    }
+  ],
+  "rarityFlags": [],
+  "reviewed": true,
+  "review": {
+    "reviewer": "Sol",
+    "at": "2026-11-19T19:53:29.224Z",
+    "originalCandidates": 155,
+    "approvedAdditions": 107,
+    "removed": [
+      {
+        "name": "Parsnip greens",
+        "reason": "Not a separate plant from existing parsnip; the leaf-as-vegetable claim is inappropriate."
+      },
+      {
+        "name": "Yam leaf",
+        "reason": "Not a separate plant; the unqualified claim of edible Dioscorea leaves is not reliable."
+      },
+      {
+        "name": "Mangel-wurzel",
+        "reason": "Fodder-beet form; held pending evidence/scope for its use as a human vegetable."
+      },
+      {
+        "name": "Mangelwurzel",
+        "reason": "Same held fodder-beet form, not a separate approved vegetable plant."
+      }
+    ],
+    "merged": [
+      {
+        "name": "Swede",
+        "into": "Rutabaga"
+      },
+      {
+        "name": "Mooli",
+        "into": "Daikon"
+      },
+      {
+        "name": "Chinese cabbage",
+        "into": "Napa cabbage"
+      },
+      {
+        "name": "Turnip greens",
+        "into": "Turnip"
+      },
+      {
+        "name": "Swiss chard",
+        "into": "Chard"
+      },
+      {
+        "name": "Kale sprouts",
+        "into": "Kale"
+      },
+      {
+        "name": "Cauliflower greens",
+        "into": "Cauliflower"
+      },
+      {
+        "name": "Prickly pear cactus",
+        "into": "Prickly pear cactus"
+      },
+      {
+        "name": "Soybean plant",
+        "into": "Soybean"
+      },
+      {
+        "name": "Sugar snap pea",
+        "into": "Snap pea"
+      },
+      {
+        "name": "Mung bean sprouts",
+        "into": "Mung bean"
+      },
+      {
+        "name": "Radish sprouts",
+        "into": "Radish"
+      },
+      {
+        "name": "Broccoli sprouts",
+        "into": "Broccoli"
+      },
+      {
+        "name": "Hyacinth bean",
+        "into": "Lablab bean"
+      },
+      {
+        "name": "Broad bean",
+        "into": "Fava bean"
+      },
+      {
+        "name": "Cowpea",
+        "into": "Cowpea"
+      },
+      {
+        "name": "Garbanzo bean",
+        "into": "Chickpea"
+      },
+      {
+        "name": "Pea",
+        "into": "Pea"
+      },
+      {
+        "name": "Garden pea",
+        "into": "Pea"
+      },
+      {
+        "name": "Butter bean",
+        "into": "Lima bean"
+      },
+      {
+        "name": "Mung bean",
+        "into": "Mung bean"
+      },
+      {
+        "name": "Soybean",
+        "into": "Soybean"
+      },
+      {
+        "name": "Green pea",
+        "into": "Pea"
+      },
+      {
+        "name": "Bitter gourd",
+        "into": "Bitter melon"
+      },
+      {
+        "name": "Amaranth",
+        "into": "Amaranth"
+      },
+      {
+        "name": "Taro leaf",
+        "into": "Taro"
+      },
+      {
+        "name": "Cassava leaf",
+        "into": "Cassava"
+      },
+      {
+        "name": "Bamboo shoot",
+        "into": "Bamboo"
+      },
+      {
+        "name": "Burdock",
+        "into": "Burdock"
+      },
+      {
+        "name": "Lamb's lettuce",
+        "into": "Mâche"
+      },
+      {
+        "name": "Pak choi",
+        "into": "Bok choy"
+      },
+      {
+        "name": "Chicory root",
+        "into": "Chicory"
+      },
+      {
+        "name": "Yam bean",
+        "into": "Jicama"
+      },
+      {
+        "name": "Salicornia",
+        "into": "Samphire"
+      },
+      {
+        "name": "Moringa leaves",
+        "into": "Moringa"
+      },
+      {
+        "name": "Moringa shoots",
+        "into": "Moringa"
+      },
+      {
+        "name": "Asparagus bean",
+        "into": "Yardlong bean"
+      },
+      {
+        "name": "Calabrese broccoli",
+        "into": "Broccoli"
+      },
+      {
+        "name": "Fiddlehead",
+        "into": "Fiddlehead fern"
+      },
+      {
+        "name": "Nopal",
+        "into": "Prickly pear cactus"
+      },
+      {
+        "name": "Moringa",
+        "into": "Moringa"
+      },
+      {
+        "name": "Amsoi",
+        "into": "Mustard greens"
+      },
+      {
+        "name": "Kumara",
+        "into": "Sweet potato"
+      },
+      {
+        "name": "Sunchoke",
+        "into": "Jerusalem artichoke"
+      }
+    ],
+    "rarityChanges": [],
+    "sources": [
+      "https://openknowledge.fao.org/3/cc5044en/cc5044en.pdf",
+      "https://www.rhs.org.uk/plants/161061/salsola-soda/details",
+      "https://www.rhs.org.uk/vegetables/parsnips/grow-your-own",
+      "https://powo.science.kew.org/taxon/167079-1",
+      "https://tahoe.ucdavis.edu/sites/g/files/dgvnsk4286/files/inline-files/2025%20Growing%20Instructions%20%20%281%29_0.pdf"
+    ],
+    "notes": [
+      "Question asks for plants: leaf/root/shoot variants were merged with the parent plant instead of creating extra scored answers. Market varieties such as snow peas and snap peas remain distinct labels without false cross-aliases.",
+      "Corrected winged bean/asparagus bean, rapini/gai lan, endive/Belgian endive, cassava/yucca, and amsoi/cabbage aliases.",
+      "Broad Latin names spanning several answers and generic Andean tuber/red bean aliases were removed where they caused ambiguity.",
+      "The reviewed list is not a recommendation about consuming any plant part or preparing any food."
+    ]
   }
- ],
- "rejected": [
-  {
-   "candidate": "Melon vine (cucumber family)",
-   "reason": "common vegetable plant"
-  },
-  {
-   "candidate": "Pepino",
-   "reason": "pepino is a fruit, not a vegetable"
-  },
-  {
-   "candidate": "Quinoa leaves",
-   "reason": "quinoa is grown for seeds, leaves not a common veg"
-  },
-  {
-   "candidate": "Parsnip root",
-   "reason": "vegetable plant"
-  },
-  {
-   "candidate": "Chayote squash",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Turban squash",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Kabocha",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Calabaza",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Hubbard squash",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Cushaw",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Galia melon",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Honeydew",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Cantaloupe",
-   "reason": "culinary fruit"
-  },
-  {
-   "candidate": "Watermelon",
-   "reason": "fruit, not a vegetable plant"
-  },
-  {
-   "candidate": "Corn",
-   "reason": "grain, not a vegetable plant"
-  },
-  {
-   "candidate": "Popcorn",
-   "reason": "grain snack, not veg"
-  },
-  {
-   "candidate": "Flint corn",
-   "reason": "grain variety"
-  },
-  {
-   "candidate": "Millet",
-   "reason": "grain"
-  },
-  {
-   "candidate": "Quinoa",
-   "reason": "grain seed"
-  },
-  {
-   "candidate": "Buckwheat",
-   "reason": "pseudocereal"
-  },
-  {
-   "candidate": "Sorghum",
-   "reason": "grain"
-  },
-  {
-   "candidate": "Lotus seed pod",
-   "reason": "seed pod, not typical veg"
-  },
-  {
-   "candidate": "Melon vine",
-   "reason": "fruit vine, not veg"
-  },
-  {
-   "candidate": "Tigernut",
-   "reason": "edible tuber seed, not veg plant"
-  },
-  {
-   "candidate": "Moringa seed pods",
-   "reason": "seed pods are fruit"
-  },
-  {
-   "candidate": "Moringa flowers",
-   "reason": "flowers not typical veg"
-  },
-  {
-   "candidate": "Moringa stems",
-   "reason": "stems not commonly eaten veg"
-  },
-  {
-   "candidate": "Amsoi",
-   "reason": "leafy mustard, but commonly considered a herb/green rather than a distinct veg plant"
-  },
-  {
-   "candidate": "Anise",
-   "reason": "spice seed, not a vegetable"
-  },
-  {
-   "candidate": "Araujia hortensis",
-   "reason": "ornamental vine, not a vegetable"
-  },
-  {
-   "candidate": "Atemoya",
-   "reason": "fruit hybrid, not a vegetable"
-  },
-  {
-   "candidate": "Azuki bean",
-   "reason": "legume used as bean, not a vegetable plant"
-  },
-  {
-   "candidate": "Basil",
-   "reason": "herb, not a vegetable"
-  },
-  {
-   "candidate": "Bergamot (Citrus bergamia)",
-   "reason": "citrus fruit tree"
-  },
-  {
-   "candidate": "Bitter leaf",
-   "reason": "herb/leafy green, not a distinct veg plant"
-  },
-  {
-   "candidate": "Borage",
-   "reason": "herb, not a vegetable"
-  },
-  {
-   "candidate": "Calabash",
-   "reason": "fruit used as container"
-  },
-  {
-   "candidate": "Chives",
-   "reason": "herb, not a vegetable"
-  },
-  {
-   "candidate": "Chrysanthemum leaves",
-   "reason": "not a common vegetable"
-  },
-  {
-   "candidate": "Cilantro",
-   "reason": "herb"
-  },
-  {
-   "candidate": "Cudweed",
-   "reason": "wild herb, not a veg"
-  },
-  {
-   "candidate": "Desert lime",
-   "reason": "fruit"
-  },
-  {
-   "candidate": "Fiddlehead (Osmunda regalis)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Fiddlehead (Pteridium aquilinum)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Fiddlehead (Pteridium esculentum)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Fiddlehead (Pteridium vulgare)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Fiddlehead (Pteridium x herbaceum)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Fiddlehead (Pteridium x hybridum)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Fiddlehead (Pteridium x intermedium)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Fiddlehead (Pteridium x interspecificum)",
-   "reason": "fern not a vegetable plant"
-  },
-  {
-   "candidate": "Sea lettuce",
-   "reason": "algae, not a plant"
-  },
-  {
-   "candidate": "Bergamot",
-   "reason": "citrus fruit, not a vegetable"
-  },
-  {
-   "candidate": "Hibiscus sabdariffa",
-   "reason": "flower used for tea, not a vegetable"
-  },
-  {
-   "candidate": "Lemon grass",
-   "reason": "herb used for flavoring, not a vegetable"
-  },
-  {
-   "candidate": "Papaya leaf",
-   "reason": "leaf not commonly eaten as vegetable"
-  },
-  {
-   "candidate": "Salsola kali",
-   "reason": "weed, not a cultivated vegetable"
-  },
-  {
-   "candidate": "Sea beet (Beta vulgaris subsp. maritima)",
-   "reason": "wild relative, not cultivated vegetable"
-  },
-  {
-   "candidate": "Melon vine (Cucumis melo)",
-   "reason": "fruit plant, not a vegetable"
-  },
-  {
-   "candidate": "Tigernut (Cyperus esculentus)",
-   "reason": "nut/tuber, not a vegetable plant"
-  },
-  {
-   "candidate": "Azuki bean (Vigna angularis)",
-   "reason": "Primarily used as a pulse, not a vegetable"
-  },
-  {
-   "candidate": "Basil (Ocimum basilicum)",
-   "reason": "Culinary herb, not a vegetable"
-  },
-  {
-   "candidate": "Borage (Borago officinalis)",
-   "reason": "Herb, flowers used, not a vegetable"
-  },
-  {
-   "candidate": "Chives (Allium schoenoprasum)",
-   "reason": "Herb, not a vegetable"
-  },
-  {
-   "candidate": "Cilantro (Coriandrum sativum)",
-   "reason": "Herb, not a vegetable"
-  },
-  {
-   "candidate": "Cudweed (Glebionis segetum)",
-   "reason": "Weed, not a recognized vegetable"
-  },
-  {
-   "candidate": "Desert lime (Citrus glauca)",
-   "reason": "Fruit, not a vegetable"
-  },
-  {
-   "candidate": "Jalapeño (Capsicum annuum)",
-   "reason": "Fruit (pepper) not a vegetable in strict sense"
-  },
-  {
-   "candidate": "Lemon grass (Cymbopogon citratus)",
-   "reason": "Herb, not a vegetable"
-  },
-  {
-   "candidate": "Papaya leaf (Carica papaya)",
-   "reason": "Leaf not commonly used as a vegetable"
-  },
-  {
-   "candidate": "Pepino (Solanum muricatum)",
-   "reason": "Fruit, not a vegetable"
-  },
-  {
-   "candidate": "Turmeric (Curcuma longa)",
-   "reason": "Root used as spice, not a vegetable"
-  },
-  {
-   "candidate": "Zucchini (Cucurbita pepo)",
-   "reason": "Common summer squash vegetable"
-  }
- ],
- "rarityFlags": []
 }

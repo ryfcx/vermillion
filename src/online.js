@@ -70,6 +70,7 @@ export function createOnline({
   autoFlush = false
 } = {}) {
   let client = suppliedClient;
+  const reviewedCandidates = new Set();
 
   function available() {
     try { return Boolean(config?.enabled && isOnline()); } catch { return false; }
@@ -347,6 +348,33 @@ export function createOnline({
     } catch (error) { return { ok: false, error: messageOf(error) }; }
   }
 
+  /** Fire-and-forget candidate review. Call only for a matcher `unknown`, never `suggest`. */
+  async function reviewAnswer(promptId, input, matchResult = null) {
+    try {
+      if (matchResult && matchResult.status !== 'unknown') return { ok: false, skipped: true };
+      if (typeof promptId !== 'string' || !promptId.trim()) return { ok: false, skipped: true };
+      const text = String(input ?? '').trim();
+      if (text.length < 2 || text.length > 80) return { ok: false, skipped: true };
+      if (!available()) return { ok: false, skipped: true };
+      const sb = getClient();
+      if (!sb?.auth?.getSession || !sb?.functions?.invoke) return { ok: false, skipped: true };
+      const { data, error } = await sb.auth.getSession();
+      const session = data?.session;
+      const user = userFromSession(session);
+      if (error || !user) return { ok: false, skipped: true };
+      // The refresh token is stable across access-token refreshes, so dedupe lasts for
+      // this sign-in session but resets if the player signs out and starts another.
+      const sessionId = session.refresh_token || user.id;
+      const normalized = text.normalize('NFKC').toLowerCase().replace(/\s+/g, ' ');
+      const key = `${sessionId}\u0000${promptId.trim()}\u0000${normalized}`;
+      if (reviewedCandidates.has(key)) return { ok: true, data: { skipped: true, duplicate: true } };
+      reviewedCandidates.add(key);
+      const result = await sb.functions.invoke('answer-review', { body: { promptId: promptId.trim(), input: text } });
+      if (result?.error) return { ok: false, error: messageOf(result.error) };
+      return { ok: true, data: result?.data ?? null };
+    } catch (error) { return { ok: false, error: messageOf(error) }; }
+  }
+
   async function flushQueue() {
     try {
       const queue = getQueue();
@@ -377,7 +405,7 @@ export function createOnline({
 
   return {
     available, getUser, onAuth, signInEmail, signInGuest, upgradeGuest, signOut,
-    getProfile, updateProfile, getStats, submitRun, dailyBoard, allTimeBoard,
+    getProfile, updateProfile, getStats, submitRun, reviewAnswer, dailyBoard, allTimeBoard,
     listFriends, requestFriend, acceptFriend, removeFriend, flushQueue
   };
 }
@@ -385,6 +413,6 @@ export function createOnline({
 const api = createOnline({ autoFlush: true });
 export const {
   available, getUser, onAuth, signInEmail, signInGuest, upgradeGuest, signOut,
-  getProfile, updateProfile, getStats, submitRun, dailyBoard, allTimeBoard,
+  getProfile, updateProfile, getStats, submitRun, reviewAnswer, dailyBoard, allTimeBoard,
   listFriends, requestFriend, acceptFriend, removeFriend, flushQueue
 } = api;

@@ -1181,3 +1181,5 @@ html.reduce-motion .title-screen, html.reduce-motion .play-page .stage { animati
 .m-row[aria-current="page"] .m-rt b, .m-row[aria-current="page"] .m-ico { color: var(--pink); }
 a.m-eyebrow { text-decoration: none !important; transition: color 0.12s var(--ease); } a.m-eyebrow:hover, a.m-eyebrow:focus-visible { color: var(--ink); outline: none; }
 @media (max-height: 520px) { .stage { padding-top: 70px; } .prompt-card .prompt-text { font-size: 20px; line-height: 1.02; } .prompt-card .pc-in { padding: 6px 16px 6px; } .pc-label { line-height: 14px; font-size: 12px; } .rare-line { line-height: 14px; } }
+.dm-note { display: block; margin-top: 2px; font-family: var(--font-body); font-size: 14px; letter-spacing: 0.08em; color: var(--muted); }
+.dock-msg { background: rgba(9, 7, 22, 0.95); color: var(--ink); border: 1px solid var(--edge); box-shadow: none; font-size: 20px; text-align: center; }
