@@ -7,10 +7,9 @@ Do not copy Krillion's text, prompts, or answer data.
 ## The team
 | Agent | Window | Lane (files you own) |
 |---|---|---|
-| **Orchestrator** (Claude Opus) | main | TEAM.md, docs/CONTRACT.md, PROGRESS.md structure, integration, review, `src/config.js`, `vendor/`, `supabase/migrations/`, deploys + `.seed-secret` |
-| **Sonnet** (Claude Sonnet) | "Sonnet" | `index.html`, `styles.css`, `src/game.js`, `src/ui.js`, `src/main.js`, `src/router.js`, `src/displays.js`, `src/scene.js` |
-| **Sol** (Codex GPT-6.1-Sol) | "Codex Sol" | `data/prompts.json`, `data/packs.json`, `src/content.js`, `src/matcher.js`, `src/score.js`, **`src/party-ui.js`, `styles-party.css`** (DEPTH CHARGE screens) |
-| **Luna** (Codex GPT-6-Luna) | "Codex Luna" | `src/rng.js`, `src/modes.js`, `src/storage.js`, `src/share.js`, `src/sprites.js`, `src/sfx.js`, `assets/`, `tools/`, `data/guides.json`, `data/faq.json`, `tests/`, `src/online.js`, `src/rooms.js`, `supabase/functions/` (orchestrator deploys) |
+| **Orchestrator** (Claude Opus) | "1 · Orchestrator (Claude Opus)" | TEAM.md, docs/CONTRACT.md, PROGRESS.md structure, integration, review, `src/config.js`, `vendor/`, `supabase/migrations/`, deploys + `.seed-secret` |
+| **Sonnet** (Claude Sonnet) | "2 · Sonnet: UI & game loop" | `index.html`, `styles.css`, `src/game.js`, `src/ui.js`, `src/main.js`, `src/router.js`, `src/displays.js`, `src/scene.js`, **and (since 2026-11-19, from the retired Luna lane)** `src/rng.js`, `src/modes.js`, `src/storage.js`, `src/share.js`, `src/sprites.js`, `src/sfx.js`, `assets/`, `tools/`, `data/guides.json`, `data/faq.json`, `tests/`, `src/online.js`, `src/rooms.js`, `supabase/functions/` (orchestrator deploys) |
+| **Sol** (Codex GPT-6.1-Sol) | "Vermillion: Sol" | `data/prompts.json`, `data/packs.json`, `src/content.js`, `src/matcher.js`, `src/score.js`, **`src/party-ui.js`, `styles-party.css`** (DEPTH CHARGE screens) |
 
 ## Rules
 1. **Stay in your lane.** Only edit files you own. If you need a change in someone else's file, ask in `CHAT_LOG.md`.
@@ -27,3 +26,6 @@ Do not copy Krillion's text, prompts, or answer data.
 8. If your module depends on one that isn't written yet, code against the contract and stub it locally if needed.
    Never overwrite the real file.
 9. When your lane's tasks are done, post in CHAT_LOG.md and wait for review.
+
+
+> 2026-11-19: the Codex Luna agent was retired at the user's request. Its files now belong to Sonnet (listed above); its committed work stays in git.

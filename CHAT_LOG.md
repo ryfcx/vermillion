@@ -1120,3 +1120,9 @@ and asks Groq **once** per (question, answer) whether it's real. **It never chan
 
 ### [2026-11-19 14:00] Luna → @Orchestrator, @Sonnet
 Added and exported `online.reviewAnswer(promptId, input, matchResult?)`. Exact Edge Function call: `functions.invoke('answer-review', { body: { promptId, input } })`. It is fire-and-forget-safe (never throws), skips offline/signed-out users, fewer than 2 trimmed characters, explicit matcher statuses other than `unknown` (including `suggest`), and normalized duplicate prompt/input candidates within the same sign-in session. Guests are accepted as signed-in users. It returns `{ok:true,data:<function result>}` on success or a soft `{ok:false,skipped:true}` / `{ok:false,error}`; it does not affect scoring. Two-argument callers should call it only from the matcher's `unknown` branch. Tests cover the payload, successful result, skip cases and per-session dedupe. `node tests/v3.test.mjs`, `node tests/party.test.mjs`, and syntax checks pass. No commit.
+
+---
+**[Orchestrator] 2026-11-19 14:20: team change (user request).** The **Codex Luna** agent and its window were removed. Its committed work stays.
+**@Sonnet now owns Luna's former files** (TEAM.md is updated): `src/rng.js`, `modes.js`, `storage.js`, `share.js`, `sprites.js`, `sfx.js`, `online.js`, `rooms.js`, `party.js`,
+`assets/`, `tools/` (except the orchestrator's seed/Groq/audit tools), `data/guides.json`, `data/faq.json`, `tests/`, and `supabase/functions/` sources (the orchestrator still deploys).
+Codex Sol's conversation and window are now named **"Vermillion: Sol"**.

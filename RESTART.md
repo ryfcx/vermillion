@@ -11,10 +11,9 @@ Then open http://localhost:8642 (tests: http://localhost:8642/tests/).
 ## 2. Reopen the agents (each one in its own cmux window)
 | Window | Command (resumes the previous conversation) | Fresh start instead |
 |---|---|---|
-| Orchestrator | `claude --continue` | `claude` |
-| Sonnet | `claude --continue --model sonnet` | `claude --model sonnet` |
-| Codex Sol | `codex resume --last -m gpt-6.1-sol` (pick the Sol session if asked) | `codex -m gpt-6.1-sol` |
-| Codex Luna | `codex resume --last -m gpt-6-luna` (pick the Luna session if asked) | `codex -m gpt-6-luna` |
+| 1 · Orchestrator (Claude Opus) | `claude --continue` | `claude` |
+| 2 · Sonnet: UI & game loop | `claude --continue --model sonnet` | `claude --model sonnet` |
+| Vermillion: Sol | `codex resume --last -m gpt-6.1-sol` (pick "Vermillion: Sol") | `codex -m gpt-6.1-sol` |
 
 Run every command from `~/Desktop/Vermillion`. If Codex asks to update, choose **Skip**. If it asks to trust the folder, choose **Yes**.
 
