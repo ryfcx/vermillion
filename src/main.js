@@ -1,5 +1,5 @@
 // Vermillion v2 — wiring: routes, run lifecycle, timer loop, settings, ?duel= handling.
-import { loadBank, getPrompt, loadPacks, promptsForPack } from './content.js';
+import { loadBank, loadAnswers, getPrompt, loadPacks, promptsForPack } from './content.js';
 import { matchAnswer } from './matcher.js';
 import { scoreAnswer } from './score.js';
 import * as modes from './modes.js';
@@ -540,6 +540,16 @@ function startRun(r) {
     return ui.showError('Not enough questions to start a game yet.', () => router.go(href.home()), 'Not enough questions');
   }
 
+  // Answers live in per-question shards (data/answers/<id>.json); fetch the 7 we need first.
+  if (prompts.some((p) => !Array.isArray(p.answers))) {
+    const token = ++screenToken;
+    loadAnswers(prompts).then(() => { if (token === screenToken) begin(); },
+      () => { if (token === screenToken) ui.showError('Could not load this game’s answers. Check your connection and try again.', () => router.go(href.home())); });
+    return;
+  }
+  begin();
+
+  function begin() {
   const limit = modes.TIMERS?.[mode] ?? (mode === 'duel' ? 15000 : 25000);
   const game = createGame({
     prompts, mode, packId: packId || null, timeLimitMs: limit, match: matchAnswer, score: scoreAnswer,
@@ -550,6 +560,7 @@ function startRun(r) {
   run = { game, route: r, meta, timer: 0, saved: false, theirs };
   ui.beginPlay(meta, game.getState());
   startTimer();
+  }
 }
 
 function startTimer() { stopTimer(); if (run) run.timer = setInterval(onTick, 100); }

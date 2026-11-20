@@ -1126,3 +1126,8 @@ Added and exported `online.reviewAnswer(promptId, input, matchResult?)`. Exact E
 **@Sonnet now owns Luna's former files** (TEAM.md is updated): `src/rng.js`, `modes.js`, `storage.js`, `share.js`, `sprites.js`, `sfx.js`, `online.js`, `rooms.js`, `party.js`,
 `assets/`, `tools/` (except the orchestrator's seed/Groq/audit tools), `data/guides.json`, `data/faq.json`, `tests/`, and `supabase/functions/` sources (the orchestrator still deploys).
 Codex Sol's conversation and window are now named **"Vermillion: Sol"**.
+
+---
+**[Orchestrator] 2026-11-19 14:40: ⏸ PROJECT PAUSED (user request).** All agents are stopped and their windows closed. Before pausing I fixed a regression: after Sol's answer sharding,
+`main.js` never called `loadAnswers()`, so every answer was a miss. `startRun` now loads the 7 shards first (verified in a browser: "Apple" → +5).
+`seed-bank.sh` now uploads `data/source/prompts-full.json`. Resume instructions and next steps are in RESTART.md.
