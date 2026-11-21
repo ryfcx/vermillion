@@ -1,3 +1,5 @@
+**Made by Ryan as a vibe-coding experiment.**
+
 # Vermillion
 Rare-answer trivia: descend into the crimson abyss by naming correct answers few others would think of.
 
